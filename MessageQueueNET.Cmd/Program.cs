@@ -45,7 +45,7 @@ namespace MessageQueueNET.Cmd
                 String.IsNullOrEmpty(queueName) ||
                 String.IsNullOrEmpty(command))
             {
-                Console.WriteLine("Usage: MessageQueueNET.Cmd.exe serviceUrl -q queueName -c comand {-m message -f messages-file}");
+                Console.WriteLine("Usage: MessageQueueNET.Cmd.exe serviceUrl -q queueName -c comand {-m message | -f messages-file}");
                 return 1;
             }
 
