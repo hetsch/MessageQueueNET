@@ -1,4 +1,4 @@
-﻿using MessageQueue.NET.Client;
+﻿using MessageQueueNET.Client;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MessageQueue.NET.Client
+namespace MessageQueueNET.Client
 {
     public class QueueClient
     {
