@@ -46,6 +46,7 @@ namespace MessageQueueNET.Cmd
                 String.IsNullOrEmpty(command))
             {
                 Console.WriteLine("Usage: MessageQueueNET.Cmd.exe serviceUrl -q queueName -c comand {-m message | -f messages-file}");
+                Console.WriteLine("       command: remove, enqueue");
                 return 1;
             }
 
