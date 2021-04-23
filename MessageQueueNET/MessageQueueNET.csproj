@@ -4,6 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>MessageQueueNET</RootNamespace>
     <AssemblyName>MessageQueueNET</AssemblyName>
+    <UserSecretsId>dac92db3-dbf3-47e8-81ec-7f3e54481482</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
