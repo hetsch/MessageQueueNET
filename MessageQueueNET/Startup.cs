@@ -1,3 +1,4 @@
+using MessageQueueNET.Extensions.DependencyInjection;
 using MessageQueueNET.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -34,11 +35,18 @@ namespace MessageQueueNET
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MessageQueue.NET", Version = "v1" });
             });
 
-            services.AddSingleton<QueuesService>();
+            services.AddQueuesService();
+            services.AddQueuePersitFileSystem(config =>
+            {
+                config.RootPath = @"c:\temp\message-queue\persist";
+            });
+            services.AddRestorePersistedQueuesService();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, 
+                                    IWebHostEnvironment env,
+                                    RestorePersistedQueuesService _restoreQueues)
         {
             if (env.IsDevelopment())
             {
@@ -46,6 +54,8 @@ namespace MessageQueueNET
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MessageQueue.NET v1"));
             }
+
+            _restoreQueues.Restore().Wait();
 
             //app.UseHttpsRedirection();
 

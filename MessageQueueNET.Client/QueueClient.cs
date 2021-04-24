@@ -64,5 +64,21 @@ namespace MessageQueueNET.Client
                 return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync());
             }
         }
+
+        async public Task<bool> Register()
+        {
+            using (var httpResponse = await _httpClient.GetAsync($"{ _serverUrl }/queue/register/{ _queueName }"))
+            {
+                return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync());
+            }
+        }
+
+        async public Task<IEnumerable<string>> QueueNames()
+        {
+            using (var httpResponse = await _httpClient.GetAsync($"{ _serverUrl }/queue/queuenames"))
+            {
+                return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+            }
+        }
     }
 }
