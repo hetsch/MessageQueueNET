@@ -105,7 +105,7 @@ namespace MessageQueueNET.Controllers
         }
 
         [HttpGet]
-        [Route("lenght/{id}")]
+        [Route("length/{id}")]
         public int Length(string id)
         {
             try

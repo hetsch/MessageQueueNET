@@ -46,7 +46,7 @@ namespace MessageQueueNET.Cmd
                 String.IsNullOrEmpty(command))
             {
                 Console.WriteLine("Usage: MessageQueueNET.Cmd.exe serviceUrl -q queueName -c comand {-m message | -f messages-file}");
-                Console.WriteLine("       command: remove, enqueue, queuenames, register");
+                Console.WriteLine("       command: remove, enqueue, dequeue, length, queuenames, register, all");
                 return 1;
             }
 
@@ -63,16 +63,34 @@ namespace MessageQueueNET.Cmd
                     if (!await client.Enqueue(messages))
                         throw new Exception($"Can't enqueue messages...");
                 }
-                else if(command == "register")
+                else if (command == "dequeue")
                 {
-                    if(!await client.Register())
+                    foreach (var m in await client.Dequeue())
+                    {
+                        Console.WriteLine(m);
+                    }
+                }
+                else if (command == "length")
+                {
+                    Console.WriteLine(await client.Length());
+                }
+                else if (command == "register")
+                {
+                    if (!await client.Register())
                         throw new Exception($"Can't register queue: { queueName }");
                 }
-                else if(command == "queuenames")
+                else if (command == "queuenames")
                 {
-                    foreach(var name in await client.QueueNames())
+                    foreach (var name in await client.QueueNames())
                     {
                         Console.WriteLine(name);
+                    }
+                }
+                else if (command == "all")
+                {
+                    foreach (var m in await client.AllMessages())
+                    {
+                        Console.WriteLine(m);
                     }
                 }
                 else

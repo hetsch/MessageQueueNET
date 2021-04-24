@@ -49,11 +49,12 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<int> Count()
+        async public Task<int> Length()
         {
             using (var httpResponse = await _httpClient.GetAsync($"{ _serverUrl }/queue/length/{ _queueName }"))
             {
-                return Convert.ToInt32(await httpResponse.Content.ReadAsStringAsync());
+                var response = await httpResponse.Content.ReadAsStringAsync();
+                return Convert.ToInt32(response);
             }
         }
 

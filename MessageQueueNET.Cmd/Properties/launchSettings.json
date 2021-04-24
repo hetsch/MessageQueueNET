@@ -2,7 +2,7 @@
   "profiles": {
     "MessageQueueNET.Cmd": {
       "commandName": "Project",
-      "commandLineArgs": "https://localhost:44301 -q q11 -c queuenames -m \"this is the message\" "
+      "commandLineArgs": "https://localhost:44301 -q 11 -c dequeue -m \"this is the message\" "
     }
   }
 }
