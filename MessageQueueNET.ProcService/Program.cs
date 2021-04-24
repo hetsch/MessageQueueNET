@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MessageQueueNET.ProcQueue
+namespace MessageQueueNET.ProcService
 {
     class Program
     {
@@ -49,7 +49,7 @@ namespace MessageQueueNET.ProcQueue
                 String.IsNullOrEmpty(queueName) ||
                 String.IsNullOrEmpty(command))
             {
-                Console.WriteLine("Usage: MessageQueueNET.ProcQueue.exe serviceUrl -q queueName -c comand {-p max-parallel-tasks=1 -qsize queuesize=100}");
+                Console.WriteLine("Usage: MessageQueueNET.ProcService.exe serviceUrl -q queueName -c comand {-p max-parallel-tasks=1 -qsize queuesize=100}");
                 Console.WriteLine("       command: remove, enqueue");
                 return 1;
             }
