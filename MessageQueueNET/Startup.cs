@@ -1,4 +1,5 @@
 using MessageQueueNET.Extensions.DependencyInjection;
+using MessageQueueNET.Middleware.Authentication;
 using MessageQueueNET.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,17 +37,26 @@ namespace MessageQueueNET
             });
 
             services.AddQueuesService();
-            services.AddQueuePersitFileSystem(config =>
+            switch (Configuration["Persist:Type"]?.ToLower())
             {
-                config.RootPath = @"c:\temp\message-queue\persist";
-            });
+                case "filesystem":
+                    services.AddQueuePersitFileSystem(config =>
+                        {
+                          config.RootPath = Configuration["Persist:RootPath"];
+                        });
+                    break;
+                default:
+                    services.AddQueuePersitNone();
+                    break;
+            }
+            
             services.AddRestorePersistedQueuesService();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, 
-                                    IWebHostEnvironment env,
-                                    RestorePersistedQueuesService _restoreQueues)
+                              IWebHostEnvironment env,
+                              RestorePersistedQueuesService _restoreQueues)
         {
             if (env.IsDevelopment())
             {
@@ -62,6 +72,13 @@ namespace MessageQueueNET
             app.UseRouting();
 
             app.UseAuthorization();
+
+            switch(Configuration["Authentication:Type"]?.ToLower())
+            {
+                case "basic":
+                    app.UseMiddleware<BasicAuthenticationMiddleware>();
+                    break;
+            }
 
             app.UseEndpoints(endpoints =>
             {

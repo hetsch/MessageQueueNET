@@ -1,3 +1,19 @@
 {
-
+  "Persist": {
+    "Type": "filesystem",
+    "RootPath": "C:\\temp\\message-queue\\persist"
+  },
+  "Authentication": {
+    "Type": "Basic",
+    "Users": [
+      {
+        "Name": "user1",
+        "Password": "pas3w0rd1"
+      },
+      {
+        "Name": "user2",
+        "Password": "pas3w0rd2"
+      }
+    ]
+  }
 }

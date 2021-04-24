@@ -12,10 +12,19 @@ namespace MessageQueueNET.Extensions.DependencyInjection
     {
         static public IServiceCollection AddQueuePersitFileSystem(this IServiceCollection services, Action<QueuePersistFileSystemOptions> setupAction)
         {
+            Console.WriteLine("Using QueuePersistFileSystem service");
+
             services.Configure<QueuePersistFileSystemOptions>(setupAction);
             services.AddTransient<IQueuesPersistService, QueuePersistFileSystem>();
 
             return services;
+        }
+
+        static public IServiceCollection AddQueuePersitNone(this IServiceCollection services)
+        {
+            Console.WriteLine("Add QueuePersistNone service");
+
+            return services.AddTransient<IQueuesPersistService, QueuePersistNone>();
         }
 
         static public IServiceCollection AddQueuesService(this IServiceCollection services)

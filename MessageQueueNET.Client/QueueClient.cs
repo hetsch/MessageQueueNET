@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Collections.Generic;
 using System.Text;
+using System.Net.Http.Headers;
 
 namespace MessageQueueNET.Client
 {
@@ -13,73 +14,151 @@ namespace MessageQueueNET.Client
         private readonly string _serverUrl;
         private readonly string _queueName;
 
+        private readonly string _userName, _password;
+
         public QueueClient(string serverUrl, string indexName, HttpClient httpClient = null)
         {
             _httpClient = httpClient ?? new HttpClient();
             _serverUrl = serverUrl;
             _queueName = indexName;
+
+            var uri = new Uri(_serverUrl);
+            var userInfo = uri.UserInfo;
+
+            if(!String.IsNullOrEmpty(userInfo) && userInfo.Contains(":"))
+            {
+                _userName = userInfo.Substring(0, userInfo.IndexOf(':'));
+                _password = userInfo.Substring(userInfo.IndexOf(':') + 1);
+
+                _serverUrl = _serverUrl.Replace($"{ userInfo }@", "");
+            }
         }
 
         async public Task<IEnumerable<string>> Dequeue(int count = 1)
         {
-            using (var httpResponse = await _httpClient.GetAsync($"{ _serverUrl }/queue/dequeue/{ _queueName }?count={ count }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/dequeue/{ _queueName }?count={ count }"))
             {
-                return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+                ModifyHttpRequest(requestMessage);
+
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+                    return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+                }
             }
         }
 
         async public Task<bool> Enqueue(IEnumerable<string> messages)
         {
-            HttpContent postContent = new StringContent(
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Put, $"{ _serverUrl }/queue/enqueue/{ _queueName }"))
+            {
+                ModifyHttpRequest(requestMessage);
+
+                requestMessage.Content = new StringContent(
                     JsonSerializer.Serialize(messages),
                     Encoding.UTF8,
                     "application/json");
 
-            using (var httpResponse = await _httpClient.PutAsync($"{ _serverUrl }/queue/enqueue/{ _queueName }", postContent))
-            {
-                return Convert.ToBoolean(await httpResponse.Content.ReadAsStringAsync());
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+                    return Convert.ToBoolean(await httpResponse.Content.ReadAsStringAsync());
+                }
             }
         }
 
         async public Task<IEnumerable<string>> AllMessages()
         {
-            using (var httpResponse = await _httpClient.GetAsync($"{ _serverUrl }/queue/all/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/all/{ _queueName }"))
             {
-                return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+                ModifyHttpRequest(requestMessage);
+
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+                    return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+                }
             }
         }
 
         async public Task<int> Length()
         {
-            using (var httpResponse = await _httpClient.GetAsync($"{ _serverUrl }/queue/length/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/length/{ _queueName }"))
             {
-                var response = await httpResponse.Content.ReadAsStringAsync();
-                return Convert.ToInt32(response);
+                ModifyHttpRequest(requestMessage);
+
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+                    var response = await httpResponse.Content.ReadAsStringAsync();
+                    return Convert.ToInt32(response);
+                }
             }
         }
 
         async public Task<bool> Remove()
         {
-            using (var httpResponse = await _httpClient.GetAsync($"{ _serverUrl }/queue/remove/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/remove/{ _queueName }"))
             {
-                return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync());
+                ModifyHttpRequest(requestMessage);
+
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+                    return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync());
+                }
             }
         }
 
         async public Task<bool> Register()
         {
-            using (var httpResponse = await _httpClient.GetAsync($"{ _serverUrl }/queue/register/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/register/{ _queueName }"))
             {
-                return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync());
+                ModifyHttpRequest(requestMessage);
+
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+                    return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync());
+                }
             }
         }
 
         async public Task<IEnumerable<string>> QueueNames()
         {
-            using (var httpResponse = await _httpClient.GetAsync($"{ _serverUrl }/queue/queuenames"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/queuenames"))
             {
-                return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+                ModifyHttpRequest(requestMessage);
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+                    return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+                }
             }
         }
+
+        #region Helper
+
+        private void ModifyHttpRequest(HttpRequestMessage requestMessage)
+        {
+            if (!String.IsNullOrEmpty(_userName) && !String.IsNullOrEmpty(_password))
+            {
+                // Add Basic Auth
+                var authenticationString = $"{ _userName }:{ _password }";
+                var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(authenticationString));
+
+                requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
+            }
+        }
+
+        private void CheckHttpResponse(HttpResponseMessage httpResponse)
+        {
+            if(!httpResponse.IsSuccessStatusCode)
+            {
+                throw new Exception($"Error connecting with queue message service. Status code: { httpResponse.StatusCode }");
+            }
+        }
+
+        #endregion
     }
 }
