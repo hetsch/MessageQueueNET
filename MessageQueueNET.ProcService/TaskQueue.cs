@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MessageQueueNET.ProcService.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -73,9 +74,9 @@ namespace MessageQueueNET.ProcService
         {
             try
             {
-                Console.WriteLine($"Queue task...");
-
                 long currentProcessId = NextProcessId();
+
+                $"Queuing task { currentProcessId }...".Log();
 
                 while (true)
                 {

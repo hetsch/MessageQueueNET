@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MessageQueueNET.ProcService.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace MessageQueueNET.ProcService
                 processStartInfo.RedirectStandardOutput = true;
                 processStartInfo.RedirectStandardError = true;
 
-                Console.WriteLine($"Starting process { context.ProcId }: { context.Command } { context.Arguments }");
+                $"Starting process { context.ProcId } with: { context.Arguments }".Log();
 
                 using (Process process = Process.Start(processStartInfo))
                 {

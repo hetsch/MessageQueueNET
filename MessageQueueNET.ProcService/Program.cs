@@ -1,4 +1,5 @@
 ﻿using MessageQueueNET.Client;
+using MessageQueueNET.ProcService.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,11 +69,12 @@ namespace MessageQueueNET.ProcService
                 {
                     if (context.ExitCode > 0)
                     {
-                        Console.WriteLine($"Task { context.ProcId } completed with exitcode { context.ExitCode }{ Environment.NewLine }{ context.Output }");
+                        $"Task { context.ProcId } completed with exitcode { context.ExitCode }".Log();
+                        context.Output.Log();
                     }
                     else
                     {
-                        Console.WriteLine($"Task { context.ProcId } completed successfully");
+                        $"Task { context.ProcId } completed successfully".Log();
                     }
                 };
                 taskQueue.TaskCanceled += async (ProccessContext context) =>
@@ -81,7 +83,7 @@ namespace MessageQueueNET.ProcService
                 };
                 taskQueue.TaskCrashed += (ProccessContext context, Exception ex) =>
                 {
-                    Console.WriteLine($"Task { context.ProcId } crashed with exception:  { ex.Message }");
+                    $"Task { context.ProcId } crashed with exception:  { ex.Message }".Log();
                 };
 
                 #endregion
@@ -94,6 +96,8 @@ namespace MessageQueueNET.ProcService
                 {
                     Console.WriteLine($"Application running until { startTime.AddSeconds(runForSeconds).ToShortDateString() } { startTime.AddSeconds(runForSeconds).ToLongTimeString() }");
                 }
+                Console.WriteLine($"Service triggers { command }");
+                Console.WriteLine($"Service monitors queue { queueName }");
                 Console.WriteLine("Press Ctrl-C to stop...");
 
                 Console.CancelKeyPress += (sender, e) =>
