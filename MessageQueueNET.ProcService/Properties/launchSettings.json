@@ -2,7 +2,7 @@
   "profiles": {
     "MessageQueueNET.ProcQueue": {
       "commandName": "Project",
-      "commandLineArgs": "https://localhost:44301 -q 04 -c c:\\temp\\dummy.bat -p 5 -duration 3600"
+      "commandLineArgs": "https://client1:pas3w0rd1@localhost:44301 -q 04 -c c:\\temp\\dummy.bat -p 5 -duration 3600"
     }
   }
 }

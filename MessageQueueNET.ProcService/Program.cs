@@ -64,23 +64,29 @@ namespace MessageQueueNET.ProcService
                 var client = new QueueClient(serverUrl, queueName);
                 var taskQueue = new TaskQueue<ProccessContext>(maxParallelTasks, queueSize, cancelTracker);
 
-                taskQueue.TaskCompleted += (ProccessContext context, Exception ex) => {
-                    if (ex == null)
+                taskQueue.TaskCompleted += (ProccessContext context) =>
+                {
+                    if (context.ExitCode > 0)
                     {
-                        if (context.ExitCode > 0)
-                        {
-                            Console.WriteLine($"Task { context.ProcId } completed with exitcode { context.ExitCode }{ Environment.NewLine }{ context.Output }");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Task { context.ProcId } completed successfully");
-                        }
+                        Console.WriteLine($"Task { context.ProcId } completed with exitcode { context.ExitCode }{ Environment.NewLine }{ context.Output }");
                     }
                     else
                     {
-                        Console.WriteLine($"Task { context.ProcId } completed with exception:  { ex.Message }");
+                        Console.WriteLine($"Task { context.ProcId } completed successfully");
                     }
                 };
+                taskQueue.TaskCanceled += async (ProccessContext context) =>
+                {
+                    await client.Enqueue(new string[] { context.Arguments });
+                };
+                taskQueue.TaskCrashed += (ProccessContext context, Exception ex) =>
+                {
+                    Console.WriteLine($"Task { context.ProcId } crashed with exception:  { ex.Message }");
+                };
+
+                #endregion
+
+                #region Proccess Loop
 
                 var startTime = DateTime.Now;
 
@@ -121,6 +127,8 @@ namespace MessageQueueNET.ProcService
 
                 #endregion
 
+                #region Cleanup
+
                 Console.WriteLine("Finishing tasks...");
 
                 while(taskQueue.HasRunningTasks)
@@ -128,6 +136,8 @@ namespace MessageQueueNET.ProcService
                     Console.WriteLine($"Waiting for { taskQueue.RunningTask } tasks to finsish...");
                     await Task.Delay(1000);
                 }
+
+                #endregion
 
                 return 0;
             }

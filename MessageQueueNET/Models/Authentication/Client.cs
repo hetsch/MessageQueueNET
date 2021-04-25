@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace MessageQueueNET.Models.Authentication
 {
-    public class User
+    public class Client
     {
-        public string Name { get; set; }
-        public string Password { get; set; }
+        public string Id { get; set; }
+        public string Secret { get; set; }
     }
 }

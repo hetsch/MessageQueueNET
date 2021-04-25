@@ -22,8 +22,10 @@ namespace MessageQueueNET.ProcService
                 processStartInfo.FileName = context.Command;
                 processStartInfo.Arguments = context.Arguments;
 
-                processStartInfo.UseShellExecute = true;
-                processStartInfo.RedirectStandardOutput = false;
+                processStartInfo.CreateNoWindow = true;
+                processStartInfo.UseShellExecute = false;
+                processStartInfo.RedirectStandardOutput = true;
+                processStartInfo.RedirectStandardError = true;
 
                 Console.WriteLine($"Starting process { context.ProcId }: { context.Command } { context.Arguments }");
 
@@ -31,7 +33,23 @@ namespace MessageQueueNET.ProcService
                 {
                     process.WaitForExit();
 
+                    var output = new List<string>();
+
+                    while (process.StandardOutput.Peek() > -1)
+                    {
+                        output.Add(process.StandardOutput.ReadLine());
+                    }
+
+                    while (process.StandardError.Peek() > -1)
+                    {
+                        output.Add(process.StandardError.ReadLine());
+                    }
+
+                    
+
                     context.ExitCode = process.ExitCode;
+                    context.Output = String.Join('\n', output);
+
                     //context.Output = process.StandardOutput.ReadToEnd();
                     
 

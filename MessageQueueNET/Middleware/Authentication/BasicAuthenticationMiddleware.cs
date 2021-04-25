@@ -39,8 +39,8 @@ namespace MessageQueueNET.Middleware.Authentication
                         var name = authCode.Substring(0, pos);
                         var password = authCode.Substring(pos + 1);
 
-                        var users = _config.GetSection("Authentication:Users").Get<IEnumerable<User>>();
-                        var user = users?.Where(u => name.Equals(u.Name, StringComparison.InvariantCultureIgnoreCase) && password == u.Password)
+                        var users = _config.GetSection("Authentication:Clients").Get<IEnumerable<Client>>();
+                        var user = users?.Where(u => name.Equals(u.Id, StringComparison.InvariantCultureIgnoreCase) && password == u.Secret)
                                          .FirstOrDefault();
 
                         if (user != null)

@@ -9,9 +9,14 @@ namespace MessageQueueNET.ProcService
     public class TaskQueue<T>
     {
         public delegate Task QueuedTask(T parameter);
-        public delegate void TaskCompletedHandler(T parameter, Exception ex);
+
+        public delegate void TaskCompletedHandler(T parameter);
+        public delegate void TaskCanceledHandler(T parameter);
+        public delegate void TaskCrashedHandler(T parameter, Exception ex);
 
         public event TaskCompletedHandler TaskCompleted;
+        public event TaskCanceledHandler TaskCanceled;
+        public event TaskCrashedHandler TaskCrashed;
 
         private readonly CancelTracker _cancelTracker;
 
@@ -68,9 +73,6 @@ namespace MessageQueueNET.ProcService
         {
             try
             {
-                if (_cancelTracker.IsCancelled)
-                    return false;
-
                 Console.WriteLine($"Queue task...");
 
                 long currentProcessId = NextProcessId();
@@ -78,7 +80,10 @@ namespace MessageQueueNET.ProcService
                 while (true)
                 {
                     if (_cancelTracker.IsCancelled)
+                    {
+                        TaskCanceled?.Invoke(parameter);
                         return false;
+                    }
 
                     if (IsReadyToRumble(currentProcessId))
                         break;
@@ -88,13 +93,13 @@ namespace MessageQueueNET.ProcService
 
                 await method?.Invoke(parameter);
 
-                TaskCompleted?.Invoke(parameter, null);
+                TaskCompleted?.Invoke(parameter);
 
                 return true;
             }
             catch (Exception ex)
             {
-                TaskCompleted?.Invoke(parameter, ex);
+                TaskCrashed?.Invoke(parameter, ex);
 
                 return false;
             }

@@ -5,14 +5,14 @@
   },
   "Authentication": {
     "Type": "Basic",
-    "Users": [
+    "Clients": [
       {
-        "Name": "user1",
-        "Password": "pas3w0rd1"
+        "Id": "client1",
+        "Secret": "pas3w0rd1"
       },
       {
-        "Name": "user2",
-        "Password": "pas3w0rd2"
+        "Id": "client2",
+        "Secret": "pas3w0rd2"
       }
     ]
   }

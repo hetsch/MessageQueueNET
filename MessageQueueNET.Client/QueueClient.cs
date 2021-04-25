@@ -14,9 +14,11 @@ namespace MessageQueueNET.Client
         private readonly string _serverUrl;
         private readonly string _queueName;
 
-        private readonly string _userName, _password;
+        private readonly string _clientId, _clientSecret;
 
-        public QueueClient(string serverUrl, string indexName, HttpClient httpClient = null)
+        public QueueClient(string serverUrl, string indexName,
+                           string clientId = "", string clientSecret = "",
+                           HttpClient httpClient = null)
         {
             _httpClient = httpClient ?? new HttpClient();
             _serverUrl = serverUrl;
@@ -25,10 +27,12 @@ namespace MessageQueueNET.Client
             var uri = new Uri(_serverUrl);
             var userInfo = uri.UserInfo;
 
-            if(!String.IsNullOrEmpty(userInfo) && userInfo.Contains(":"))
+            if (String.IsNullOrEmpty(clientId) &&
+                String.IsNullOrEmpty(clientSecret) &&
+                !String.IsNullOrEmpty(userInfo) && userInfo.Contains(":"))
             {
-                _userName = userInfo.Substring(0, userInfo.IndexOf(':'));
-                _password = userInfo.Substring(userInfo.IndexOf(':') + 1);
+                _clientId = userInfo.Substring(0, userInfo.IndexOf(':'));
+                _clientSecret = userInfo.Substring(userInfo.IndexOf(':') + 1);
 
                 _serverUrl = _serverUrl.Replace($"{ userInfo }@", "");
             }
@@ -141,10 +145,10 @@ namespace MessageQueueNET.Client
 
         private void ModifyHttpRequest(HttpRequestMessage requestMessage)
         {
-            if (!String.IsNullOrEmpty(_userName) && !String.IsNullOrEmpty(_password))
+            if (!String.IsNullOrEmpty(_clientId) && !String.IsNullOrEmpty(_clientSecret))
             {
                 // Add Basic Auth
-                var authenticationString = $"{ _userName }:{ _password }";
+                var authenticationString = $"{ _clientId }:{ _clientSecret }";
                 var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(authenticationString));
 
                 requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
