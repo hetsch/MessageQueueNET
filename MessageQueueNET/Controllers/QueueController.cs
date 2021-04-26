@@ -26,11 +26,11 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("dequeue/{id}")]
-        async public Task<IEnumerable<string>> Dequeue(string id, int count = 1)
+        async public Task<IEnumerable<string>> Dequeue(string id, int count = 1, bool register = false)
         {
             try
             {
-                if (_queues.QueueExists(id))
+                if (register == true || _queues.QueueExists(id))
                 {
                     var queue = _queues.GetQueue(id);
 
@@ -52,7 +52,7 @@ namespace MessageQueueNET.Controllers
             }
             catch
             {
-                
+
             }
 
             return new string[0];

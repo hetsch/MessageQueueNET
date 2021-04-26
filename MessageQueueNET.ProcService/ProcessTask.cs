@@ -28,7 +28,7 @@ namespace MessageQueueNET.ProcService
                 processStartInfo.RedirectStandardOutput = true;
                 processStartInfo.RedirectStandardError = true;
 
-                $"Starting process { context.ProcId } with: { context.Arguments }".Log();
+                $"Starting process - arguments: { context.Arguments }".Log(context);
 
                 using (Process process = Process.Start(processStartInfo))
                 {
@@ -46,21 +46,8 @@ namespace MessageQueueNET.ProcService
                         output.Add(process.StandardError.ReadLine());
                     }
 
-                    
-
                     context.ExitCode = process.ExitCode;
                     context.Output = String.Join('\n', output);
-
-                    //context.Output = process.StandardOutput.ReadToEnd();
-                    
-
-                    //if (context.ExitCode > 0)
-                    //{
-                    //    Console.WriteLine($"Exit Code: { context.ExitCode }");
-                    //    Console.WriteLine($"Error:\n{ context.EOutput }");
-                    //}
-
-                    //Console.WriteLine($"Finished process { context.ProcId }");
                 }
             });
 

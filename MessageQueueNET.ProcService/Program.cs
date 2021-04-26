@@ -69,21 +69,22 @@ namespace MessageQueueNET.ProcService
                 {
                     if (context.ExitCode > 0)
                     {
-                        $"Task { context.ProcId } completed with exitcode { context.ExitCode }".Log();
-                        context.Output.Log();
+                        $"completed with exitcode { context.ExitCode } after { Math.Round((DateTime.Now - context.StartTime).TotalSeconds, 3) }s)".Log(context);
+                        $"output: { context.Output }".Log(context);
                     }
                     else
                     {
-                        $"Task { context.ProcId } completed successfully".Log();
+                        $"completed successfully ({ Math.Round((DateTime.Now - context.StartTime).TotalSeconds, 3) }s)".Log(context);
                     }
                 };
                 taskQueue.TaskCanceled += async (ProccessContext context) =>
                 {
                     await client.Enqueue(new string[] { context.Arguments });
+                    $"cancelled. { context.Arguments } requeued to { queueName }".Log(context);
                 };
                 taskQueue.TaskCrashed += (ProccessContext context, Exception ex) =>
                 {
-                    $"Task { context.ProcId } crashed with exception:  { ex.Message }".Log();
+                    $"crashed with exception:  { ex.Message }".Log(context);
                 };
 
                 #endregion
@@ -135,9 +136,14 @@ namespace MessageQueueNET.ProcService
 
                 Console.WriteLine("Finishing tasks...");
 
-                while(taskQueue.HasRunningTasks)
+                var runningTasks = 0;
+                while (taskQueue.HasRunningTasks)
                 {
-                    Console.WriteLine($"Waiting for { taskQueue.RunningTask } tasks to finsish...");
+                    if (taskQueue.RunningTask != runningTasks)
+                    {
+                        runningTasks = taskQueue.RunningTask;
+                        Console.WriteLine($"Waiting for { runningTasks } tasks to finsish...");
+                    }
                     await Task.Delay(1000);
                 }
 

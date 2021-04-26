@@ -38,9 +38,9 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<IEnumerable<string>> Dequeue(int count = 1)
+        async public Task<IEnumerable<string>> Dequeue(int count = 1, bool register = false)
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/dequeue/{ _queueName }?count={ count }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/dequeue/{ _queueName }?count={ count }&register={ register }"))
             {
                 ModifyHttpRequest(requestMessage);
 

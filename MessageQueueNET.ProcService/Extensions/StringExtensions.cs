@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MessageQueueNET.ProcService.Abstraction;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,9 +9,9 @@ namespace MessageQueueNET.ProcService.Extensions
 {
     static class StringExtensions
     {
-        static public void Log(this string line)
+        static public void Log(this string line, ITaskContext context)
         {
-            Console.WriteLine($"{ DateTime.Now.ToShortDateString() } { DateTime.Now.ToLongTimeString() }: { line }");
+            Console.WriteLine($"{ DateTime.Now.ToShortDateString() } { DateTime.Now.ToLongTimeString() }: Task { context.TaskId } - { line }");
         }
     }
 }

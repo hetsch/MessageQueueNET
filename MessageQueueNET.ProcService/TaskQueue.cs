@@ -1,4 +1,5 @@
-﻿using MessageQueueNET.ProcService.Extensions;
+﻿using MessageQueueNET.ProcService.Abstraction;
+using MessageQueueNET.ProcService.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 namespace MessageQueueNET.ProcService
 {
     public class TaskQueue<T>
+       where T : ITaskContext
     {
         public delegate Task QueuedTask(T parameter);
 
@@ -21,7 +23,7 @@ namespace MessageQueueNET.ProcService
 
         private readonly CancelTracker _cancelTracker;
 
-        private long ProcessId = 0;
+        private long TaskId = 0;
         private long ProcessedTasks = 0;
         private int MaxParallelTasks = 50;
         private int MaxQueueLength = 100;
@@ -41,13 +43,13 @@ namespace MessageQueueNET.ProcService
             _cancelTracker = cancelTracker ?? new CancelTracker();
         }
 
-        public int CurrentCapacity => MaxQueueLength - (int)(ProcessId - ProcessedTasks);
+        public int CurrentCapacity => MaxQueueLength - (int)(TaskId - ProcessedTasks);
 
         private long NextProcessId()
         {
             lock (locker)
             {
-                return ++ProcessId;
+                return ++TaskId;
             }
         }
 
@@ -67,16 +69,16 @@ namespace MessageQueueNET.ProcService
             }
         }
 
-        public int RunningTask => (int)(ProcessId - ProcessedTasks);
+        public int RunningTask => (int)(TaskId - ProcessedTasks);
         public bool HasRunningTasks => RunningTask > 0;
 
         async public Task<bool> AwaitRequest(TaskQueue<T>.QueuedTask method, T parameter)
         {
             try
             {
-                long currentProcessId = NextProcessId();
+                long currentProcessId = parameter.TaskId = NextProcessId();
 
-                $"Queuing task { currentProcessId }...".Log();
+                $"Queuing...".Log(parameter);
 
                 while (true)
                 {
@@ -92,6 +94,7 @@ namespace MessageQueueNET.ProcService
                     await Task.Delay(10);
                 }
 
+                parameter.StartTime = DateTime.Now;
                 await method?.Invoke(parameter);
 
                 TaskCompleted?.Invoke(parameter);
