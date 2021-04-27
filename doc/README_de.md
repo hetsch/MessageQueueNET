@@ -6,7 +6,7 @@ Message Queues stellen ein asynchrones Kommunikationsprotokoll bereit, wobei Sen
 Nachrichten in der Wartschlange werden nur so lange gespeichert, bis der Empfänger diese abruft. Nach dem Abrufen wird eine Nachricht wieder gelöscht.
 Jede Nachricht wird außerdem nur von einem einzelnen Empfänger abgeholt und verarbeitet.
 
-*MessageQueueNET* stellt für dieses Protokoll folgende Werkzeug bereit:
+*MessageQueueNET* stellt für dieses Protokoll folgende Werkzeuge bereit:
 
 * Web API: die eigentlich *Messsage Queue*
 * Client Library: Eine .NET Standard Bibliothek zur interaktion mit der API

@@ -1,20 +1,20 @@
 # MessageQueueNET.Client
 
-In der `MessageQueueNET.Client` .NET Standard Bibliothek (nuget) befindet sich die `QueueClient` Klasse, die für .NET Programm eine Abstraktion der REST Schnittstelle liefert.
+The `MessageQueueNET.Client` .NET Standard Library (nuget) contains the `QueueClient` class, which provides an abstraction of the REST interface using any .NET language.
 
-## Instanziierung 
+## Instantiation
 
-Ein Client kann folgendermaßen instanziiert werden:
+A client can be created as follows:
 
 ```csharp
 var client = new QueueClient("https://clientId:clientSecret@my-server", "my-queue-1");
 ```
 
-Verwendet die API Autorisierung kann, diese über die Url (Beispiel oben) oder auch über optionale Parameter übergeben werden.
+If API authorization is used, the `ClientId` and `ClientSecret` can be passed in url-format (example above) or as optional parameters.
 
-## Methoden
+## Methods
 
-Hier werden die Methoden aufgelistet. Die Funktionweise entspricht der für die REST API beschriebenen:
+Here all methods are listed. The function is the same as described for the REST API:
 
 ```csharp
 Task<bool> EnqueueAsync(IEnumerable<string> messages)
@@ -44,7 +44,7 @@ Task<bool> RegisterAsync()
 Task<IEnumerable<string>> QueueNamesAsync()
 ```
 
-Beispiel:
+Example:
 
 ```csharp
 var client = new QueueClient("https://clientId:clientSecret@my-server", "my-queue-1");
@@ -56,3 +56,5 @@ var queueNames = await client.QueueNames(); // => ["my-queue-1, ..."]
 var length = await client.Length(); // => 2
 var message = await client.Dequeue(); // => ["Message1"]
 ```
+
+

@@ -3,13 +3,13 @@
 Die Rest API ist eine .NET Core API Web Anwendung. Die Anwendung läuft sowohl im *Microsoft IIS*, *Standalone* (dotnet MessageQueueNET.dll), oder als *Docker Container*.
 
 Die API stellt Methoden zur Verfügung, mit denen Queues (Warteschlangen) erstellt und abgefragt werden können. Es können beliebige Warteschlangen angelegt werden, die durch
-einen eindeutigen Namen (beliebige Zeichenkette) unterschieden werden. Jeder diese Warteschlangen kann nach dem Erstellen von unterschiedlichen Prozessen abgearbeitet werden.
+einen eindeutigen Namen (beliebige Zeichenkette) unterschieden werden. Jede diese Warteschlangen von unterschiedlichen Prozessen abgearbeitet werden.
 
 ## Konfiguration
 
 Die Konfiguration erfolgt im *JSON* Format in der *appsettings.json* oder in der *_config/message-queue.json* Datei. Empfohlen wird, die hier gezeigten Einstellungen in der
-*_config/message-queue.json* Datei durchzuführen, da diese beim Updates nicht überschrieben wird. Beim einem Update kann man alles außer das *_config* Verzeichnis über eine
-alte Installtation kopieren.
+*_config/message-queue.json* Datei durchzuführen, da diese beim Updates nicht überschrieben wird. Beim einem Update kann alles außer dem *_config* Verzeichnis über eine
+bestehende Installtation kopieren werden.
 
 ### message-queue.json (appsettings.json)
 
@@ -35,8 +35,8 @@ alte Installtation kopieren.
 }
 ```
 
-Die Warteschlangen werden per default `in Memory` verwaltet. Das garantiert eine hohe Performance. Die Applikation beendet (wiederverwendet/recycled) sind alle Warteschlagen ebenfalls gelöscht.
-Ein Ausweg ist die *Persistierung* von Warteschlagen. Als `Type` kann hier derzeit nur `filesystem` angegeben werden. Die einzelnen Einträge werden dann zusätzlich in unter `RootPath` angegeben Pfad gespeichert.
+Die Warteschlangen werden per default `in Memory` verwaltet. Das garantiert eine hohe Performance. Wird die Applikation beendet (wiederverwendet/recycled) sind alle Warteschlagen ebenfalls gelöscht.
+Ein Ausweg ist die *Persistierung* von Warteschlagen. Als `Type` kann hier derzeit nur `filesystem` angegeben werden. Die einzelnen Einträge werden damit zusätzlich in dem unter `RootPath` angegeben Pfad gespeichert.
 Wird die Anwendung beendet und später wieder neue gestartet, baut die Applikation den letzten Zustand wieder her. Bei sehr langen Warteschlagen, kann der Startvorgang der Applikation dadurch einige Sekunden 
 in Anspruch nehmen.
 
@@ -58,12 +58,13 @@ Fügt einer Warteschlange neue Werte hinzu. Die Werte werden als *JSON String Ar
   "message1", "message2"
 ]
 ```
+
 **[GET] /queue/dequeue/{id}** optional: ?count={**1**}&register={true/**false**}
 
-Holt sich Werte aus einer Wartschlange. Die Anzahl der Werte kann über `count` angegeben werden (default: 1). Werden werden von einer Warteschlange abgeholt, die nicht existiert,
-wird ein leeres Array `[]` zurück gebeben. Dadurch wird keine neue Warteschlange mit der angebeben *Id* angelegt. Möchte man ein Warteschlange abfragen und gleichzeitig 
-diese Warteschlange auch erstellen, wenn diese noch nicht vorhanden ist, kann das über den Parameter `register=true` gewährleistet. Die Warteschlange ist damit zwar immer leer,
-anderer Prozesse können aber über `/queue/queuenames` (siehe unten) ermitteln, dass diese Warteschlange bereits abgefragt wurden.
+Holt sich Werte aus einer Wartschlange. Die Anzahl der Werte kann über `count` angegeben werden (default: 1). Werden Nachrichten von einer Warteschlange abgeholt, die nicht existiert,
+wird ein leeres Array `[]` zurück gegeben. Dadurch wird keine neue Warteschlange mit der angebeben *Id* angelegt. Möchte man eine Warteschlange abfragen und gleichzeitig 
+diese Warteschlange auch erstellen, wenn diese noch nicht vorhanden ist, wird das über den Parameter `register=true` gewährleistet. Die Warteschlange ist damit zwar noch immer leer,
+anderer Prozesse können aber über `/queue/queuenames` (siehe unten) ermitteln, dass diese Warteschlange bereits abgefragt wurde und ein Prozess für das abarbeiten bereit steht.
 
 Werden über diese Methode Werte abgefragt, verschwinden diese automatisch aus der Warteschlange und stehen für anderer Prozesse nicht mehr zur Verfügung.
 
@@ -81,7 +82,7 @@ Löscht eine Warteschlange
 
 **[GET] /queue/register/{id}**
 
-Erstellt eine Warteschlange ohne Werte (falls die Wartschlange noch nicht vorhanden ist). Anderer Prozesse können die Warteschlange danach über `/queue/queuenames` sehen.
+Erstellt eine Warteschlange ohne Werte (falls die Wartschlange noch nicht vorhanden ist). Anderere Prozesse können die Warteschlange danach über `/queue/queuenames` sehen.
 Existiert die Wartschlange bereits, hat diese Methode keinen Effekt.
 
 **[GET] /queue/queuenames**
