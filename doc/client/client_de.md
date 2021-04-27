@@ -57,4 +57,4 @@ var length = await client.Length(); // => 2
 var message = await client.Dequeue(); // => ["Message1"]
 ```
 
-[Kommandozeilenwerkzeuge](./doc/console/tools_de.md)
+[Kommandozeilenwerkzeuge](../console/tools_de.md)

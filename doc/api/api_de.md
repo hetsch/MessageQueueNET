@@ -89,4 +89,4 @@ Existiert die Wartschlange bereits, hat diese Methode keinen Effekt.
 
 Gibt die Namen (Ids) aller Warteschlangen zurück
 
-[Client Library](./doc/client/client_de.md)
+[Client Library](../client/client_de.md)

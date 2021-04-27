@@ -86,4 +86,4 @@ If the message queue already exists, this method has no effect.
 
 Returns the names (ids) of all queues
 
-[Client Library](./doc/client/client_en.md)
+[Client Library](../client/client_en.md)
