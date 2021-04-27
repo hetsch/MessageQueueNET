@@ -3,6 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>MessageQueueNET.Client</AssemblyName>
+    <Version>0.9.1</Version>
+    <Copyright>2021, Jürgen Gstaltmaier</Copyright>
+    <PackageProjectUrl>https://github.com/jugstalt/MessageQueueNET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jugstalt/MessageQueueNET</RepositoryUrl>
+    <Authors>Jürgen Gstaltmaier</Authors>
+    <Company />
+    <Product />
   </PropertyGroup>
 
   <ItemGroup>
