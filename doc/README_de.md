@@ -13,3 +13,6 @@ Jede Nachricht wird außerdem nur von einem einzelnen Empfänger abgeholt und ve
 * Kommandozeilenwerkzeuge: Zugriff auf die *Message Queue* über die Kommandozeile
 
 [Web API](api/api_de.md)
+
+[Client Library](client/client_de.md)
+
