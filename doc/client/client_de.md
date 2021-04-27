@@ -10,38 +10,38 @@ Ein Client kann folgendermaßen instanziiert werden:
 var client = new QueueClient("https://clientId:clientSecret@my-server", "my-queue-1");
 ```
 
-Verwende die API Autorisierung kann diese über die Url (Beispiel oben) oder auch über optionale Parameter übergeben werden.
+Verwende die API Autorisierung kann, diese über die Url (Beispiel oben) oder auch über optionale Parameter übergeben werden.
 
 ## Methoden
 
 Hier werden die Methoden aufgelistet. Die Funktionweise entspricht der für die REST API beschriebenen:
 
 ```csharp
-async public Task<bool> Enqueue(IEnumerable<string> messages)
+Task<bool> EnqueueAsync(IEnumerable<string> messages)
 ```
 
 ```csharp
-async public Task<IEnumerable<string>> Dequeue(int count = 1, bool register = false)
+Task<IEnumerable<string>> DequeueAsync(int count = 1, bool register = false)
 ```
 
 ```csharp
-async public Task<IEnumerable<string>> AllMessages()
+Task<IEnumerable<string>> AllMessagesAsync()
 ```
 
 ```csharp
-async public Task<int> Length()
+Task<int> LengthAsync()
 ```
 
 ```csharp
-async public Task<bool> Remove()
+Task<bool> RemoveAsync()
 ```
 
 ```csharp
-async public Task<bool> Register()
+Task<bool> RegisterAsync()
 ```
 
 ```csharp
-async public Task<IEnumerable<string>> QueueNames()
+Task<IEnumerable<string>> QueueNamesAsync()
 ```
 
 Beispiel:
@@ -52,5 +52,7 @@ var client = new QueueClient("https://clientId:clientSecret@my-server", "my-queu
 await client.Enqueue(new [] { "Message1", "Messsage2" });
 
 var queueNames = await client.QueueNames(); // => ["my-queue-1, ..."]
-var message = await client.Dequeue(); // => "Message1"
+
+var length = await client.Length(); // => 2
+var message = await client.Dequeue(); // => ["Message1"]
 ```

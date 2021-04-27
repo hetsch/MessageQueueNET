@@ -73,7 +73,7 @@ namespace MessageQueueNET
 
             app.UseAuthorization();
 
-            switch(Configuration["Authentication:Type"]?.ToLower())
+            switch(Configuration["Authorization:Type"]?.ToLower())
             {
                 case "basic":
                     app.UseMiddleware<BasicAuthenticationMiddleware>();

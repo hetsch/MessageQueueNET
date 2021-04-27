@@ -38,7 +38,7 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<IEnumerable<string>> Dequeue(int count = 1, bool register = false)
+        async public Task<IEnumerable<string>> DequeueAsync(int count = 1, bool register = false)
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/dequeue/{ _queueName }?count={ count }&register={ register }"))
             {
@@ -52,7 +52,7 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<bool> Enqueue(IEnumerable<string> messages)
+        async public Task<bool> EnqueueAsync(IEnumerable<string> messages)
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Put, $"{ _serverUrl }/queue/enqueue/{ _queueName }"))
             {
@@ -71,7 +71,7 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<IEnumerable<string>> AllMessages()
+        async public Task<IEnumerable<string>> AllMessagesAsync()
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/all/{ _queueName }"))
             {
@@ -85,7 +85,7 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<int> Length()
+        async public Task<int> LengthAsync()
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/length/{ _queueName }"))
             {
@@ -100,7 +100,7 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<bool> Remove()
+        async public Task<bool> RemoveAsync()
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/remove/{ _queueName }"))
             {
@@ -114,7 +114,7 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<bool> Register()
+        async public Task<bool> RegisterAsync()
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/register/{ _queueName }"))
             {
@@ -128,7 +128,7 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<IEnumerable<string>> QueueNames()
+        async public Task<IEnumerable<string>> QueueNamesAsync()
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/queuenames"))
             {

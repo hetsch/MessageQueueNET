@@ -16,3 +16,4 @@ Jede Nachricht wird außerdem nur von einem einzelnen Empfänger abgeholt und ve
 
 [Client Library](client/client_de.md)
 
+[Kommandozeilenwerkzeuge](console/tools_de.md)

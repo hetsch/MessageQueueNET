@@ -22,7 +22,7 @@ namespace MessageQueueNET.Middleware.Authentication
 
         public async Task InvokeAsync(HttpContext context)
         {
-            if ("Basic".Equals(_config["Authentication:Type"], StringComparison.InvariantCultureIgnoreCase))
+            if ("Basic".Equals(_config["Authorization:Type"], StringComparison.InvariantCultureIgnoreCase))
             {
                 var authHeader = context.Request.Headers["Authorization"].ToString();
 
@@ -39,7 +39,7 @@ namespace MessageQueueNET.Middleware.Authentication
                         var name = authCode.Substring(0, pos);
                         var password = authCode.Substring(pos + 1);
 
-                        var users = _config.GetSection("Authentication:Clients").Get<IEnumerable<Client>>();
+                        var users = _config.GetSection("Authorization:Clients").Get<IEnumerable<Client>>();
                         var user = users?.Where(u => name.Equals(u.Id, StringComparison.InvariantCultureIgnoreCase) && password == u.Secret)
                                          .FirstOrDefault();
 

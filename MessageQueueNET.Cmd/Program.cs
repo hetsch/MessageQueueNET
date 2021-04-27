@@ -55,40 +55,40 @@ namespace MessageQueueNET.Cmd
                 var client = new QueueClient(serverUrl, queueName);
                 if (command == "remove")
                 {
-                    if (!await client.Remove())
+                    if (!await client.RemoveAsync())
                         throw new Exception("Can't remove queue");
                 }
                 else if (command == "enqueue")
                 {
-                    if (!await client.Enqueue(messages))
+                    if (!await client.EnqueueAsync(messages))
                         throw new Exception($"Can't enqueue messages...");
                 }
                 else if (command == "dequeue")
                 {
-                    foreach (var m in await client.Dequeue())
+                    foreach (var m in await client.DequeueAsync())
                     {
                         Console.WriteLine(m);
                     }
                 }
                 else if (command == "length")
                 {
-                    Console.WriteLine(await client.Length());
+                    Console.WriteLine(await client.LengthAsync());
                 }
                 else if (command == "register")
                 {
-                    if (!await client.Register())
+                    if (!await client.RegisterAsync())
                         throw new Exception($"Can't register queue: { queueName }");
                 }
                 else if (command == "queuenames")
                 {
-                    foreach (var name in await client.QueueNames())
+                    foreach (var name in await client.QueueNamesAsync())
                     {
                         Console.WriteLine(name);
                     }
                 }
                 else if (command == "all")
                 {
-                    foreach (var m in await client.AllMessages())
+                    foreach (var m in await client.AllMessagesAsync())
                     {
                         Console.WriteLine(m);
                     }

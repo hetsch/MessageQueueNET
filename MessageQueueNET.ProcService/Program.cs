@@ -99,7 +99,7 @@ namespace MessageQueueNET.ProcService
                 };
                 taskQueue.TaskCanceled += async (ProccessContext context) =>
                 {
-                    await client.Enqueue(new string[] { context.Arguments });
+                    await client.EnqueueAsync(new string[] { context.Arguments });
                     $"cancelled. { context.Arguments } requeued to { queueName }".Log(context);
                 };
                 taskQueue.TaskCrashed += (ProccessContext context, Exception ex) =>
@@ -132,7 +132,7 @@ namespace MessageQueueNET.ProcService
                     var currentCapacity = taskQueue.CurrentCapacity;
                     if (currentCapacity > 0)
                     {
-                        foreach (var message in await client.Dequeue(taskQueue.CurrentCapacity))
+                        foreach (var message in await client.DequeueAsync(taskQueue.CurrentCapacity))
                         {
                             var task = taskQueue.AwaitRequest(new ProcessTask().Run, new ProccessContext()
                             {

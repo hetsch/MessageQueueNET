@@ -3,7 +3,7 @@
     "Type": "filesystem",
     "RootPath": "C:\\temp\\message-queue\\persist"
   },
-  "Authentication": {
+  "Authorization": {
     "Type": "Basic",
     "Clients": [
       {
