@@ -11,3 +11,5 @@ Jede Nachricht wird außerdem nur von einem einzelnen Empfänger abgeholt und ve
 * Web API: die eigentlich *Messsage Queue*
 * Client Library: Eine .NET Standard Bibliothek zur interaktion mit der API
 * Kommandozeilenwerkzeuge: Zugriff auf die *Message Queue* über die Kommandozeile
+
+[Web API](api/api_de.md)

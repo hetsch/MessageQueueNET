@@ -1,6 +1,7 @@
 ﻿using MessageQueueNET.Client;
 using MessageQueueNET.ProcService.Extensions;
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace MessageQueueNET.ProcService
                    command = String.Empty;
 
             int maxParallelTasks = 1, queueSize = 100;
-            int runForSeconds = 0;
+            DateTime runUntil = DateTime.MinValue;
 
             if (args.Length > 0)
             {
@@ -40,7 +41,26 @@ namespace MessageQueueNET.ProcService
                             queueSize = int.Parse(args[++i]);
                             break;
                         case "-duration":
-                            runForSeconds = int.Parse(args[++i]);
+                            runUntil = DateTime.Now.AddSeconds(int.Parse(args[++i]));
+                            break;
+                        case "-stoptime":
+                            DateTime td;
+                            var timeString = args[++i];
+                            foreach (var timeFormat in new[] { "HH:mm", "h:mm tt" })
+                            {
+                                if (DateTime.TryParseExact(timeString, timeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out td))
+                                {
+                                    if (td < DateTime.Now)
+                                        td = td.AddDays(1);
+
+                                    runUntil = td;
+                                    break;
+                                }
+                            }
+                            if (runUntil < DateTime.Now)
+                            {
+                                throw new Exception($"Invalid time format { timeString }. Use something like 09:00 or 14:30 or 07:00 pm");
+                            }
                             break;
                     }
                 }
@@ -93,9 +113,9 @@ namespace MessageQueueNET.ProcService
 
                 var startTime = DateTime.Now;
 
-                if (runForSeconds > 0)
+                if (runUntil > DateTime.Now)
                 {
-                    Console.WriteLine($"Application running until { startTime.AddSeconds(runForSeconds).ToShortDateString() } { startTime.AddSeconds(runForSeconds).ToLongTimeString() }");
+                    Console.WriteLine($"Application running until { runUntil.ToShortDateString() } {runUntil.ToLongTimeString() }");
                 }
                 Console.WriteLine($"Service triggers { command }");
                 Console.WriteLine($"Service monitors queue { queueName }");
@@ -124,7 +144,7 @@ namespace MessageQueueNET.ProcService
 
                     await Task.Delay(1000);
 
-                    if (runForSeconds > 0 && startTime.AddSeconds(runForSeconds) <= DateTime.Now)
+                    if (!runUntil.Equals(DateTime.MinValue) && runUntil <= DateTime.Now)
                     {
                         cancelTracker.Cancel();
                     }
