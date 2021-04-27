@@ -17,7 +17,7 @@ namespace MessageQueueNET.ProcService
                    queueName = String.Empty,
                    command = String.Empty;
 
-            int maxParallelTasks = 1, queueSize = 100;
+            int maxParallelTasks = 1, queueSize = 0;
             DateTime runUntil = DateTime.MinValue;
 
             if (args.Length > 0)
@@ -70,8 +70,7 @@ namespace MessageQueueNET.ProcService
                 String.IsNullOrEmpty(queueName) ||
                 String.IsNullOrEmpty(command))
             {
-                Console.WriteLine("Usage: MessageQueueNET.ProcService.exe serviceUrl -q queueName -c comand {-p max-parallel-tasks=1 -qsize queuesize=100}");
-                Console.WriteLine("       command: remove, enqueue");
+                Console.WriteLine("Usage: MessageQueueNET.ProcService.exe serviceUrl -q queueName -c comand {-p max-parallel-tasks=1 -qsize queuesize=100 -duration <seconds> | -stoptime <time>  }");
                 return 1;
             }
 
@@ -83,7 +82,7 @@ namespace MessageQueueNET.ProcService
 
                 var cancelTracker = new CancelTracker();
                 var client = new QueueClient(serverUrl, queueName);
-                var taskQueue = new TaskQueue<ProccessContext>(maxParallelTasks, queueSize, cancelTracker);
+                var taskQueue = new TaskQueue<ProccessContext>(maxParallelTasks, queueSize > 0 ? queueSize : maxParallelTasks, cancelTracker);
 
                 taskQueue.TaskCompleted += (ProccessContext context) =>
                 {
