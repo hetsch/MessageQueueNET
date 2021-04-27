@@ -88,3 +88,5 @@ Existiert die Wartschlange bereits, hat diese Methode keinen Effekt.
 **[GET] /queue/queuenames**
 
 Gibt die Namen (Ids) aller Warteschlangen zurück
+
+[Client Library](./doc/client/client_de.md)

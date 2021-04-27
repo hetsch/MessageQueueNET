@@ -56,3 +56,5 @@ var queueNames = await client.QueueNames(); // => ["my-queue-1, ..."]
 var length = await client.Length(); // => 2
 var message = await client.Dequeue(); // => ["Message1"]
 ```
+
+[Kommandozeilenwerkzeuge](./doc/console/tools_de.md)
