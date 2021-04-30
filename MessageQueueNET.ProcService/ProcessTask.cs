@@ -32,19 +32,41 @@ namespace MessageQueueNET.ProcService
 
                 using (Process process = Process.Start(processStartInfo))
                 {
-                    process.WaitForExit();
-
                     var output = new List<string>();
 
-                    while (process.StandardOutput.Peek() > -1)
+                    process.OutputDataReceived += (sender, outLine) =>
                     {
-                        output.Add(process.StandardOutput.ReadLine());
-                    }
+                        if (!String.IsNullOrEmpty(outLine.Data))
+                        {
+                            //Console.WriteLine($"Output received:{ outLine.Data }");
+                            output.Add(outLine.Data);
+                        }
+                    };
 
-                    while (process.StandardError.Peek() > -1)
+                    process.ErrorDataReceived += (sender, outLine) =>
                     {
-                        output.Add(process.StandardError.ReadLine());
-                    }
+                        if (!String.IsNullOrEmpty(outLine.Data))
+                        {
+                            //Console.WriteLine($"Error received:{ outLine.Data }");
+                            output.Add(outLine.Data);
+                        }
+                    };
+
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    process.WaitForExit();
+
+                    // Causes Deadlogs...
+                    //while (process.StandardOutput.Peek() > -1)
+                    //{
+                    //    output.Add(process.StandardOutput.ReadLine());
+                    //}
+
+                    //while (process.StandardError.Peek() > -1)
+                    //{
+                    //    output.Add(process.StandardError.ReadLine());
+                    //}
 
                     context.ExitCode = process.ExitCode;
                     context.Output = String.Join('\n', output);
