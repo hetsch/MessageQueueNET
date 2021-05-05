@@ -20,6 +20,8 @@ namespace MessageQueueNET.ProcService
             int maxParallelTasks = 1, queueSize = 0;
             DateTime runUntil = DateTime.MinValue;
 
+            string logFile = String.Empty;
+
             if (args.Length > 0)
             {
                 serverUrl = args[0];
@@ -61,6 +63,9 @@ namespace MessageQueueNET.ProcService
                             {
                                 throw new Exception($"Invalid time format { timeString }. Use something like 09:00 or 14:30 or 07:00 pm");
                             }
+                            break;
+                        case "-log":
+                            logFile = args[++i];
                             break;
                     }
                 }
@@ -114,11 +119,11 @@ namespace MessageQueueNET.ProcService
 
                 if (runUntil > DateTime.Now)
                 {
-                    Console.WriteLine($"Application running until { runUntil.ToShortDateString() } {runUntil.ToLongTimeString() }");
+                    $"Application running until { runUntil.ToShortDateString() } {runUntil.ToLongTimeString() }".Log(logFile: logFile);
                 }
-                Console.WriteLine($"Service triggers { command }");
-                Console.WriteLine($"Service monitors queue { queueName }");
-                Console.WriteLine("Press Ctrl-C to stop...");
+                $"Service triggers { command }".Log(logFile: logFile);
+                $"Service monitors queue { queueName }".Log(logFile: logFile);
+                "Press Ctrl-C to stop...".Log(logFile: logFile);
 
                 Console.CancelKeyPress += (sender, e) =>
                 {
@@ -136,7 +141,8 @@ namespace MessageQueueNET.ProcService
                             var task = taskQueue.AwaitRequest(new ProcessTask().Run, new ProccessContext()
                             {
                                 Command = command,
-                                Arguments = message
+                                Arguments = message,
+                                LogFile = logFile
                             });
                         }
                     }
@@ -153,7 +159,7 @@ namespace MessageQueueNET.ProcService
 
                 #region Cleanup
 
-                Console.WriteLine("Finishing tasks...");
+                "Finishing tasks...".Log(logFile: logFile); ;
 
                 var runningTasks = 0;
                 while (taskQueue.HasRunningTasks)
@@ -161,7 +167,7 @@ namespace MessageQueueNET.ProcService
                     if (taskQueue.RunningTask != runningTasks)
                     {
                         runningTasks = taskQueue.RunningTask;
-                        Console.WriteLine($"Waiting for { runningTasks } tasks to finsish...");
+                        $"Waiting for { runningTasks } tasks to finsish...".Log(logFile: logFile); ;
                     }
                     await Task.Delay(1000);
                 }
@@ -172,7 +178,7 @@ namespace MessageQueueNET.ProcService
             }
             catch(Exception ex)
             {
-                Console.WriteLine($"Ends with exception: { ex.Message }");
+                $"Ends with exception: { ex.Message }".Log(logFile: logFile); ;
                 return 1;
             }
         }

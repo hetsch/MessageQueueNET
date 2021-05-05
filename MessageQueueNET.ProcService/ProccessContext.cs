@@ -25,6 +25,8 @@ namespace MessageQueueNET.ProcService
 
         public DateTime StartTime { get; set; }
 
+        public string LogFile { get; set; }
+
         #endregion
     }
 }

@@ -10,5 +10,7 @@ namespace MessageQueueNET.ProcService.Abstraction
     {
         long TaskId { get; set; }
         DateTime StartTime { get; set; }
+
+        string LogFile { get; set; }
     }
 }
