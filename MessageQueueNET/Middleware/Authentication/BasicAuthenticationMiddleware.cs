@@ -39,7 +39,7 @@ namespace MessageQueueNET.Middleware.Authentication
                         var name = authCode.Substring(0, pos);
                         var password = authCode.Substring(pos + 1);
 
-                        var users = _config.GetSection("Authorization:Clients").Get<IEnumerable<Client>>();
+                        var users = _config.GetSection("Authorization:Clients").Get<IEnumerable<ApiClient>>();
                         var user = users?.Where(u => name.Equals(u.Id, StringComparison.InvariantCultureIgnoreCase) && password == u.Secret)
                                          .FirstOrDefault();
 

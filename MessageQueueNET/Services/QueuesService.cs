@@ -3,22 +3,28 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace MessageQueueNET.Services
 {
     public class QueuesService
     {
-        private readonly ConcurrentDictionary<string, ConcurrentQueue<QueueItem>> _queues;
+        private readonly ConcurrentDictionary<string, Queue> _queues;
 
         public QueuesService()
         {
-            _queues = new ConcurrentDictionary<string, ConcurrentQueue<QueueItem>>();
+            _queues = new ConcurrentDictionary<string, Queue>();
         }
 
-        public ConcurrentQueue<QueueItem> GetQueue(string queueName)
+        public Queue GetQueue(string queueName, bool forAccess = true)
         {
-            return _queues.GetOrAdd(queueName, (key) => new ConcurrentQueue<QueueItem>());
+            var queue = _queues.GetOrAdd(queueName, (key) => new Queue(queueName));
+
+            if (forAccess == true)
+            {
+                queue.LastAccessUTC = DateTime.UtcNow;
+            }
+
+            return queue;
         }
 
         public bool QueueExists(string queueName)
@@ -30,7 +36,7 @@ namespace MessageQueueNET.Services
         {
             try
             {
-                _queues.TryRemove(queueName, out ConcurrentQueue<QueueItem> queue);
+                _queues.TryRemove(queueName, out Queue queue);
 
                 return true;
             }
@@ -42,11 +48,14 @@ namespace MessageQueueNET.Services
 
         public IEnumerable<string> QueueNames => _queues.Keys.ToArray();
 
-        public bool Restore(string queueName, IEnumerable<QueueItem> items)
+        public IEnumerable<Queue> Queues => _queues.Values.ToArray();
+
+        public bool Restore(string queueName, QueueProperties properties, IEnumerable<QueueItem> items)
         {
             try
             {
                 var queue = GetQueue(queueName);
+                queue.Properties = properties;
                 queue.Clear();
 
                 if (items != null)

@@ -8,6 +8,10 @@ namespace MessageQueueNET.Services.Abstraction
 {
     public interface IQueuesPersistService
     {
+        Task<bool> PersistQueueProperties(Queue queue);
+
+        Task<QueueProperties> GetQueueProperties(string queueName);
+
         Task<bool> PersistQueueItem(string queueName, QueueItem item);
 
         Task<bool> RemoveQueueItem(string queueName, Guid itemId);

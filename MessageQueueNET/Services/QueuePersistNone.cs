@@ -14,7 +14,17 @@ namespace MessageQueueNET.Services
             return Task.FromResult<IEnumerable<QueueItem>>(new QueueItem[0]);
         }
 
+        public Task<QueueProperties> GetQueueProperties(string queueName)
+        {
+            return Task.FromResult<QueueProperties>(null);
+        }
+
         public Task<bool> PersistQueueItem(string queueName, QueueItem item)
+        {
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> PersistQueueProperties(Queue queue)
         {
             return Task.FromResult(true);
         }

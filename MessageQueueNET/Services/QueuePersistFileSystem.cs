@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -12,6 +11,7 @@ namespace MessageQueueNET.Services
 {
     public class QueuePersistFileSystem : IQueuesPersistService
     {
+        private const string QueuePropertiesFilename = "_queue.properties.json";
         private readonly QueuePersistFileSystemOptions _options;
 
         public QueuePersistFileSystem(IOptionsMonitor<QueuePersistFileSystemOptions> optionsMonitor)
@@ -20,6 +20,46 @@ namespace MessageQueueNET.Services
         }
 
         #region IQueuePersist
+
+        async public Task<bool> PersistQueueProperties(Queue queue)
+        {
+            try
+            {
+                if (queue?.Properties != null)
+                {
+                    FileInfo fi = new FileInfo(Path.Combine(_options.RootPath, queue.Name, QueuePropertiesFilename));
+
+                    if (!fi.Directory.Exists)
+                    {
+                        fi.Directory.Create();
+                    }
+
+                    var jsonString = JsonSerializer.Serialize(queue.Properties);
+                    await File.WriteAllTextAsync(fi.FullName, jsonString);
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        async public Task<QueueProperties> GetQueueProperties(string queueName)
+        {
+            try
+            {
+                FileInfo fi = new FileInfo(Path.Combine(_options.RootPath, queueName, QueuePropertiesFilename));
+                if (fi.Exists)
+                {
+                    var jsonString = await File.ReadAllTextAsync(fi.FullName);
+                    return JsonSerializer.Deserialize<QueueProperties>(jsonString);
+                }
+            }
+            catch { }
+            return null;
+        }
 
         async public Task<IEnumerable<QueueItem>> GetAllItems(string queueName)
         {
@@ -65,7 +105,7 @@ namespace MessageQueueNET.Services
             try
             {
                 DirectoryInfo di = new DirectoryInfo(_options.RootPath);
-                foreach(var queueDirectory in di.GetDirectories())
+                foreach (var queueDirectory in di.GetDirectories())
                 {
                     queueNames.Add(queueDirectory.Name);
                 }

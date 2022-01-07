@@ -36,14 +36,18 @@ namespace MessageQueueNET.Controllers
 
                     List<string> messages = new List<string>();
 
-                    for (int i = 0; i < count; i++)
+                    while (messages.Count() < count)
                     {
                         if (queue.TryDequeue(out QueueItem item))
                         {
-                            if (await _persist.RemoveQueueItem(id, item.Id))
+                            if (await _persist.RemoveQueueItem(id, item.Id) && item.IsValid(queue))
                             {
                                 messages.Add(item.Message);
                             }
+                        }
+                        else
+                        {
+                            break;
                         }
                     }
 
@@ -93,7 +97,9 @@ namespace MessageQueueNET.Controllers
                 {
                     var queue = _queues.GetQueue(id);
 
-                    return queue.Select(item => item.Message);
+                    return queue
+                        .Where(item => item.IsValid(queue))
+                        .Select(item => item.Message);
                 }
             }
             catch
@@ -112,7 +118,11 @@ namespace MessageQueueNET.Controllers
             {
                 if (_queues.QueueExists(id))
                 {
-                    return _queues.GetQueue(id).Count;
+                    var queue = _queues.GetQueue(id);
+
+                    return _queues.GetQueue(id)
+                        .Where(item => item.IsValid(queue))
+                        .Count();
                 }
             }
             catch
@@ -144,12 +154,33 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("register/{id}")]
-        public bool Register(string id)
+        public bool Register(string id, int lifetimeSeconds = 0, int itemLifetimeSeconds = 0)
         {
-            _queues.GetQueue(id);
+            var queue = _queues.GetQueue(id);
+
+            queue.Properties.LifetimeSeconds = lifetimeSeconds;
+            queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds;
+
+            _persist.PersistQueueProperties(queue);
 
             return true;
         }
+
+        [HttpGet]
+        [Route("properties/{id}")]
+        public MessageQueueNET.Client.Models.QueueProperties QueueProperties(string id)
+        {
+            var queue = _queues.GetQueue(id);
+
+            return new Client.Models.QueueProperties()
+            {
+                LastAccessUTC = queue.LastAccessUTC,
+                Length = queue.Where(item => item.IsValid(queue))
+                              .Count(),
+                LifetimeSeconds = queue.Properties.LifetimeSeconds,
+                ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds
+            };
+        }  
 
         [HttpGet]
         [Route("queuenames")]

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MessageQueueNET.Models
 {
@@ -16,5 +13,16 @@ namespace MessageQueueNET.Models
         public Guid Id { get; set; }
         public DateTime CreationDateUTC { get; set; }
         public string Message { get; set; }
+
+        public bool IsValid(Queue queue)
+        {
+            if (queue.Properties.ItemLifetimeSeconds > 0 && 
+                (DateTime.UtcNow - this.CreationDateUTC).TotalSeconds > queue.Properties.ItemLifetimeSeconds)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

@@ -24,7 +24,9 @@ namespace MessageQueueNET.Services
             {
                 foreach (var queueName in await _persist.QueueNames())
                 {
-                    _queues.Restore(queueName, await _persist.GetAllItems(queueName));
+                    _queues.Restore(queueName,
+                                    await _persist.GetQueueProperties(queueName),
+                                    await _persist.GetAllItems(queueName));
                 }
 
                 return true;
@@ -34,5 +36,5 @@ namespace MessageQueueNET.Services
                 return false;
             }
         }
-     }
+    }
 }

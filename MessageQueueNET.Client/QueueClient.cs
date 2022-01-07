@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Collections.Generic;
 using System.Text;
 using System.Net.Http.Headers;
+using MessageQueueNET.Client.Models;
 
 namespace MessageQueueNET.Client
 {
@@ -114,9 +115,9 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<bool> RegisterAsync()
+        async public Task<bool> RegisterAsync(int lifetimeSeconds = 0, int itemLifetimeSeconds = 0)
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/register/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/register/{ _queueName }?lifetimeSeconds={ lifetimeSeconds }&itemLifetimeSeconds={ itemLifetimeSeconds }"))
             {
                 ModifyHttpRequest(requestMessage);
 
@@ -124,6 +125,27 @@ namespace MessageQueueNET.Client
                 {
                     CheckHttpResponse(httpResponse);
                     return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync());
+                }
+            }
+        }
+
+        async public Task<QueueProperties> PropertiesAsync()
+        {
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/properties/{ _queueName }"))
+            {
+                ModifyHttpRequest(requestMessage);
+
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+
+                    string jsonResponse = await httpResponse.Content.ReadAsStringAsync();
+
+                    return JsonSerializer.Deserialize<QueueProperties>(jsonResponse, 
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
                 }
             }
         }

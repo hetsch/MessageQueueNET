@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Cmd
@@ -14,15 +15,17 @@ namespace MessageQueueNET.Cmd
             string serverUrl = String.Empty, queueName = String.Empty,
                 command = String.Empty;
 
+            int lifetimeSeconds = 0, itemLifetimeSeconds = 0;
+
             var messages = new List<string>();
 
             if (args.Length > 0)
             {
                 serverUrl = args[0];
 
-                for (int i = 1; i < args.Length-1; i++)
+                for (int i = 1; i < args.Length - 1; i++)
                 {
-                    switch(args[i])
+                    switch (args[i])
                     {
                         case "-q":
                             queueName = args[++i];
@@ -38,15 +41,21 @@ namespace MessageQueueNET.Cmd
                                     .Select(l => l.Trim())
                                     .Where(l => !String.IsNullOrEmpty(l)));
                             break;
+                        case "-lifetime":
+                            lifetimeSeconds = int.Parse(args[++i]);
+                            break;
+                        case "-itemlifetime":
+                            itemLifetimeSeconds = int.Parse(args[++i]);
+                            break;
                     }
                 }
             }
-            if (String.IsNullOrEmpty(serverUrl) || 
+            if (String.IsNullOrEmpty(serverUrl) ||
                 String.IsNullOrEmpty(queueName) ||
                 String.IsNullOrEmpty(command))
             {
                 Console.WriteLine("Usage: MessageQueueNET.Cmd.exe serviceUrl -q queueName -c comand {-m message | -f messages-file}");
-                Console.WriteLine("       command: remove, enqueue, dequeue, length, queuenames, register, all");
+                Console.WriteLine("       command: remove, enqueue, dequeue, length, queuenames, register, properties, all");
                 return 1;
             }
 
@@ -56,12 +65,16 @@ namespace MessageQueueNET.Cmd
                 if (command == "remove")
                 {
                     if (!await client.RemoveAsync())
+                    {
                         throw new Exception("Can't remove queue");
+                    }
                 }
                 else if (command == "enqueue")
                 {
                     if (!await client.EnqueueAsync(messages))
+                    {
                         throw new Exception($"Can't enqueue messages...");
+                    }
                 }
                 else if (command == "dequeue")
                 {
@@ -76,8 +89,15 @@ namespace MessageQueueNET.Cmd
                 }
                 else if (command == "register")
                 {
-                    if (!await client.RegisterAsync())
+                    if (!await client.RegisterAsync(lifetimeSeconds, itemLifetimeSeconds))
+                    {
                         throw new Exception($"Can't register queue: { queueName }");
+                    }
+                }
+                else if(command == "properties")
+                {
+                    var properties = await client.PropertiesAsync();
+                    Console.WriteLine(JsonSerializer.Serialize(properties));
                 }
                 else if (command == "queuenames")
                 {

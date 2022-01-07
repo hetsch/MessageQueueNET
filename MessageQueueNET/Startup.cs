@@ -1,19 +1,13 @@
 using MessageQueueNET.Extensions.DependencyInjection;
 using MessageQueueNET.Middleware.Authentication;
 using MessageQueueNET.Services;
+using MessageQueueNET.Services.Abstraction;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MessageQueueNET
 {
@@ -29,6 +23,7 @@ namespace MessageQueueNET
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<IAppVersionService, AppVersionService>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -42,19 +37,25 @@ namespace MessageQueueNET
                 case "filesystem":
                     services.AddQueuePersitFileSystem(config =>
                         {
-                          config.RootPath = Configuration["Persist:RootPath"];
+                            config.RootPath = Configuration["Persist:RootPath"];
                         });
                     break;
                 default:
                     services.AddQueuePersitNone();
                     break;
             }
-            
+
             services.AddRestorePersistedQueuesService();
+
+            #region Background Task
+
+            services.AddHostedService<TimedHostedBackgroundService>();
+
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, 
+        public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
                               RestorePersistedQueuesService _restoreQueues)
         {
@@ -73,7 +74,7 @@ namespace MessageQueueNET
 
             app.UseAuthorization();
 
-            switch(Configuration["Authorization:Type"]?.ToLower())
+            switch (Configuration["Authorization:Type"]?.ToLower())
             {
                 case "basic":
                     app.UseMiddleware<BasicAuthenticationMiddleware>();
