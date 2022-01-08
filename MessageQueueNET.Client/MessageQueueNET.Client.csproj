@@ -3,17 +3,19 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>MessageQueueNET.Client</AssemblyName>
-    <Version>1.22.101</Version>
+    <Version>1.22.103</Version>
     <Copyright>2021, Jürgen Gstaltmaier</Copyright>
     <PackageProjectUrl>https://github.com/jugstalt/MessageQueueNET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/jugstalt/MessageQueueNET</RepositoryUrl>
     <Authors>Jürgen Gstaltmaier</Authors>
     <Company />
     <Product />
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <PackageReference Include="System.Text.Json" Version="6.0.1" />
   </ItemGroup>
 
 </Project>

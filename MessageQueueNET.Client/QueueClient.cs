@@ -1,29 +1,36 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Text.Json;
+﻿using MessageQueueNET.Client.Models;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Net.Http;
 using System.Net.Http.Headers;
-using MessageQueueNET.Client.Models;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace MessageQueueNET.Client
 {
     public class QueueClient
     {
+        private static HttpClient ReuseableHttpClient = new HttpClient();
+
         private readonly HttpClient _httpClient;
         private readonly string _serverUrl;
         private readonly string _queueName;
 
         private readonly string _clientId, _clientSecret;
 
-        public QueueClient(string serverUrl, string indexName,
+        public QueueClient(string serverUrl, string queueName,
                            string clientId = "", string clientSecret = "",
                            HttpClient httpClient = null)
         {
-            _httpClient = httpClient ?? new HttpClient();
+            if (httpClient == null && ReuseableHttpClient == null)
+            {
+                ReuseableHttpClient = new HttpClient();
+            }
+
+            _httpClient = httpClient ?? ReuseableHttpClient;
             _serverUrl = serverUrl;
-            _queueName = indexName;
+            _queueName = queueName;
 
             var uri = new Uri(_serverUrl);
             var userInfo = uri.UserInfo;
@@ -36,6 +43,11 @@ namespace MessageQueueNET.Client
                 _clientSecret = userInfo.Substring(userInfo.IndexOf(':') + 1);
 
                 _serverUrl = _serverUrl.Replace($"{ userInfo }@", "");
+            }
+            else
+            {
+                _clientId = clientId;
+                _clientSecret = clientSecret;
             }
         }
 
@@ -141,7 +153,7 @@ namespace MessageQueueNET.Client
 
                     string jsonResponse = await httpResponse.Content.ReadAsStringAsync();
 
-                    return JsonSerializer.Deserialize<QueueProperties>(jsonResponse, 
+                    return JsonSerializer.Deserialize<QueueProperties>(jsonResponse,
                         new JsonSerializerOptions
                         {
                             PropertyNameCaseInsensitive = true
@@ -179,7 +191,7 @@ namespace MessageQueueNET.Client
 
         private void CheckHttpResponse(HttpResponseMessage httpResponse)
         {
-            if(!httpResponse.IsSuccessStatusCode)
+            if (!httpResponse.IsSuccessStatusCode)
             {
                 throw new Exception($"Error connecting with queue message service. Status code: { httpResponse.StatusCode }");
             }
