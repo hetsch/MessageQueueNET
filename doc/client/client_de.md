@@ -2,6 +2,8 @@
 
 In der `MessageQueueNET.Client` .NET Standard Bibliothek (nuget) befindet sich die `QueueClient` Klasse, die für .NET Programm eine Abstraktion der REST Schnittstelle liefert.
 
+https://www.nuget.org/packages/MessageQueueNET.Client
+
 ## Instanziierung 
 
 Ein Client kann folgendermaßen instanziiert werden:

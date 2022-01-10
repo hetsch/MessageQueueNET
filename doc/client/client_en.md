@@ -2,6 +2,8 @@
 
 The `MessageQueueNET.Client` .NET Standard Library (nuget) contains the `QueueClient` class, which provides an abstraction of the REST interface using any .NET language.
 
+https://www.nuget.org/packages/MessageQueueNET.Client
+
 ## Instantiation
 
 A client can be created as follows:
