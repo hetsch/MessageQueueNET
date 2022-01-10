@@ -87,10 +87,10 @@ Existiert die Wartschlange bereits, hat diese Methode keinen Effekt.
 
 dabei können zusätzliche Parameter übergeben werden: 
 
-    - **lifetimeSeconds <int>**: Ist die Liste länger als die hier angegeben Zeitspanne leer, wird sich automatisch gelöscht. Ein Wert ``0`` bedeutet, dass die Liste niemals automatisch gelöscht wird 
-    - **itemLifetimeSeconds <int>**: Wird eine Nachricht nicht unter der hier angezeigten Zeitspann abgeholt, wird sie automatisch gelöscht. Ein Wert ``0`` bedeutet, dass Nachrichten nie automatisch gelöscht werden.
-    - **suspendEnqueue <bool>**: Setzt man diesen Werr auf ``true`` können dieser Liste eine Werte mehr hinzugefügt werden, bis der Wert wieder auf ``false`` gesetzt wird.
-    - **suspendDequeue <bool>**: Setzt man diesen Wert auf ``true`` können aus dieser Liste keine Nachrichten abgeholt werden. Die Nachrichten werden dabei nicht gelöscht. Setzt man Wert wieder auf ``false`` kann die Warteschlange wieder abgearbeitet werden.
+- **lifetimeSeconds <int>**: Ist die Liste länger als die hier angegeben Zeitspanne leer, wird sich automatisch gelöscht. Ein Wert ``0`` bedeutet, dass die Liste niemals automatisch gelöscht wird 
+- **itemLifetimeSeconds <int>**: Wird eine Nachricht nicht unter der hier angezeigten Zeitspann abgeholt, wird sie automatisch gelöscht. Ein Wert ``0`` bedeutet, dass Nachrichten nie automatisch gelöscht werden.
+- **suspendEnqueue <bool>**: Setzt man diesen Werr auf ``true`` können dieser Liste eine Werte mehr hinzugefügt werden, bis der Wert wieder auf ``false`` gesetzt wird.
+- **suspendDequeue <bool>**: Setzt man diesen Wert auf ``true`` können aus dieser Liste keine Nachrichten abgeholt werden. Die Nachrichten werden dabei nicht gelöscht. Setzt man Wert wieder auf ``false`` kann die Warteschlange wieder abgearbeitet werden.
 
 **[GET] /queue/properties/{id}**
 
