@@ -1,9 +1,7 @@
 ﻿using MessageQueueNET.Models;
 using MessageQueueNET.Services;
 using MessageQueueNET.Services.Abstraction;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,6 +31,11 @@ namespace MessageQueueNET.Controllers
                 if (register == true || _queues.QueueExists(id))
                 {
                     var queue = _queues.GetQueue(id);
+
+                    if(queue.Properties.SuspendDequeue == true)
+                    {
+                        return new string[0];
+                    }
 
                     List<string> messages = new List<string>();
 
@@ -70,11 +73,18 @@ namespace MessageQueueNET.Controllers
             {
                 var queue = _queues.GetQueue(id);
 
+                if(queue.Properties.SuspendEnqueue == true)
+                {
+                    return false;
+                }
+
                 foreach (var message in messages)
                 {
                     var item = new QueueItem() { Message = message };
                     if (!await _persist.PersistQueueItem(id, item))
+                    {
                         return false;
+                    }
 
                     queue.Enqueue(item);
                 }
@@ -104,7 +114,7 @@ namespace MessageQueueNET.Controllers
             }
             catch
             {
-                
+
             }
 
             return new string[0];
@@ -127,7 +137,7 @@ namespace MessageQueueNET.Controllers
             }
             catch
             {
-                
+
             }
 
             return 0;
@@ -146,7 +156,7 @@ namespace MessageQueueNET.Controllers
             }
             catch
             {
-                
+
             }
 
             return false;
@@ -154,12 +164,18 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("register/{id}")]
-        public bool Register(string id, int lifetimeSeconds = 0, int itemLifetimeSeconds = 0)
+        public bool Register(string id, 
+                             int? lifetimeSeconds = null, 
+                             int? itemLifetimeSeconds = null, 
+                             bool? suspendEnqueue = null, 
+                             bool? suspendDequeue = null)
         {
             var queue = _queues.GetQueue(id);
 
-            queue.Properties.LifetimeSeconds = lifetimeSeconds;
-            queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds;
+            queue.Properties.LifetimeSeconds = lifetimeSeconds.HasValue ? lifetimeSeconds.Value : queue.Properties.LifetimeSeconds;
+            queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds.HasValue ? itemLifetimeSeconds.Value : queue.Properties.ItemLifetimeSeconds;
+            queue.Properties.SuspendEnqueue = suspendEnqueue.HasValue ? suspendEnqueue.Value : queue.Properties.SuspendEnqueue;
+            queue.Properties.SuspendDequeue = suspendDequeue.HasValue ? suspendDequeue.Value : queue.Properties.SuspendDequeue;
 
             _persist.PersistQueueProperties(queue);
 
@@ -177,10 +193,14 @@ namespace MessageQueueNET.Controllers
                 LastAccessUTC = queue.LastAccessUTC,
                 Length = queue.Where(item => item.IsValid(queue))
                               .Count(),
+
                 LifetimeSeconds = queue.Properties.LifetimeSeconds,
-                ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds
+                ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds,
+
+                SuspendDequeue = queue.Properties.SuspendDequeue,
+                SuspendEnqueue = queue.Properties.SuspendEnqueue,
             };
-        }  
+        }
 
         [HttpGet]
         [Route("queuenames")]
