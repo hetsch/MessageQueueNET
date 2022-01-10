@@ -37,7 +37,14 @@ Task<bool> RemoveAsync()
 ```
 
 ```csharp
-Task<bool> RegisterAsync()
+Task<bool> RegisterAsync(int? lifetimeSeconds = null,
+                         int? itemLifetimeSeconds = null,
+                         bool? suspendEnqueue = null,
+                         bool? suspendDequeue = null)
+```
+
+```csharp
+Task<bool> PropertiesAsync()
 ```
 
 ```csharp
