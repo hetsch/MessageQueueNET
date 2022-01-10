@@ -127,9 +127,31 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<bool> RegisterAsync(int lifetimeSeconds = 0, int itemLifetimeSeconds = 0)
+        async public Task<bool> RegisterAsync(int? lifetimeSeconds = null,
+                                              int? itemLifetimeSeconds = null,
+                                              bool? suspendEnqueue = null,
+                                              bool? suspendDequeue = null)
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/register/{ _queueName }?lifetimeSeconds={ lifetimeSeconds }&itemLifetimeSeconds={ itemLifetimeSeconds }"))
+            List<string> urlParameters = new List<string>();
+
+            if (lifetimeSeconds.HasValue)
+            {
+                urlParameters.Add($"lifetimeSeconds={ lifetimeSeconds.Value }");
+            }
+            if (itemLifetimeSeconds.HasValue)
+            {
+                urlParameters.Add($"itemLifetimeSeconds={ itemLifetimeSeconds.Value }");
+            }
+            if (suspendEnqueue.HasValue)
+            {
+                urlParameters.Add($"suspendEnqueue={ suspendEnqueue.Value }");
+            }
+            if (suspendDequeue.HasValue)
+            {
+                urlParameters.Add($"suspendDequeue={ suspendDequeue.Value }");
+            }
+
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/register/{ _queueName }?{ String.Join("&", urlParameters) }"))
             {
                 ModifyHttpRequest(requestMessage);
 

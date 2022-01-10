@@ -82,6 +82,10 @@ Removes am message queue
 Creates a queue with no values (if the queue does not already exist). Other processes can then see the queue using `/queue/queuenames`.
 If the message queue already exists, this method has no effect.
 
+**[GET] /queue/properties/{id}**
+
+Lists the properties of a queue or returns them as JSON.
+
 **[GET] /queue/queuenames**
 
 Returns the names (ids) of all queues

@@ -25,6 +25,41 @@ Example
 ./MessageQueueNET.Cmd.exe http://my-queue-server -q my-queue-1 -c enqueue -m "Message 1"
 ```
 
+### MessageQueueNET.Cmd Shell
+
+The 'shell' command starts a simple shell. With the shell you can send commands to a MessageQueueNET instance.
+
+```
+./MessageQueueNET.Cmd.exe http://my-queue-server -c shell
+```
+
+Example:
+
+```
+MessageQueueNET Shell
+Type help for help...
+>>
+>> queue1 register
+>> queue1 properties
+LastAccessUTC: 10.01.2022 13:59:03
+Length: 0
+LifetimeSeconds: 0
+ItemLifetimeSeconds: 0
+SuspendEnqueue: False
+SuspendDequeue: False
+>>
+>> queuenames
+queue1
+>>
+>> queue1 enqueue -m "message #1" -m "message #2"
+>>
+>> queue1 all
+message #1
+message #2
+>>
+>> exit
+```
+
 ## MessageQueueNET.ProcService.exe
 
 This tool monitors a queue and starts a process (e.g. shellscript) to which the received message is passed as arguments:

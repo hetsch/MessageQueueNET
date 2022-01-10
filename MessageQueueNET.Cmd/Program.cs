@@ -1,9 +1,11 @@
 ﻿using MessageQueueNET.Client;
+using MessageQueueNET.Client.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Cmd
@@ -12,117 +14,242 @@ namespace MessageQueueNET.Cmd
     {
         async static Task<int> Main(string[] args)
         {
-            string serverUrl = String.Empty, queueName = String.Empty,
-                command = String.Empty;
-
-            int lifetimeSeconds = 0, itemLifetimeSeconds = 0;
-
-            var messages = new List<string>();
+            var cmdArguments = new CmdArguments();
 
             if (args.Length > 0)
             {
-                serverUrl = args[0];
-
-                for (int i = 1; i < args.Length - 1; i++)
-                {
-                    switch (args[i])
-                    {
-                        case "-q":
-                            queueName = args[++i];
-                            break;
-                        case "-c":
-                            command = args[++i];
-                            break;
-                        case "-m":
-                            messages.Add(args[++i]);
-                            break;
-                        case "-f":
-                            messages.AddRange(File.ReadAllLines(args[++i])
-                                    .Select(l => l.Trim())
-                                    .Where(l => !String.IsNullOrEmpty(l)));
-                            break;
-                        case "-lifetime":
-                            lifetimeSeconds = int.Parse(args[++i]);
-                            break;
-                        case "-itemlifetime":
-                            itemLifetimeSeconds = int.Parse(args[++i]);
-                            break;
-                    }
-                }
+                cmdArguments.ServerUrl = args[0];
+                cmdArguments.Parse(args, 1);
             }
-            if (String.IsNullOrEmpty(serverUrl) ||
-                String.IsNullOrEmpty(queueName) ||
-                String.IsNullOrEmpty(command))
+            if (String.IsNullOrEmpty(cmdArguments.ServerUrl) ||
+                String.IsNullOrEmpty(cmdArguments.Command))
             {
-                Console.WriteLine("Usage: MessageQueueNET.Cmd.exe serviceUrl -q queueName -c comand {-m message | -f messages-file}");
-                Console.WriteLine("       command: remove, enqueue, dequeue, length, queuenames, register, properties, all");
+                WriteHelp();
                 return 1;
             }
 
             try
             {
-                var client = new QueueClient(serverUrl, queueName);
-                if (command == "remove")
+                if (cmdArguments.Command == "shell")
                 {
-                    if (!await client.RemoveAsync())
-                    {
-                        throw new Exception("Can't remove queue");
-                    }
+                    await Shell(cmdArguments.ServerUrl);
+                    return 0;
                 }
-                else if (command == "enqueue")
+                else if (String.IsNullOrEmpty(cmdArguments.QueueName))
                 {
-                    if (!await client.EnqueueAsync(messages))
-                    {
-                        throw new Exception($"Can't enqueue messages...");
-                    }
+                    WriteHelp();
+                    return 1;
                 }
-                else if (command == "dequeue")
-                {
-                    foreach (var m in await client.DequeueAsync())
-                    {
-                        Console.WriteLine(m);
-                    }
-                }
-                else if (command == "length")
-                {
-                    Console.WriteLine(await client.LengthAsync());
-                }
-                else if (command == "register")
-                {
-                    if (!await client.RegisterAsync(lifetimeSeconds, itemLifetimeSeconds))
-                    {
-                        throw new Exception($"Can't register queue: { queueName }");
-                    }
-                }
-                else if(command == "properties")
-                {
-                    var properties = await client.PropertiesAsync();
-                    Console.WriteLine(JsonSerializer.Serialize(properties));
-                }
-                else if (command == "queuenames")
-                {
-                    foreach (var name in await client.QueueNamesAsync())
-                    {
-                        Console.WriteLine(name);
-                    }
-                }
-                else if (command == "all")
-                {
-                    foreach (var m in await client.AllMessagesAsync())
-                    {
-                        Console.WriteLine(m);
-                    }
-                }
-                else
-                {
-                    throw new Exception($"Unknown command: { command }");
-                }
+
+
                 return 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: { ex.Message }");
                 return 1;
+            }
+        }
+
+        static private void WriteHelp()
+        {
+            Console.WriteLine("Usage: MessageQueueNET.Cmd.exe serviceUrl -q queueName -c comand {-m message | -f messages-file}");
+            Console.WriteLine("       command: remove, enqueue, dequeue, length, queuenames, register, properties, all, shell");
+        }
+
+        static private void WriteShellHelp()
+        {
+            Console.WriteLine("Usage:");
+            Console.WriteLine();
+
+            Console.WriteLine("queuenames => list all queue names");
+            Console.WriteLine();
+
+            Console.WriteLine("<queuename> <command> [options] => run an command on a queue");
+            Console.WriteLine();
+
+            Console.WriteLine("Commands:");
+            
+            Console.WriteLine("  register: register a new q1 or change the properties of an existing queue");
+            Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine("  options:");
+            Console.WriteLine("     -lifetime <number>    : The lifetime of the queue seconds if queue get empty. 0 => queue will never removed automatically");
+            Console.WriteLine("     -itemlifetime <number>: The lifetime of items in seconds. 0 => items will never removed automatically");
+            Console.WriteLine("     -suspend-enqueue <true|false>: suspend enqueue items");
+            Console.WriteLine("     -suspend-dequeue <true|false>: suspend dequeue items");
+            Console.WriteLine();
+
+            Console.WriteLine("  properties: Lists the properties of an queue");
+            Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine();
+
+            Console.WriteLine("  remove: removes/destroys a queue");
+            Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine();
+
+            Console.WriteLine("  length: number of messages in a queue");
+            Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine();
+
+            Console.WriteLine("  all: lists all messages in a queue without dequeing any item");
+            Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine();
+
+            Console.WriteLine("  enqueue: enqueies messages");
+            Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine("  options:");
+            Console.WriteLine("     -m message1 -m message2");
+            Console.WriteLine();
+
+            Console.WriteLine("  dequeue: dequeues a message");
+            Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine();
+        }
+
+        async static private Task Exec(CmdArguments cmdArguments)
+        {
+            var client = new QueueClient(cmdArguments.ServerUrl, cmdArguments.QueueName);
+
+            if (cmdArguments.Command == "remove")
+            {
+                if (!await client.RemoveAsync())
+                {
+                    throw new Exception("Can't remove queue");
+                }
+            }
+            else if (cmdArguments.Command == "enqueue")
+            {
+                if (!await client.EnqueueAsync(cmdArguments.Messages))
+                {
+                    throw new Exception($"Can't enqueue messages...");
+                }
+            }
+            else if (cmdArguments.Command == "dequeue")
+            {
+                foreach (var m in await client.DequeueAsync())
+                {
+                    Console.WriteLine(m ?? "<null>");
+                }
+            }
+            else if (cmdArguments.Command == "length")
+            {
+                Console.WriteLine(await client.LengthAsync());
+            }
+            else if (cmdArguments.Command == "register")
+            {
+                if (!await client.RegisterAsync(
+                    lifetimeSeconds: cmdArguments.LifetimeSeconds, 
+                    itemLifetimeSeconds: cmdArguments.ItemLifetimeSeconds,
+                    suspendDequeue: cmdArguments.SuspendDequeue,
+                    suspendEnqueue: cmdArguments.SuspendEnqueue))
+                {
+                    throw new Exception($"Can't register queue: { cmdArguments.QueueName }");
+                }
+            }
+            else if (cmdArguments.Command == "properties")
+            {
+                var queueProperties = await client.PropertiesAsync();
+
+                foreach(var propertyInfo in typeof(QueueProperties).GetProperties())
+                {
+                    Console.WriteLine($"{ propertyInfo.Name }: { propertyInfo.GetValue(queueProperties) }");
+                }
+                
+            }
+            else if (cmdArguments.Command == "queuenames")
+            {
+                foreach (var name in await client.QueueNamesAsync())
+                {
+                    Console.WriteLine(name);
+                }
+            }
+            else if (cmdArguments.Command == "all")
+            {
+                foreach (var m in await client.AllMessagesAsync())
+                {
+                    Console.WriteLine(m ?? "<null>");
+                }
+            }
+            else
+            {
+                throw new Exception($"Unknown command: { cmdArguments.Command  }");
+            }
+        }
+
+        async static private Task Shell(string serverUrl)
+        {
+            Console.WriteLine("MessageQueueNET Shell");
+            Console.WriteLine("Type help for help...");
+
+            while (true)
+            {
+                Console.Write(">> ");
+                var line = Console.ReadLine();
+
+                if (String.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                var args = Regex.Matches(line, @"[\""].+?[\""]|[^ ]+")
+                    .Cast<Match>()
+                    .Select(m =>
+                    {
+                        var val = m.Value.Trim();
+                        if(val.StartsWith("\"") && val.EndsWith("\""))
+                        {
+                            val = val.Substring(1, val.Length - 2);
+                        }
+                   
+                        return val;
+                    })
+                    .ToArray();
+
+                //Console.WriteLine("args: [\n" + String.Join("\n", args) + "\n]");
+
+                CmdArguments cmdArguments = null;
+
+                if (args.Length == 1 && args[0] == "exit")
+                {
+                    return;
+                }
+                else if (args.Length == 1 && args[0] == "help")
+                {
+                    WriteShellHelp();
+                    continue;
+                }
+                else if (args.Length == 1 && args[0] == "queuenames")
+                {
+                    cmdArguments = new CmdArguments()
+                    {
+                        ServerUrl = serverUrl,
+                        Command = args[0]
+                    };
+                }
+                else if (args.Length < 2)
+                {
+                    WriteShellHelp();
+                    continue;
+                }
+                else
+                {
+                    cmdArguments = new CmdArguments()
+                    {
+                        ServerUrl = serverUrl,
+                        QueueName = args[0],
+                        Command = args[1]
+                    };
+                }
+                try
+                {
+                    cmdArguments.Parse(args, 2);
+
+                    await Exec(cmdArguments);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception: { ex.Message }");
+                }
             }
         }
     }

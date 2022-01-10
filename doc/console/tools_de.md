@@ -9,7 +9,7 @@ Der Aufruf lautet folgendermaßen:
 
 ```
 Usage: MessageQueueNET.Cmd.exe serviceUrl -q queueName -c comand {-m message | -f messages-file}
-       command: remove, enqueue, dequeue, length, queuenames, register, all
+       command: remove, enqueue, dequeue, length, queuenames, register, properties, all, shell
 ```
 
 `serviceUrl`, `queneName` und `command` müssen immer angeben werden. Verwende die API Autorisierung, kann diese über die Url angeben werden (`https://clientId:clientSecret@my-server/...`).
@@ -17,13 +17,49 @@ Usage: MessageQueueNET.Cmd.exe serviceUrl -q queueName -c comand {-m message | -
 Sollten Nachrichten einer Warteschleife hinzugefügt werden, kann dies mit der Option `-m` erfolgen. Sollte mehrere Nachrichten gleichzeit übergeben werden,
 kann mit der Option `-f` ein Textfile mit den Nachrichten übergeben werden. Jede Zeile im Textfile entspricht dabei einer Nachricht. Leerzeilen werden ignoriert.
 
-Als Kommandos können die oben angeführte Werte hinter der Option `-c` angegeben werden. Die bedeutung der einzelnen Kommandos wurden bei der REST API Beschrieben.
+Als Kommandos können die oben angeführte Werte hinter der Option `-c` angegeben werden. Die Bedeutung der einzelnen Kommandos wurden bei der REST API Beschrieben.
 
 Beispiel
 
 ```
 ./MessageQueueNET.Cmd.exe http://my-queue-server -q my-queue-1 -c enqueue -m "Message 1"
 ```
+
+### MessageQueueNET.Cmd Shell
+
+Über das `shell` Kommando, kann ein einfache Shell gestartet werden, über die Befehle zu einer MessageQueue gesendet werden können.
+
+```
+./MessageQueueNET.Cmd.exe http://my-queue-server -c shell
+```
+
+Beispiel:
+
+```
+MessageQueueNET Shell
+Type help for help...
+>>
+>> queue1 register
+>> queue1 properties
+LastAccessUTC: 10.01.2022 13:59:03
+Length: 0
+LifetimeSeconds: 0
+ItemLifetimeSeconds: 0
+SuspendEnqueue: False
+SuspendDequeue: False
+>>
+>> queuenames
+queue1
+>>
+>> queue1 enqueue -m "message #1" -m "message #2"
+>>
+>> queue1 all
+message #1
+message #2
+>>
+>> exit
+```
+
 
 ## MessageQueueNET.ProcService.exe
 
