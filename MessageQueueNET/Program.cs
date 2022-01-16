@@ -1,11 +1,8 @@
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MessageQueueNET
 {
@@ -13,6 +10,12 @@ namespace MessageQueueNET
     {
         public static void Main(string[] args)
         {
+            #region First Start => init configuration
+
+            new Setup().TrySetup(args);
+
+            #endregion
+
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -25,6 +28,29 @@ namespace MessageQueueNET
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+
+                    #region Expose Ports
+
+                    List<string> urls = new List<string>();
+                    for (int i = 0; i < args.Length - 1; i++)
+                    {
+                        switch (args[i].ToLower())
+                        {
+                            case "-expose-http":
+                                urls.Add("http://localhost:" + int.Parse(args[++i]));
+                                break;
+                            case "-expose-https":
+                                urls.Add("https://localhost:" + int.Parse(args[++i]));
+                                break;
+                        }
+                    }
+                    if (urls.Count > 0)
+                    {
+                        webBuilder = webBuilder.UseUrls(urls.ToArray());
+                    }
+
+                    #endregion
                 });
+
     }
 }

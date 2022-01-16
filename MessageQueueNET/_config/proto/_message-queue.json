@@ -2,10 +2,10 @@
   "MessageQueue": {
     "Persist": {
       "Type": "filesystem",
-      "RootPath": "C:\\temp\\message-queue\\persist"
+      "RootPath": "{data-root-path}/data/persist"
     }
   },
-  "Authorization": {
+  "Authorization_": {
     "Type": "Basic",
     "Clients": [
       {

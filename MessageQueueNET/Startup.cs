@@ -32,12 +32,12 @@ namespace MessageQueueNET
             });
 
             services.AddQueuesService();
-            switch (Configuration["Persist:Type"]?.ToLower())
+            switch (Configuration["MessageQueue:Persist:Type"]?.ToLower())
             {
                 case "filesystem":
                     services.AddQueuePersitFileSystem(config =>
                         {
-                            config.RootPath = Configuration["Persist:RootPath"];
+                            config.RootPath = Configuration["MessageQueue:Persist:RootPath"];
                         });
                     break;
                 default:
