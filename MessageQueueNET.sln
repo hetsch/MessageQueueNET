@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueueNET.Cmd", "Mess
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueueNET.ProcService", "MessageQueueNET.ProcService\MessageQueueNET.ProcService.csproj", "{0AFB5320-DDBF-459B-94E0-B54039F0F0EA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueueNET.ProcOrchestra", "MessageQueueNET.ProcOrchestra\MessageQueueNET.ProcOrchestra.csproj", "{6D054D55-A476-461F-8341-CF094FA23278}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{0AFB5320-DDBF-459B-94E0-B54039F0F0EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0AFB5320-DDBF-459B-94E0-B54039F0F0EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0AFB5320-DDBF-459B-94E0-B54039F0F0EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D054D55-A476-461F-8341-CF094FA23278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D054D55-A476-461F-8341-CF094FA23278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D054D55-A476-461F-8341-CF094FA23278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D054D55-A476-461F-8341-CF094FA23278}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +50,7 @@ Global
 		{18BEF327-8ACD-475A-BA42-0BD8E06457BB} = {90400040-C2F7-4714-BAD0-B6A384777990}
 		{18112CB7-9522-45C4-BCA5-45021C8AABE1} = {90400040-C2F7-4714-BAD0-B6A384777990}
 		{0AFB5320-DDBF-459B-94E0-B54039F0F0EA} = {90400040-C2F7-4714-BAD0-B6A384777990}
+		{6D054D55-A476-461F-8341-CF094FA23278} = {90400040-C2F7-4714-BAD0-B6A384777990}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C03DE594-F8A9-4016-9E7E-63E54E9D94BA}
