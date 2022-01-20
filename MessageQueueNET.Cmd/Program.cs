@@ -41,6 +41,7 @@ namespace MessageQueueNET.Cmd
                     return 1;
                 }
 
+                await Exec(cmdArguments);
 
                 return 0;
             }
