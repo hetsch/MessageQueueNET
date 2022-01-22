@@ -1,10 +1,7 @@
 ﻿using MessageQueueNET.Client;
 using MessageQueueNET.Client.Models;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -66,16 +63,19 @@ namespace MessageQueueNET.Cmd
             Console.WriteLine("queuenames => list all queue names");
             Console.WriteLine();
 
-            Console.WriteLine("<queuename> <command> [options] => run an command on a queue");
+            Console.WriteLine("<queuename> <command> [options] => run a command on a queue");
             Console.WriteLine();
 
             Console.WriteLine("Commands:");
-            
+
             Console.WriteLine("  register: register a new q1 or change the properties of an existing queue");
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
             Console.WriteLine("  options:");
-            Console.WriteLine("     -lifetime <number>    : The lifetime of the queue seconds if queue get empty. 0 => queue will never removed automatically");
-            Console.WriteLine("     -itemlifetime <number>: The lifetime of items in seconds. 0 => items will never removed automatically");
+            Console.WriteLine("     -lifetime <number>                : The lifetime of the queue seconds if queue get empty. 0 => queue will never removed automatically");
+            Console.WriteLine("     -itemlifetime <number>            : The lifetime of items in seconds. 0 => items will never removed automatically");
+            Console.WriteLine("     -confirmProcessingSeconds <number>: Seconds a client can wail until confirming the messeage.");
+            Console.WriteLine("                                         if the message will not confirmed by the client, it will re-enqued");
+            Console.WriteLine("                                         0 => no confirmation needed");
             Console.WriteLine("     -suspend-enqueue <true|false>: suspend enqueue items");
             Console.WriteLine("     -suspend-dequeue <true|false>: suspend dequeue items");
             Console.WriteLine();
@@ -127,9 +127,20 @@ namespace MessageQueueNET.Cmd
             }
             else if (cmdArguments.Command == "dequeue")
             {
-                foreach (var m in await client.DequeueAsync())
+                var messagesResult = await client.DequeueAsync();
+                if (messagesResult?.Messages != null)
                 {
-                    Console.WriteLine(m ?? "<null>");
+                    foreach (var m in messagesResult.Messages)
+                    {
+                        if (cmdArguments.ShowFullItem || messagesResult.RequireConfirmation)
+                        {
+                            Console.WriteLine($"{ m.Id }:{ m?.Value ?? "<null>"}");
+                        }
+                        else
+                        {
+                            Console.WriteLine(m?.Value ?? "<null>");
+                        }
+                    }
                 }
             }
             else if (cmdArguments.Command == "length")
@@ -139,8 +150,9 @@ namespace MessageQueueNET.Cmd
             else if (cmdArguments.Command == "register")
             {
                 if (!await client.RegisterAsync(
-                    lifetimeSeconds: cmdArguments.LifetimeSeconds, 
+                    lifetimeSeconds: cmdArguments.LifetimeSeconds,
                     itemLifetimeSeconds: cmdArguments.ItemLifetimeSeconds,
+                    confirmProcessingSeconds: cmdArguments.ConfirmProcessingSeconds,
                     suspendDequeue: cmdArguments.SuspendDequeue,
                     suspendEnqueue: cmdArguments.SuspendEnqueue))
                 {
@@ -151,11 +163,11 @@ namespace MessageQueueNET.Cmd
             {
                 var queueProperties = await client.PropertiesAsync();
 
-                foreach(var propertyInfo in typeof(QueueProperties).GetProperties())
+                foreach (var propertyInfo in typeof(QueueProperties).GetProperties())
                 {
                     Console.WriteLine($"{ propertyInfo.Name }: { propertyInfo.GetValue(queueProperties) }");
                 }
-                
+
             }
             else if (cmdArguments.Command == "queuenames")
             {
@@ -166,9 +178,20 @@ namespace MessageQueueNET.Cmd
             }
             else if (cmdArguments.Command == "all")
             {
-                foreach (var m in await client.AllMessagesAsync())
+                var messagesResult = await client.AllMessagesAsync();
+                if (messagesResult?.Messages != null)
                 {
-                    Console.WriteLine(m ?? "<null>");
+                    foreach (var m in messagesResult.Messages)
+                    {
+                        if (cmdArguments.ShowFullItem)
+                        {
+                            Console.WriteLine($"{ m.Id }:{ m?.Value ?? "<null>"}");
+                        }
+                        else
+                        {
+                            Console.WriteLine(m?.Value ?? "<null>");
+                        }
+                    }
                 }
             }
             else
@@ -197,11 +220,11 @@ namespace MessageQueueNET.Cmd
                     .Select(m =>
                     {
                         var val = m.Value.Trim();
-                        if(val.StartsWith("\"") && val.EndsWith("\""))
+                        if (val.StartsWith("\"") && val.EndsWith("\""))
                         {
                             val = val.Substring(1, val.Length - 2);
                         }
-                   
+
                         return val;
                     })
                     .ToArray();

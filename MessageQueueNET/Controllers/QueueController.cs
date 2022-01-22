@@ -1,4 +1,5 @@
-﻿using MessageQueueNET.Models;
+﻿using MessageQueueNET.Client.Models;
+using MessageQueueNET.Models;
 using MessageQueueNET.Services;
 using MessageQueueNET.Services.Abstraction;
 using Microsoft.AspNetCore.Mvc;
@@ -24,28 +25,45 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("dequeue/{id}")]
-        async public Task<IEnumerable<string>> Dequeue(string id, int count = 1, bool register = false)
+        async public Task<MessagesResult> Dequeue(string id, int count = 1, bool register = false)
         {
+            var result = new MessagesResult();
+
             try
             {
                 if (register == true || _queues.QueueExists(id))
                 {
                     var queue = _queues.GetQueue(id);
 
-                    if(queue.Properties.SuspendDequeue == true)
+                    result.RequireConfirmation = queue.Properties.ConfirmProcessingSeconds > 0;
+                    if (result.RequireConfirmation == true)
                     {
-                        return new string[0];
+                        result.ConfirmationPeriod = queue.Properties.ConfirmProcessingSeconds;
                     }
 
-                    List<string> messages = new List<string>();
+                    if (queue.Properties.SuspendDequeue == true)
+                    {
+                        return result;
+                    }
 
-                    while (messages.Count() < count)
+                    List<MessageResult> items = new List<MessageResult>();
+
+                    while (items.Count() < count)
                     {
                         if (queue.TryDequeue(out QueueItem item))
                         {
+                            if (queue.Properties.ConfirmProcessingSeconds > 0)
+                            {
+                                _queues.AddToUnconfirmedMessage(queue.Name, item);
+                            }
+
                             if (await _persist.RemoveQueueItem(id, item.Id) && item.IsValid(queue))
                             {
-                                messages.Add(item.Message);
+                                items.Add(new MessageResult()
+                                {
+                                    Id = item.Id,
+                                    Value = item.Message
+                                });
                             }
                         }
                         else
@@ -54,7 +72,7 @@ namespace MessageQueueNET.Controllers
                         }
                     }
 
-                    return messages;
+                    result.Messages = items;
                 }
             }
             catch
@@ -62,7 +80,7 @@ namespace MessageQueueNET.Controllers
 
             }
 
-            return new string[0];
+            return result;
         }
 
         [HttpPut]
@@ -73,7 +91,7 @@ namespace MessageQueueNET.Controllers
             {
                 var queue = _queues.GetQueue(id);
 
-                if(queue.Properties.SuspendEnqueue == true)
+                if (queue.Properties.SuspendEnqueue == true)
                 {
                     return false;
                 }
@@ -99,7 +117,7 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("all/{id}")]
-        public IEnumerable<string> AllMessages(string id)
+        public MessagesResult AllMessages(string id)
         {
             try
             {
@@ -107,9 +125,20 @@ namespace MessageQueueNET.Controllers
                 {
                     var queue = _queues.GetQueue(id);
 
-                    return queue
-                        .Where(item => item.IsValid(queue))
-                        .Select(item => item.Message);
+                    var messages = queue
+                        .Where(message => message.IsValid(queue))
+                        .Select(message => new MessageResult()
+                        {
+                            Id = message.Id,
+                            Value = message.Message
+                        });
+
+                    return new MessagesResult()
+                    {
+                        RequireConfirmation = queue.Properties.ConfirmProcessingSeconds > 0,
+                        ConfirmationPeriod = queue.Properties.ConfirmProcessingSeconds > 0 ? queue.Properties.LifetimeSeconds : null,
+                        Messages = messages
+                    };
                 }
             }
             catch
@@ -117,7 +146,7 @@ namespace MessageQueueNET.Controllers
 
             }
 
-            return new string[0];
+            return new MessagesResult();
         }
 
         [HttpGet]
@@ -164,16 +193,18 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("register/{id}")]
-        public bool Register(string id, 
-                             int? lifetimeSeconds = null, 
-                             int? itemLifetimeSeconds = null, 
-                             bool? suspendEnqueue = null, 
+        public bool Register(string id,
+                             int? lifetimeSeconds = null,
+                             int? itemLifetimeSeconds = null,
+                             int? confirmProcessingSeconds = null,
+                             bool? suspendEnqueue = null,
                              bool? suspendDequeue = null)
         {
             var queue = _queues.GetQueue(id);
 
             queue.Properties.LifetimeSeconds = lifetimeSeconds.HasValue ? lifetimeSeconds.Value : queue.Properties.LifetimeSeconds;
             queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds.HasValue ? itemLifetimeSeconds.Value : queue.Properties.ItemLifetimeSeconds;
+            queue.Properties.ConfirmProcessingSeconds = confirmProcessingSeconds.HasValue ? confirmProcessingSeconds.Value : queue.Properties.ConfirmProcessingSeconds;
             queue.Properties.SuspendEnqueue = suspendEnqueue.HasValue ? suspendEnqueue.Value : queue.Properties.SuspendEnqueue;
             queue.Properties.SuspendDequeue = suspendDequeue.HasValue ? suspendDequeue.Value : queue.Properties.SuspendDequeue;
 
@@ -196,6 +227,7 @@ namespace MessageQueueNET.Controllers
 
                 LifetimeSeconds = queue.Properties.LifetimeSeconds,
                 ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds,
+                ConfirmProcessingSeconds = queue.Properties.ConfirmProcessingSeconds,
 
                 SuspendDequeue = queue.Properties.SuspendDequeue,
                 SuspendEnqueue = queue.Properties.SuspendEnqueue,

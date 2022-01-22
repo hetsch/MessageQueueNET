@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MessageQueueNET.Cmd
 {
@@ -19,13 +17,15 @@ namespace MessageQueueNET.Cmd
         public string Command { get; set; }
         public int? LifetimeSeconds { get; set; }
         public int? ItemLifetimeSeconds { get; set; }
+        public int? ConfirmProcessingSeconds { get; set; }
         public bool? SuspendEnqueue { get; set; }
         public bool? SuspendDequeue { get; set; }
         public List<string> Messages { get; set; }
+        public bool ShowFullItem { get; set; }
 
-        public void Parse(string[] args, int startAt=0)
+        public void Parse(string[] args, int startAt = 0)
         {
-            for (int i = 1; i < args.Length - 1; i++)
+            for (int i = 1; i < args.Length; i++)
             {
                 switch (args[i])
                 {
@@ -54,6 +54,12 @@ namespace MessageQueueNET.Cmd
                         break;
                     case "-suspend-dequeue":
                         this.SuspendDequeue = bool.Parse(args[++i]);
+                        break;
+                    case "-confirmProcessingSeconds":
+                        this.ConfirmProcessingSeconds = int.Parse(args[++i]);
+                        break;
+                    case "-full":
+                        ShowFullItem = true;
                         break;
                 }
             }

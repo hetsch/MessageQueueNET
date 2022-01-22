@@ -18,6 +18,7 @@ namespace MessageQueueNET.Client
         private readonly string _queueName;
 
         private readonly string _clientId, _clientSecret;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         public QueueClient(string serverUrl, string queueName,
                            string clientId = "", string clientSecret = "",
@@ -49,9 +50,14 @@ namespace MessageQueueNET.Client
                 _clientId = clientId;
                 _clientSecret = clientSecret;
             }
+
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
         }
 
-        async public Task<IEnumerable<string>> DequeueAsync(int count = 1, bool register = false)
+        async public Task<MessagesResult> DequeueAsync(int count = 1, bool register = false)
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/dequeue/{ _queueName }?count={ count }&register={ register }"))
             {
@@ -60,7 +66,7 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+                    return JsonSerializer.Deserialize<MessagesResult> (await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
@@ -84,7 +90,7 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<IEnumerable<string>> AllMessagesAsync()
+        async public Task<MessagesResult> AllMessagesAsync()
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/all/{ _queueName }"))
             {
@@ -93,7 +99,7 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+                    return JsonSerializer.Deserialize<MessagesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
@@ -122,13 +128,14 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync());
+                    return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
 
         async public Task<bool> RegisterAsync(int? lifetimeSeconds = null,
                                               int? itemLifetimeSeconds = null,
+                                              int? confirmProcessingSeconds = null,
                                               bool? suspendEnqueue = null,
                                               bool? suspendDequeue = null)
         {
@@ -141,6 +148,10 @@ namespace MessageQueueNET.Client
             if (itemLifetimeSeconds.HasValue)
             {
                 urlParameters.Add($"itemLifetimeSeconds={ itemLifetimeSeconds.Value }");
+            }
+            if(confirmProcessingSeconds.HasValue)
+            {
+                urlParameters.Add($"confirmProcessingSeconds={ confirmProcessingSeconds.Value }");
             }
             if (suspendEnqueue.HasValue)
             {
@@ -158,7 +169,7 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync());
+                    return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
@@ -175,11 +186,7 @@ namespace MessageQueueNET.Client
 
                     string jsonResponse = await httpResponse.Content.ReadAsStringAsync();
 
-                    return JsonSerializer.Deserialize<QueueProperties>(jsonResponse,
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        });
+                    return JsonSerializer.Deserialize<QueueProperties>(jsonResponse, _jsonOptions);
                 }
             }
         }
@@ -192,7 +199,7 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync());
+                    return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }

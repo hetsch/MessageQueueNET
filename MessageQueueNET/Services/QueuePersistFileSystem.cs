@@ -69,6 +69,11 @@ namespace MessageQueueNET.Services
 
             foreach (var fi in di.GetFiles("*.json"))
             {
+                if (fi.Name.StartsWith("_"))
+                {
+                    continue;
+                }
+
                 var jsonString = await File.ReadAllTextAsync(fi.FullName);
                 result.Add(JsonSerializer.Deserialize<QueueItem>(jsonString));
             }

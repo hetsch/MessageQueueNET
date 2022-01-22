@@ -136,14 +136,18 @@ namespace MessageQueueNET.ProcService
                     var currentCapacity = taskQueue.CurrentCapacity;
                     if (currentCapacity > 0)
                     {
-                        foreach (var message in await client.DequeueAsync(taskQueue.CurrentCapacity))
+                        var messagesResult = await client.DequeueAsync(taskQueue.CurrentCapacity);
+                        if (messagesResult?.Messages != null)
                         {
-                            var task = taskQueue.AwaitRequest(new ProcessTask().Run, new ProccessContext()
+                            foreach (var message in messagesResult.Messages)
                             {
-                                Command = command,
-                                Arguments = message,
-                                LogFile = logFile
-                            });
+                                var task = taskQueue.AwaitRequest(new ProcessTask().Run, new ProccessContext()
+                                {
+                                    Command = command,
+                                    Arguments = message.Value,
+                                    LogFile = logFile
+                                });
+                            }
                         }
                     }
 
