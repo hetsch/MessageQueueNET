@@ -17,7 +17,7 @@ namespace MessageQueueNET.Cmd
         public string Command { get; set; }
         public int? LifetimeSeconds { get; set; }
         public int? ItemLifetimeSeconds { get; set; }
-        public int? ConfirmProcessingSeconds { get; set; }
+        public int? ConfirmationPeridSeconds { get; set; }
         public bool? SuspendEnqueue { get; set; }
         public bool? SuspendDequeue { get; set; }
         public List<string> Messages { get; set; }
@@ -55,8 +55,8 @@ namespace MessageQueueNET.Cmd
                     case "-suspend-dequeue":
                         this.SuspendDequeue = bool.Parse(args[++i]);
                         break;
-                    case "-confirmProcessingSeconds":
-                        this.ConfirmProcessingSeconds = int.Parse(args[++i]);
+                    case "-confirmationperiod":
+                        this.ConfirmationPeridSeconds = int.Parse(args[++i]);
                         break;
                     case "-full":
                         ShowFullItem = true;

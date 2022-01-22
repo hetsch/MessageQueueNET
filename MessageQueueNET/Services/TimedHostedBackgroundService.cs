@@ -62,7 +62,7 @@ namespace MessageQueueNET.Services
 
                 foreach (var queue in _queues.Queues)
                 {
-                    if (queue.Properties.ConfirmProcessingSeconds > 0)
+                    if (queue.Properties.ConfirmationPeriodSeconds > 0)
                     {
                         _queues.ReEnqueueUnconfirmedMessages(queue);
                     }

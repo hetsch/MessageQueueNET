@@ -71,11 +71,11 @@ namespace MessageQueueNET.Cmd
             Console.WriteLine("  register: register a new q1 or change the properties of an existing queue");
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
             Console.WriteLine("  options:");
-            Console.WriteLine("     -lifetime <number>                : The lifetime of the queue seconds if queue get empty. 0 => queue will never removed automatically");
-            Console.WriteLine("     -itemlifetime <number>            : The lifetime of items in seconds. 0 => items will never removed automatically");
-            Console.WriteLine("     -confirmProcessingSeconds <number>: Seconds a client can wail until confirming the messeage.");
-            Console.WriteLine("                                         if the message will not confirmed by the client, it will re-enqued");
-            Console.WriteLine("                                         0 => no confirmation needed");
+            Console.WriteLine("     -lifetime <number>          : The lifetime of the queue seconds if queue get empty. 0 => queue will never removed automatically");
+            Console.WriteLine("     -itemlifetime <number>      : The lifetime of items in seconds. 0 => items will never removed automatically");
+            Console.WriteLine("     -confirmationperiod <number>: Seconds a client can wail until confirming the messeage.");
+            Console.WriteLine("                                   if the message will not confirmed by the client, it will re-enqued");
+            Console.WriteLine("                                   0 => no confirmation needed");
             Console.WriteLine("     -suspend-enqueue <true|false>: suspend enqueue items");
             Console.WriteLine("     -suspend-dequeue <true|false>: suspend dequeue items");
             Console.WriteLine();
@@ -149,14 +149,18 @@ namespace MessageQueueNET.Cmd
             }
             else if (cmdArguments.Command == "register")
             {
-                if (!await client.RegisterAsync(
+                var queueProperties = await client.RegisterAsync(
                     lifetimeSeconds: cmdArguments.LifetimeSeconds,
                     itemLifetimeSeconds: cmdArguments.ItemLifetimeSeconds,
-                    confirmProcessingSeconds: cmdArguments.ConfirmProcessingSeconds,
+                    confirmationPeriodSeconds: cmdArguments.ConfirmationPeridSeconds,
                     suspendDequeue: cmdArguments.SuspendDequeue,
-                    suspendEnqueue: cmdArguments.SuspendEnqueue))
+                    suspendEnqueue: cmdArguments.SuspendEnqueue);
+
+                Console.WriteLine("registered queue properties:");
+                Console.WriteLine("----------------------------");
+                foreach (var propertyInfo in typeof(QueueProperties).GetProperties())
                 {
-                    throw new Exception($"Can't register queue: { cmdArguments.QueueName }");
+                    Console.WriteLine($"{ propertyInfo.Name }: { propertyInfo.GetValue(queueProperties) }");
                 }
             }
             else if (cmdArguments.Command == "properties")
@@ -167,7 +171,6 @@ namespace MessageQueueNET.Cmd
                 {
                     Console.WriteLine($"{ propertyInfo.Name }: { propertyInfo.GetValue(queueProperties) }");
                 }
-
             }
             else if (cmdArguments.Command == "queuenames")
             {

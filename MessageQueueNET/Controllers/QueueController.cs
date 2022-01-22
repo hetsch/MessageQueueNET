@@ -35,10 +35,10 @@ namespace MessageQueueNET.Controllers
                 {
                     var queue = _queues.GetQueue(id);
 
-                    result.RequireConfirmation = queue.Properties.ConfirmProcessingSeconds > 0;
+                    result.RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0;
                     if (result.RequireConfirmation == true)
                     {
-                        result.ConfirmationPeriod = queue.Properties.ConfirmProcessingSeconds;
+                        result.ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds;
                     }
 
                     if (queue.Properties.SuspendDequeue == true)
@@ -52,7 +52,7 @@ namespace MessageQueueNET.Controllers
                     {
                         if (queue.TryDequeue(out QueueItem item))
                         {
-                            if (queue.Properties.ConfirmProcessingSeconds > 0)
+                            if (queue.Properties.ConfirmationPeriodSeconds > 0)
                             {
                                 _queues.AddToUnconfirmedMessage(queue.Name, item);
                             }
@@ -135,8 +135,8 @@ namespace MessageQueueNET.Controllers
 
                     return new MessagesResult()
                     {
-                        RequireConfirmation = queue.Properties.ConfirmProcessingSeconds > 0,
-                        ConfirmationPeriod = queue.Properties.ConfirmProcessingSeconds > 0 ? queue.Properties.LifetimeSeconds : null,
+                        RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0,
+                        ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
                         Messages = messages
                     };
                 }
@@ -193,10 +193,10 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("register/{id}")]
-        public bool Register(string id,
+        public MessageQueueNET.Client.Models.QueueProperties Register(string id,
                              int? lifetimeSeconds = null,
                              int? itemLifetimeSeconds = null,
-                             int? confirmProcessingSeconds = null,
+                             int? confirmationPeriodSeconds = null,
                              bool? suspendEnqueue = null,
                              bool? suspendDequeue = null)
         {
@@ -204,13 +204,13 @@ namespace MessageQueueNET.Controllers
 
             queue.Properties.LifetimeSeconds = lifetimeSeconds.HasValue ? lifetimeSeconds.Value : queue.Properties.LifetimeSeconds;
             queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds.HasValue ? itemLifetimeSeconds.Value : queue.Properties.ItemLifetimeSeconds;
-            queue.Properties.ConfirmProcessingSeconds = confirmProcessingSeconds.HasValue ? confirmProcessingSeconds.Value : queue.Properties.ConfirmProcessingSeconds;
+            queue.Properties.ConfirmationPeriodSeconds = confirmationPeriodSeconds.HasValue ? confirmationPeriodSeconds.Value : queue.Properties.ConfirmationPeriodSeconds;
             queue.Properties.SuspendEnqueue = suspendEnqueue.HasValue ? suspendEnqueue.Value : queue.Properties.SuspendEnqueue;
             queue.Properties.SuspendDequeue = suspendDequeue.HasValue ? suspendDequeue.Value : queue.Properties.SuspendDequeue;
 
             _persist.PersistQueueProperties(queue);
 
-            return true;
+            return QueueProperties(id);
         }
 
         [HttpGet]
@@ -227,7 +227,7 @@ namespace MessageQueueNET.Controllers
 
                 LifetimeSeconds = queue.Properties.LifetimeSeconds,
                 ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds,
-                ConfirmProcessingSeconds = queue.Properties.ConfirmProcessingSeconds,
+                ConfirmationPeriodSeconds = queue.Properties.ConfirmationPeriodSeconds,
 
                 SuspendDequeue = queue.Properties.SuspendDequeue,
                 SuspendEnqueue = queue.Properties.SuspendEnqueue,

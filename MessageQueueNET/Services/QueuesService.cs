@@ -83,7 +83,7 @@ namespace MessageQueueNET.Services
                 {
                     foreach (var queryItems in unconfirmedItems.Values
                                                                .ToArray()
-                                                               .Where(i => (DateTime.UtcNow - i.CreationDateUTC).TotalSeconds > queue.Properties.ConfirmProcessingSeconds))
+                                                               .Where(i => (DateTime.UtcNow - i.CreationDateUTC).TotalSeconds > queue.Properties.ConfirmationPeriodSeconds))
                     {
                         if(unconfirmedItems.TryRemove(queryItems.Id, out QueueItem item))
                         {

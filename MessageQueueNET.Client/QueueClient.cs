@@ -133,9 +133,9 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<bool> RegisterAsync(int? lifetimeSeconds = null,
+        async public Task<QueueProperties> RegisterAsync(int? lifetimeSeconds = null,
                                               int? itemLifetimeSeconds = null,
-                                              int? confirmProcessingSeconds = null,
+                                              int? confirmationPeriodSeconds = null,
                                               bool? suspendEnqueue = null,
                                               bool? suspendDequeue = null)
         {
@@ -149,9 +149,9 @@ namespace MessageQueueNET.Client
             {
                 urlParameters.Add($"itemLifetimeSeconds={ itemLifetimeSeconds.Value }");
             }
-            if(confirmProcessingSeconds.HasValue)
+            if(confirmationPeriodSeconds.HasValue)
             {
-                urlParameters.Add($"confirmProcessingSeconds={ confirmProcessingSeconds.Value }");
+                urlParameters.Add($"confirmationPeriodSeconds={ confirmationPeriodSeconds.Value }");
             }
             if (suspendEnqueue.HasValue)
             {
@@ -169,7 +169,7 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                    return JsonSerializer.Deserialize<QueueProperties>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
