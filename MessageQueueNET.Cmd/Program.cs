@@ -105,6 +105,13 @@ namespace MessageQueueNET.Cmd
             Console.WriteLine("  dequeue: dequeues a message");
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
             Console.WriteLine();
+
+            Console.WriteLine("  confirm,confirmdequeue: dequeues a message");
+            Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine("  options:");
+            Console.WriteLine("     -id or -messageid MessageId (guid)");
+
+            Console.WriteLine();
         }
 
         async static private Task Exec(CmdArguments cmdArguments)
@@ -143,9 +150,21 @@ namespace MessageQueueNET.Cmd
                     }
                 }
             }
+            else if (cmdArguments.Command == "confirm" || cmdArguments.Command == "confirmdequeue")
+            {
+                Console.WriteLine($"Result: { await client.ConfirmDequeueAsync(cmdArguments.MessageId) }");
+            }
             else if (cmdArguments.Command == "length")
             {
-                Console.WriteLine(await client.LengthAsync());
+                var lengthResult = await client.LengthAsync();
+                if (cmdArguments.ShowFullItem && lengthResult.UnconfirmedItems.HasValue)
+                {
+                    Console.WriteLine($"{ lengthResult.QueueLength } (+{ lengthResult.UnconfirmedItems.Value } unconfirmed)");
+                }
+                else
+                {
+                    Console.WriteLine(lengthResult.QueueLength);
+                }
             }
             else if (cmdArguments.Command == "register")
             {
@@ -193,6 +212,17 @@ namespace MessageQueueNET.Cmd
                         else
                         {
                             Console.WriteLine(m?.Value ?? "<null>");
+                        }
+                    }
+
+                    if (cmdArguments.ShowFullItem &&
+                        messagesResult.UnconfirmedMessages != null &&
+                        messagesResult.UnconfirmedMessages.Count() > 0)
+                    {
+                        Console.WriteLine("Dequeued unconfirmed messages:");
+                        foreach (var m in messagesResult.UnconfirmedMessages)
+                        {
+                            Console.WriteLine($"{ m.Id }:{ m?.Value ?? "<null>"}");
                         }
                     }
                 }

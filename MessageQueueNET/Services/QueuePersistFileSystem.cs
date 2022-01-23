@@ -64,18 +64,41 @@ namespace MessageQueueNET.Services
         async public Task<IEnumerable<QueueItem>> GetAllItems(string queueName)
         {
             var result = new List<QueueItem>();
-
             DirectoryInfo di = new DirectoryInfo(Path.Combine(_options.RootPath, queueName));
-
-            foreach (var fi in di.GetFiles("*.json"))
+  
+            if (di.Exists)
             {
-                if (fi.Name.StartsWith("_"))
+                foreach (var fi in di.GetFiles("*.json"))
                 {
-                    continue;
-                }
+                    if (fi.Name.StartsWith("_"))
+                    {
+                        continue;
+                    }
 
-                var jsonString = await File.ReadAllTextAsync(fi.FullName);
-                result.Add(JsonSerializer.Deserialize<QueueItem>(jsonString));
+                    var jsonString = await File.ReadAllTextAsync(fi.FullName);
+                    result.Add(JsonSerializer.Deserialize<QueueItem>(jsonString));
+                }
+            }
+            return result;
+        }
+
+        async public Task<IEnumerable<QueueItem>> GetAllUnconfirmedItems(string queueName)
+        {
+            var result = new List<QueueItem>();
+            DirectoryInfo di = new DirectoryInfo(Path.Combine(_options.RootPath, queueName, "_unconfirmed"));
+            
+            if (di.Exists)
+            {
+                foreach (var fi in di.GetFiles("*.json"))
+                {
+                    if (fi.Name.StartsWith("_"))
+                    {
+                        continue;
+                    }
+
+                    var jsonString = await File.ReadAllTextAsync(fi.FullName);
+                    result.Add(JsonSerializer.Deserialize<QueueItem>(jsonString));
+                }
             }
 
             return result;
@@ -143,6 +166,46 @@ namespace MessageQueueNET.Services
             try
             {
                 FileInfo fi = new FileInfo(Path.Combine(_options.RootPath, queueName, $"{ itemId.ToString().ToLower() }.json"));
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                }
+
+                return Task.FromResult(true);
+            }
+            catch
+            {
+                return Task.FromResult(false);
+            }
+        }
+
+        async public Task<bool> PersistUnconfirmedQueueItem(string queueName, QueueItem item)
+        {
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(Path.Combine(_options.RootPath, queueName, "_unconfirmed"));
+
+                if (!di.Exists)
+                {
+                    di.Create();
+                }
+
+                var jsonString = JsonSerializer.Serialize(item);
+                await File.WriteAllTextAsync(Path.Combine(di.FullName, $"{ item.Id.ToString().ToLower() }.json"), jsonString);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public Task<bool> RemoveUnconfirmedQueueItem(string queueName, Guid itemId)
+        {
+            try
+            {
+                FileInfo fi = new FileInfo(Path.Combine(_options.RootPath, queueName, "_unconfirmed", $"{ itemId.ToString().ToLower() }.json"));
                 if (fi.Exists)
                 {
                     fi.Delete();

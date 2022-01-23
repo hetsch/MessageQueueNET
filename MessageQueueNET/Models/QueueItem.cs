@@ -14,10 +14,20 @@ namespace MessageQueueNET.Models
         public DateTime CreationDateUTC { get; set; }
         public string Message { get; set; }
 
-        public void ResetCreationDate()
+        private void ResetCreationDate()
         {
             this.CreationDateUTC = DateTime.UtcNow;
         }
+
+        public QueueItem Clone()
+        {
+            return new QueueItem()
+            {
+                Id = this.Id,
+                Message = this.Message
+            };
+        }
+
         public bool IsValid(Queue queue)
         {
             if (queue.Properties.ItemLifetimeSeconds > 0 && 

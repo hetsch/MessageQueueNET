@@ -3,6 +3,7 @@ using MessageQueueNET.Models;
 using MessageQueueNET.Services;
 using MessageQueueNET.Services.Abstraction;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -54,7 +55,13 @@ namespace MessageQueueNET.Controllers
                         {
                             if (queue.Properties.ConfirmationPeriodSeconds > 0)
                             {
-                                _queues.AddToUnconfirmedMessage(queue.Name, item);
+                                var unconfirmedItem = item.Clone();
+                                if (!await _persist.PersistUnconfirmedQueueItem(id, unconfirmedItem))
+                                {
+                                    throw new Exception("Can't unable to persist unconfirmed queue item");
+                                }
+
+                                _queues.AddToUnconfirmedMessage(queue, unconfirmedItem);
                             }
 
                             if (await _persist.RemoveQueueItem(id, item.Id) && item.IsValid(queue))
@@ -81,6 +88,30 @@ namespace MessageQueueNET.Controllers
             }
 
             return result;
+        }
+
+        [HttpGet]
+        [Route("confirmdequeue/{id}")]
+        async public Task<bool> ConfirmDequeue(string id, Guid messageId)
+        {
+            try
+            {
+                var queue = _queues.GetQueue(id);
+
+                if (queue.Properties.ConfirmationPeriodSeconds > 0)
+                {
+                    if (await _persist.RemoveUnconfirmedQueueItem(queue.Name, messageId))
+                    {
+                        return _queues.ConfirmDequeuedMessage(queue, messageId);
+                    }
+                }
+            }
+            catch
+            {
+                
+            }
+
+            return false;
         }
 
         [HttpPut]
@@ -133,11 +164,13 @@ namespace MessageQueueNET.Controllers
                             Value = message.Message
                         });
 
+
                     return new MessagesResult()
                     {
                         RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0,
                         ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
-                        Messages = messages
+                        Messages = messages,
+                        UnconfirmedMessages = _queues.UnconfirmedItems(queue)
                     };
                 }
             }
@@ -151,7 +184,7 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("length/{id}")]
-        public int Length(string id)
+        public QueueLengthResult Length(string id)
         {
             try
             {
@@ -159,9 +192,13 @@ namespace MessageQueueNET.Controllers
                 {
                     var queue = _queues.GetQueue(id);
 
-                    return _queues.GetQueue(id)
-                        .Where(item => item.IsValid(queue))
-                        .Count();
+                    return new QueueLengthResult()
+                    {
+                        QueueLength = _queues.GetQueue(id)
+                                             .Where(item => item.IsValid(queue))
+                                             .Count(),
+                        UnconfirmedItems = _queues.UnconfirmedMessagesCount(queue)
+                    };
                 }
             }
             catch
@@ -169,7 +206,7 @@ namespace MessageQueueNET.Controllers
 
             }
 
-            return 0;
+            return new QueueLengthResult();
         }
 
         [HttpGet]

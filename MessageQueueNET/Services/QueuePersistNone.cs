@@ -2,7 +2,6 @@
 using MessageQueueNET.Services.Abstraction;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Services
@@ -10,38 +9,32 @@ namespace MessageQueueNET.Services
     public class QueuePersistNone : IQueuesPersistService
     {
         public Task<IEnumerable<QueueItem>> GetAllItems(string queueName)
-        {
-            return Task.FromResult<IEnumerable<QueueItem>>(new QueueItem[0]);
-        }
+            => Task.FromResult<IEnumerable<QueueItem>>(new QueueItem[0]);
+        public Task<IEnumerable<QueueItem>> GetAllUnconfirmedItems(string queueName)
+            => Task.FromResult<IEnumerable<QueueItem>>(new QueueItem[0]);
 
         public Task<QueueProperties> GetQueueProperties(string queueName)
-        {
-            return Task.FromResult<QueueProperties>(null);
-        }
+            => Task.FromResult<QueueProperties>(null);
 
-        public Task<bool> PersistQueueItem(string queueName, QueueItem item)
-        {
-            return Task.FromResult(true);
-        }
+        public Task<bool> PersistQueueItem(string queueName, QueueItem item) 
+            => Task.FromResult(true);
 
-        public Task<bool> PersistQueueProperties(Queue queue)
-        {
-            return Task.FromResult(true);
-        }
+        public Task<bool> PersistUnconfirmedQueueItem(string queueName, QueueItem item)
+            => Task.FromResult(true);
+        public Task<bool> RemoveUnconfirmedQueueItem(string queueName, Guid itemId) 
+            => Task.FromResult(true);
+
+        public Task<bool> PersistQueueProperties(Queue queue) 
+            => Task.FromResult(true);
 
         public Task<IEnumerable<string>> QueueNames()
-        {
-            return Task.FromResult<IEnumerable<string>>(new string[0]);
-        }
+            => Task.FromResult<IEnumerable<string>>(new string[0]);
 
-        public Task<bool> RemoveQueue(string queueName)
-        {
-            return Task.FromResult(true);
-        }
+        public Task<bool> RemoveQueue(string queueName) 
+            => Task.FromResult(true);
 
-        public Task<bool> RemoveQueueItem(string queueName, Guid itemId)
-        {
-            return Task.FromResult(false);
-        }
+        public Task<bool> RemoveQueueItem(string queueName, Guid itemId) 
+            => Task.FromResult(false);
+
     }
 }

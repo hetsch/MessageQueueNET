@@ -25,7 +25,13 @@ namespace MessageQueueNET
         {
             services.AddTransient<IAppVersionService, AppVersionService>();
 
-            services.AddControllers();
+            services.AddControllers()
+                    .AddJsonOptions(options =>
+                    {
+                        options.JsonSerializerOptions.DefaultIgnoreCondition = 
+                            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+                    });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MessageQueue.NET", Version = "v1" });
@@ -57,7 +63,7 @@ namespace MessageQueueNET
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              RestorePersistedQueuesService _restoreQueues)
+                              RestorePersistedQueuesService restoreQueues)
         {
             if (env.IsDevelopment())
             {
@@ -66,7 +72,7 @@ namespace MessageQueueNET
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MessageQueue.NET v1"));
             }
 
-            _restoreQueues.Restore().Wait();
+            restoreQueues.Restore().Wait();
 
             //app.UseHttpsRedirection();
 

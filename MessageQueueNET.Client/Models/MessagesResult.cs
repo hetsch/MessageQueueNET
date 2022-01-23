@@ -10,5 +10,7 @@ namespace MessageQueueNET.Client.Models
         public int? ConfirmationPeriod { get; set; }
 
         public IEnumerable<MessageResult> Messages { get; set; }
+
+        public IEnumerable<MessageResult> UnconfirmedMessages { get; set; }
     }
 }

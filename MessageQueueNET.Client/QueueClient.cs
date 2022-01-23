@@ -71,6 +71,20 @@ namespace MessageQueueNET.Client
             }
         }
 
+        async public Task<bool> ConfirmDequeueAsync(Guid messageId)
+        {
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/confirmdequeue/{ _queueName }?messageId={ messageId }"))
+            {
+                ModifyHttpRequest(requestMessage);
+
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+                    return Convert.ToBoolean(await httpResponse.Content.ReadAsStringAsync());
+                }
+            }
+        }
+
         async public Task<bool> EnqueueAsync(IEnumerable<string> messages)
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Put, $"{ _serverUrl }/queue/enqueue/{ _queueName }"))
@@ -104,7 +118,7 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<int> LengthAsync()
+        async public Task<QueueLengthResult> LengthAsync()
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/length/{ _queueName }"))
             {
@@ -113,8 +127,8 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    var response = await httpResponse.Content.ReadAsStringAsync();
-                    return Convert.ToInt32(response);
+
+                    return JsonSerializer.Deserialize<QueueLengthResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }

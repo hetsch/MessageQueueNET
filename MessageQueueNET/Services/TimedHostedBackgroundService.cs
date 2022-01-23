@@ -64,7 +64,7 @@ namespace MessageQueueNET.Services
                 {
                     if (queue.Properties.ConfirmationPeriodSeconds > 0)
                     {
-                        _queues.ReEnqueueUnconfirmedMessages(queue);
+                        _queues.ReEnqueueUnconfirmedMessages(queue, _persist).Wait();
                     }
 
                     if (queue.Properties.LifetimeSeconds > 0 &&

@@ -21,6 +21,7 @@ namespace MessageQueueNET.Cmd
         public bool? SuspendEnqueue { get; set; }
         public bool? SuspendDequeue { get; set; }
         public List<string> Messages { get; set; }
+        public Guid MessageId { get; set; }
         public bool ShowFullItem { get; set; }
 
         public void Parse(string[] args, int startAt = 0)
@@ -40,8 +41,8 @@ namespace MessageQueueNET.Cmd
                         break;
                     case "-f":
                         this.Messages.AddRange(File.ReadAllLines(args[++i])
-                                .Select(l => l.Trim())
-                                .Where(l => !String.IsNullOrEmpty(l)));
+                                     .Select(l => l.Trim())
+                                     .Where(l => !String.IsNullOrEmpty(l)));
                         break;
                     case "-lifetime":
                         this.LifetimeSeconds = int.Parse(args[++i]);
@@ -57,6 +58,10 @@ namespace MessageQueueNET.Cmd
                         break;
                     case "-confirmationperiod":
                         this.ConfirmationPeridSeconds = int.Parse(args[++i]);
+                        break;
+                    case "-id":
+                    case "-messageid":
+                        this.MessageId = new Guid(args[++i]);
                         break;
                     case "-full":
                         ShowFullItem = true;

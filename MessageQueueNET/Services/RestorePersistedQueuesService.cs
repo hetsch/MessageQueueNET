@@ -26,7 +26,8 @@ namespace MessageQueueNET.Services
                 {
                     _queues.Restore(queueName,
                                     await _persist.GetQueueProperties(queueName),
-                                    await _persist.GetAllItems(queueName));
+                                    await _persist.GetAllItems(queueName),
+                                    await _persist.GetAllUnconfirmedItems(queueName));
                 }
 
                 return true;

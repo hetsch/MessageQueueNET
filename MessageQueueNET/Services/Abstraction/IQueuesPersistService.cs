@@ -18,6 +18,11 @@ namespace MessageQueueNET.Services.Abstraction
 
         Task<IEnumerable<QueueItem>> GetAllItems(string queueName);
 
+        Task<bool> PersistUnconfirmedQueueItem(string queueName, QueueItem item);
+        Task<bool> RemoveUnconfirmedQueueItem(string queueName, Guid itemId);
+        Task<IEnumerable<QueueItem>> GetAllUnconfirmedItems(string queueName);
+        
+
         Task<bool> RemoveQueue(string queueName);
 
         Task<IEnumerable<string>> QueueNames();
