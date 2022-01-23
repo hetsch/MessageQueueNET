@@ -2,6 +2,7 @@
 using MessageQueueNET.Client.Models;
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -15,6 +16,12 @@ namespace MessageQueueNET.Cmd
 
             if (args.Length > 0)
             {
+                if (args[0] == "-version" || args[0] == "--version")
+                {
+                    Console.WriteLine(Version);
+                    return 0;
+                }
+
                 cmdArguments.ServerUrl = args[0];
                 cmdArguments.Parse(args, 1);
             }
@@ -270,6 +277,11 @@ namespace MessageQueueNET.Cmd
                 {
                     return;
                 }
+                if (args.Length == 1 && args[0] == "version")
+                {
+                    Console.WriteLine(Version);
+                    continue;
+                }
                 else if (args.Length == 1 && args[0] == "help")
                 {
                     WriteShellHelp();
@@ -309,5 +321,11 @@ namespace MessageQueueNET.Cmd
                 }
             }
         }
+
+        public static string Version =>
+            Assembly
+            .GetAssembly(typeof(MessageQueueNET.Client.QueueClient))
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .InformationalVersion;
     }
 }

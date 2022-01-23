@@ -2,6 +2,7 @@
 using MessageQueueNET.ProcService.Extensions;
 using System;
 using System.Globalization;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,6 +25,12 @@ namespace MessageQueueNET.ProcService
 
             if (args.Length > 0)
             {
+                if(args[0] == "-version" || args[0]=="--version")
+                {
+                    Console.WriteLine(Version);
+                    return 0;
+                }
+
                 serverUrl = args[0];
 
                 for (int i = 1; i < args.Length - 1; i++)
@@ -186,5 +193,11 @@ namespace MessageQueueNET.ProcService
                 return 1;
             }
         }
+
+        public static string Version =>
+            Assembly
+            .GetAssembly(typeof(MessageQueueNET.Client.QueueClient))
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .InformationalVersion;
     }
 }

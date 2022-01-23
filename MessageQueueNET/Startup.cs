@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using System;
 
 namespace MessageQueueNET
 {
@@ -28,7 +29,7 @@ namespace MessageQueueNET
             services.AddControllers()
                     .AddJsonOptions(options =>
                     {
-                        options.JsonSerializerOptions.DefaultIgnoreCondition = 
+                        options.JsonSerializerOptions.DefaultIgnoreCondition =
                             System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
                     });
 
@@ -63,13 +64,18 @@ namespace MessageQueueNET
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              RestorePersistedQueuesService restoreQueues)
+                              RestorePersistedQueuesService restoreQueues,
+                              IAppVersionService appVersion)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+
+            if (env.IsDevelopment() || "true".Equals(Configuration["swaggerUI"], StringComparison.OrdinalIgnoreCase))
+            {
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MessageQueue.NET v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", $"MessageQueue.NET v{ appVersion.Version }"));
             }
 
             restoreQueues.Restore().Wait();

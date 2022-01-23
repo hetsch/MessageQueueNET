@@ -1,4 +1,5 @@
 {
+  "SwaggerUI": false,
   "MessageQueue": {
     "Persist": {
       "Type": "filesystem",
