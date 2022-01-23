@@ -65,6 +65,13 @@ The queue is therefore still empty, however, other processes can use '/queue/que
 
 When values are queried using this method, they automatically disappear from the queue and are no longer available for other processes.
 
+**[GET] /queue/confirmdequeue/{id}?messageId={messageId}**
+
+If the property ``ConfirmationPeriodSeconds`` is defined for the queue (>0), a message must be confirmed within the
+time span. Otherwise, the message is automatically added back to the queue.
+This method confirms that the message has arrived and been successfully processed. With this method, the
+message finally removed from the queue.
+
 **[GET] /queue/all/{id}**
 
 Returns all the values of a queue without affecting it.
@@ -84,6 +91,8 @@ If the queue already exists, this method can be used to change the properties of
 
 - **lifetimeSeconds <int>**: If the queue is empty for longer than the time specified here, it is automatically deleted. a value of ``0`` means that the queue is never automatically deleted
 - **itemLifetimeSeconds <int>**: If a message is not picked up under the time span shown here, it is automatically deleted. A value of ``0`` means that messages are never automatically deleted.
+- **confirmationPeriodSeconds <int>**: This value can be used to ensure that the successful processing of a message from the client
+must be confirmed. Otherwise, this message is automatically added back to the queue.
 - **suspendEnqueue <bool>**: If you set this werr to ``true``, no more values can be added to this queue until the value is set back to ``false``.
 - **suspendDequeue <bool>**: If you set this value to ``true``, no messages can be retrieved from this queue. The messages are not deleted. If you set the value back to ``false``, the queue can be processed again.
 

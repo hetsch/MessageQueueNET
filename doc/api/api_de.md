@@ -68,6 +68,13 @@ anderer Prozesse können aber über `/queue/queuenames` (siehe unten) ermitteln,
 
 Werden über diese Methode Werte abgefragt, verschwinden diese automatisch aus der Warteschlange und stehen für anderer Prozesse nicht mehr zur Verfügung.
 
+**[GET] /queue/confirmdequeue/{id}?messageId={messageId}**
+
+Ist für die Warteschlange die Eigenschaft ``ConfirmationPeriodSeconds`` definiert (>0), muss eine Nachricht innerhalb der hier
+eingstellen Zeitspanne bestätigt werden. Ansonsten wird die Nachricht automatisch wieder der Warteschlange hinzugefügt.
+Mit dieser Methode wird bestätigt, dass die Nachricht angekommen und erfolgreich bearbeitet wurde. Damit verschwindet diese
+Nachricht endgültig aus der Wartschlange.
+
 **[GET] /queue/all/{id}**
 
 Gibt alle Werte einer Warteschlange zurück ohne diese zu beeinflussen.
@@ -89,6 +96,8 @@ dabei können zusätzliche Parameter übergeben werden:
 
 - **lifetimeSeconds <int>**: Ist die Warteschlange länger als die hier angegeben Zeitspanne leer, wird sie automatisch gelöscht. Ein Wert ``0`` bedeutet, dass die Warteschlange niemals automatisch gelöscht wird 
 - **itemLifetimeSeconds <int>**: Wird eine Nachricht nicht unter der hier angezeigten Zeitspann abgeholt, wird sie automatisch gelöscht. Ein Wert ``0`` bedeutet, dass Nachrichten nie automatisch gelöscht werden.
+- **confirmationPeriodSeconds <int>**: Mit diesem Wert kann eigestellt werden, dass die erfolgreiche Bearbeitung einer Nachrichten vom Client
+bestätigt werden muss. Ansonsten wird diese Nachricht automatisch wieder der Warteschlange hinzugefügt.
 - **suspendEnqueue <bool>**: Setzt man diesen Werr auf ``true`` können dieser Warteschlange keine Werte mehr hinzugefügt werden, bis der Wert wieder auf ``false`` gesetzt wird.
 - **suspendDequeue <bool>**: Setzt man diesen Wert auf ``true`` können aus dieser Warteschlange keine Nachrichten abgeholt werden. Die Nachrichten werden dabei nicht gelöscht. Setzt man den Wert wieder auf ``false`` kann die Warteschlange wieder abgearbeitet werden.
 

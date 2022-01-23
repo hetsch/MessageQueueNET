@@ -23,15 +23,19 @@ Task<bool> EnqueueAsync(IEnumerable<string> messages)
 ```
 
 ```csharp
-Task<IEnumerable<string>> DequeueAsync(int count = 1, bool register = false)
+Task<MessagesResult> DequeueAsync(int count = 1, bool register = false)
 ```
 
 ```csharp
-Task<IEnumerable<string>> AllMessagesAsync()
+Task<bool> ConfirmDequeueAsync(Guid messageId)
 ```
 
 ```csharp
-Task<int> LengthAsync()
+Task<MessagesResult> AllMessagesAsync()
+```
+
+```csharp
+Task<QueueLengthResult> LengthAsync()
 ```
 
 ```csharp
