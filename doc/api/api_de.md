@@ -98,7 +98,7 @@ dabei können zusätzliche Parameter übergeben werden:
 - **itemLifetimeSeconds <int>**: Wird eine Nachricht nicht unter der hier angezeigten Zeitspann abgeholt, wird sie automatisch gelöscht. Ein Wert ``0`` bedeutet, dass Nachrichten nie automatisch gelöscht werden.
 - **confirmationPeriodSeconds <int>**: Mit diesem Wert kann eigestellt werden, dass die erfolgreiche Bearbeitung einer Nachrichten vom Client
 bestätigt werden muss. Ansonsten wird diese Nachricht automatisch wieder der Warteschlange hinzugefügt.
-Ein Wert ``0`` bedeutet, dass Nachrichten nicht bestätigt werden müssen und nachen einem ``dequeue`` vollstndig aus der Wartschlange verschwinden.
+Ein Wert ``0`` bedeutet, dass Nachrichten nicht bestätigt werden müssen und nach einem ``dequeue`` vollstndig aus der Wartschlange verschwinden.
 - **suspendEnqueue <bool>**: Setzt man diesen Werr auf ``true`` können dieser Warteschlange keine Werte mehr hinzugefügt werden, bis der Wert wieder auf ``false`` gesetzt wird.
 - **suspendDequeue <bool>**: Setzt man diesen Wert auf ``true`` können aus dieser Warteschlange keine Nachrichten abgeholt werden. Die Nachrichten werden dabei nicht gelöscht. Setzt man den Wert wieder auf ``false`` kann die Warteschlange wieder abgearbeitet werden.
 
