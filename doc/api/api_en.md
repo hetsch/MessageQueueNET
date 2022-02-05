@@ -72,9 +72,13 @@ time span. Otherwise, the message is automatically added back to the queue.
 This method confirms that the message has arrived and been successfully processed. With this method, the
 message finally removed from the queue.
 
-**[GET] /queue/all/{id}**
+**[GET] /queue/all/{id}?max={number}&unconfirmedOnly={boolean}**
 
 Returns all the values of a queue without affecting it.
+The parameter ``max`` and ``unconfirmedOnly`` are optional.
+``max``: the maximum number of results to be returned
+``unconfirmedOnly``: only messages are returned that have been picked up but not yet by
+Client have been confirmed. Only queues with ``confirmationPeriodSeconds>0`` can return values here.
 
 **[GET] /queue/length/{id}**
 

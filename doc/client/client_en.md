@@ -31,7 +31,7 @@ Task<bool> ConfirmDequeueAsync(Guid messageId)
 ```
 
 ```csharp
-Task<MessagesResult> AllMessagesAsync()
+Task<MessagesResult> AllMessagesAsync(int max = 0, bool unconfirmedOnly = false)
 ```
 
 ```csharp

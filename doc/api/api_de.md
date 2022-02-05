@@ -75,9 +75,13 @@ eingstellen Zeitspanne bestätigt werden. Ansonsten wird die Nachricht automatis
 Mit dieser Methode wird bestätigt, dass die Nachricht angekommen und erfolgreich bearbeitet wurde. Damit verschwindet diese
 Nachricht endgültig aus der Wartschlange.
 
-**[GET] /queue/all/{id}**
+**[GET] /queue/all/{id}?max={number}&unconfirmedOnly={boolean}**
 
 Gibt alle Werte einer Warteschlange zurück ohne diese zu beeinflussen.
+Die Parameter ``max`` und ``unconfirmedOnly`` sind optional.
+``max``: die Maximale Anzahl der Ergebnisse die zurück gegeben werden
+``unconfirmedOnly``: es werden nur Messages zurückgeliefert, die bereits abgeholt aber noch nicht von
+Client bestätigt wurden. Nur Warteschlangen mit ``confirmationPeriodSeconds>0`` können hier Werte zurückliefern.
 
 **[GET] /queue/length/{id}**
 
@@ -94,13 +98,18 @@ Existiert die Wartschlange bereits, können über diese Methode die Eigenschafte
 
 dabei können zusätzliche Parameter übergeben werden: 
 
-- **lifetimeSeconds <int>**: Ist die Warteschlange länger als die hier angegeben Zeitspanne leer, wird sie automatisch gelöscht. Ein Wert ``0`` bedeutet, dass die Warteschlange niemals automatisch gelöscht wird 
-- **itemLifetimeSeconds <int>**: Wird eine Nachricht nicht unter der hier angezeigten Zeitspann abgeholt, wird sie automatisch gelöscht. Ein Wert ``0`` bedeutet, dass Nachrichten nie automatisch gelöscht werden.
-- **confirmationPeriodSeconds <int>**: Mit diesem Wert kann eigestellt werden, dass die erfolgreiche Bearbeitung einer Nachrichten vom Client
+- **lifetimeSeconds <int>**: 
+Ist die Warteschlange länger als die hier angegeben Zeitspanne leer, wird sie automatisch gelöscht. Ein Wert ``0`` bedeutet, dass die Warteschlange niemals automatisch gelöscht wird 
+- **itemLifetimeSeconds <int>**: 
+Wird eine Nachricht nicht unter der hier angezeigten Zeitspann abgeholt, wird sie automatisch gelöscht. Ein Wert ``0`` bedeutet, dass Nachrichten nie automatisch gelöscht werden.
+- **confirmationPeriodSeconds <int>**: 
+Mit diesem Wert kann eigestellt werden, dass die erfolgreiche Bearbeitung einer Nachrichten vom Client
 bestätigt werden muss. Ansonsten wird diese Nachricht automatisch wieder der Warteschlange hinzugefügt.
 Ein Wert ``0`` bedeutet, dass Nachrichten nicht bestätigt werden müssen und nach einem ``dequeue`` vollstndig aus der Wartschlange verschwinden.
-- **suspendEnqueue <bool>**: Setzt man diesen Werr auf ``true`` können dieser Warteschlange keine Werte mehr hinzugefügt werden, bis der Wert wieder auf ``false`` gesetzt wird.
-- **suspendDequeue <bool>**: Setzt man diesen Wert auf ``true`` können aus dieser Warteschlange keine Nachrichten abgeholt werden. Die Nachrichten werden dabei nicht gelöscht. Setzt man den Wert wieder auf ``false`` kann die Warteschlange wieder abgearbeitet werden.
+- **suspendEnqueue <bool>**: 
+Setzt man diesen Werr auf ``true`` können dieser Warteschlange keine Werte mehr hinzugefügt werden, bis der Wert wieder auf ``false`` gesetzt wird.
+- **suspendDequeue <bool>**: 
+Setzt man diesen Wert auf ``true`` können aus dieser Warteschlange keine Nachrichten abgeholt werden. Die Nachrichten werden dabei nicht gelöscht. Setzt man den Wert wieder auf ``false`` kann die Warteschlange wieder abgearbeitet werden.
 
 **[GET] /queue/properties/{id}**
 
