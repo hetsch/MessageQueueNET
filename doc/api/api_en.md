@@ -93,13 +93,18 @@ Removes am message queue
 Creates a queue with no values (if the queue does not already exist). Other processes can then see the queue using `/queue/queuenames`.
 If the queue already exists, this method can be used to change the properties of the queue.
 
-- **lifetimeSeconds <int>**: If the queue is empty for longer than the time specified here, it is automatically deleted. a value of ``0`` means that the queue is never automatically deleted
-- **itemLifetimeSeconds <int>**: If a message is not picked up under the time span shown here, it is automatically deleted. A value of ``0`` means that messages are never automatically deleted.
-- **confirmationPeriodSeconds <int>**: This value can be used to ensure that the successful processing of a message from the client
+- **lifetimeSeconds <int>**: 
+If the queue is empty for longer than the time specified here, it is automatically deleted. a value of ``0`` means that the queue is never automatically deleted
+- **itemLifetimeSeconds <int>**: 
+If a message is not picked up under the time span shown here, it is automatically deleted. A value of ``0`` means that messages are never automatically deleted.
+- **confirmationPeriodSeconds <int>**: 
+This value can be used to ensure that the successful processing of a message from the client
 must be confirmed. Otherwise, this message is automatically added back to the queue.
 A value ``0`` means that messages do not have to be confirmed and disappear completely from the queue after a ``dequeue``.
-- **suspendEnqueue <bool>**: If you set this werr to ``true``, no more values can be added to this queue until the value is set back to ``false``.
-- **suspendDequeue <bool>**: If you set this value to ``true``, no messages can be retrieved from this queue. The messages are not deleted. If you set the value back to ``false``, the queue can be processed again.
+- **suspendEnqueue <bool>**: 
+If you set this werr to ``true``, no more values can be added to this queue until the value is set back to ``false``.
+- **suspendDequeue <bool>**: 
+If you set this value to ``true``, no messages can be retrieved from this queue. The messages are not deleted. If you set the value back to ``false``, the queue can be processed again.
 
 **[GET] /queue/properties/{id}**
 
