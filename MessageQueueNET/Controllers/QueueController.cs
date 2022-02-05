@@ -148,7 +148,7 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("all/{id}")]
-        public MessagesResult AllMessages(string id)
+        public MessagesResult AllMessages(string id, int max = 0, bool unconfirmedOnly = false)
         {
             try
             {
@@ -156,21 +156,37 @@ namespace MessageQueueNET.Controllers
                 {
                     var queue = _queues.GetQueue(id);
 
-                    var messages = queue
-                        .Where(message => message.IsValid(queue))
-                        .Select(message => new MessageResult()
-                        {
-                            Id = message.Id,
-                            Value = message.Message
-                        });
+                    IEnumerable<MessageResult> messages = null, unconfirmedMessages = null;
 
+                    if (unconfirmedOnly == false)
+                    {
+                        messages = queue
+                            .Where(message => message.IsValid(queue))
+                            .Select(message => new MessageResult()
+                            {
+                                Id = message.Id,
+                                Value = message.Message
+                            });
+
+                        if (max > 0)
+                        {
+                            messages = messages.Take(max);
+                        }
+                    }
+
+                    unconfirmedMessages = _queues.UnconfirmedItems(queue);
+
+                    if(max>0)
+                    {
+                        unconfirmedMessages = unconfirmedMessages?.Take(max);
+                    }
 
                     return new MessagesResult()
                     {
                         RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0,
                         ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
                         Messages = messages,
-                        UnconfirmedMessages = _queues.UnconfirmedItems(queue)
+                        UnconfirmedMessages = unconfirmedMessages
                     };
                 }
             }

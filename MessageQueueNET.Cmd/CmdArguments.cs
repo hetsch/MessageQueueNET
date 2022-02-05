@@ -24,11 +24,14 @@ namespace MessageQueueNET.Cmd
         public Guid MessageId { get; set; }
         public bool ShowFullItem { get; set; }
 
+        public bool UnconfirmedOnly { get; set; }
+        public int Max { get; set; }
+
         public void Parse(string[] args, int startAt = 0)
         {
             for (int i = 1; i < args.Length; i++)
             {
-                switch (args[i])
+                switch (args[i].ToLower())
                 {
                     case "-q":
                         this.QueueName = args[++i];
@@ -65,6 +68,12 @@ namespace MessageQueueNET.Cmd
                         break;
                     case "-full":
                         ShowFullItem = true;
+                        break;
+                    case "-max":
+                        this.Max = int.Parse(args[++i]);
+                        break;
+                    case "-unconfirmed":
+                        this.UnconfirmedOnly = true;
                         break;
                 }
             }

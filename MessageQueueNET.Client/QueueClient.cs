@@ -104,9 +104,9 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<MessagesResult> AllMessagesAsync()
+        async public Task<MessagesResult> AllMessagesAsync(int max = 0, bool unconfirmedOnly = false)
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/all/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/all/{ _queueName }?max={ max }&unconfirmedOnly={ unconfirmedOnly }"))
             {
                 ModifyHttpRequest(requestMessage);
 

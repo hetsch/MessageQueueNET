@@ -101,6 +101,9 @@ namespace MessageQueueNET.Cmd
 
             Console.WriteLine("  all: lists all messages in a queue without dequeing any item");
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine("  options: (all optional)");
+            Console.WriteLine("     -max <max number of results>");
+            Console.WriteLine("     -unconfirmed   ... show only the unconfirmed messages");
             Console.WriteLine();
 
             Console.WriteLine("  enqueue: enqueies messages");
@@ -207,7 +210,7 @@ namespace MessageQueueNET.Cmd
             }
             else if (cmdArguments.Command == "all")
             {
-                var messagesResult = await client.AllMessagesAsync();
+                var messagesResult = await client.AllMessagesAsync(cmdArguments.Max, cmdArguments.UnconfirmedOnly);
                 if (messagesResult?.Messages != null)
                 {
                     foreach (var m in messagesResult.Messages)
@@ -221,16 +224,16 @@ namespace MessageQueueNET.Cmd
                             Console.WriteLine(m?.Value ?? "<null>");
                         }
                     }
+                }
 
-                    if (cmdArguments.ShowFullItem &&
-                        messagesResult.UnconfirmedMessages != null &&
-                        messagesResult.UnconfirmedMessages.Count() > 0)
+                if ((cmdArguments.ShowFullItem || cmdArguments.UnconfirmedOnly)  &&
+                    messagesResult.UnconfirmedMessages != null &&
+                    messagesResult.UnconfirmedMessages.Count() > 0)
+                {
+                    Console.WriteLine("Dequeued unconfirmed messages:");
+                    foreach (var m in messagesResult.UnconfirmedMessages)
                     {
-                        Console.WriteLine("Dequeued unconfirmed messages:");
-                        foreach (var m in messagesResult.UnconfirmedMessages)
-                        {
-                            Console.WriteLine($"{ m.Id }:{ m?.Value ?? "<null>"}");
-                        }
+                        Console.WriteLine($"{ m.Id }:{ m?.Value ?? "<null>"}");
                     }
                 }
             }
@@ -273,7 +276,7 @@ namespace MessageQueueNET.Cmd
 
                 CmdArguments cmdArguments = null;
 
-                if (args.Length == 1 && args[0] == "exit")
+                if (args.Length == 1 && (args[0] == "exit" || args[0] == "quit"))
                 {
                     return;
                 }
