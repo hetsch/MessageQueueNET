@@ -2,7 +2,12 @@
   "profiles": {
     "MessageQueueNET.ProcQueue": {
       "commandName": "Project",
-      "commandLineArgs": "https://client1:pas3w0rd1@localhost:44301 -q 04 -c c:\\temp\\dummy.bat -p 5 -duration 30 -stoptime_X \"08:39\""
+      "commandLineArgs": "https://client1:pas3w0rd1@localhost:44301 -q 04 -c c:\\temp\\dummy.bat -p 5 -duration 300 -stoptime_X \"08:39\""
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "environmentVariables": {},
+      "distributionName": ""
     }
   }
 }
