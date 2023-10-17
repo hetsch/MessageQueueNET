@@ -66,7 +66,10 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<MessagesResult> (await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                    var result = JsonSerializer.Deserialize<MessagesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                    if (result == null)
+                        throw new InvalidOperationException("Deserialization returned null.");
+                    return result;
                 }
             }
         }
@@ -113,8 +116,11 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<MessagesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
-                }
+                    var result = JsonSerializer.Deserialize<MessagesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                    if (result == null)
+                        throw new InvalidOperationException("Deserialization returned null.");
+                    return result;
+                 }
             }
         }
 
@@ -128,7 +134,10 @@ namespace MessageQueueNET.Client
                 {
                     CheckHttpResponse(httpResponse);
 
-                    return JsonSerializer.Deserialize<QueueLengthResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                    var result = JsonSerializer.Deserialize<QueueLengthResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+
+                    if (result == null) throw new InvalidOperationException("Deserialization returned null.");
+                    return result;
                 }
             }
         }
@@ -183,7 +192,10 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<QueueProperties>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                    var result = JsonSerializer.Deserialize<QueueProperties>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                    if (result == null)
+                        throw new InvalidOperationException("Deserialization returned null.");
+                    return result;
                 }
             }
         }
@@ -200,7 +212,10 @@ namespace MessageQueueNET.Client
 
                     string jsonResponse = await httpResponse.Content.ReadAsStringAsync();
 
-                    return JsonSerializer.Deserialize<QueueProperties>(jsonResponse, _jsonOptions);
+                    var result = JsonSerializer.Deserialize<QueueProperties>(jsonResponse, _jsonOptions);
+
+                    if (result == null) throw new InvalidOperationException("Deserialization returned null.");
+                    return result;
                 }
             }
         }
@@ -213,7 +228,10 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                    var result = JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+
+                    if (result == null) throw new InvalidOperationException("Deserialization returned null.");
+                    return result;
                 }
             }
         }

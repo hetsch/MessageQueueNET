@@ -12,7 +12,7 @@ namespace MessageQueueNET.ProcService.Extensions
     {
         static object _writeLock = new object();
 
-        static public void Log(this string line, ITaskContext context = null, string logFile = "")
+        static public void Log(this string line, ITaskContext? context = null, string? logFile = null)
         { 
             if (context != null)
             {

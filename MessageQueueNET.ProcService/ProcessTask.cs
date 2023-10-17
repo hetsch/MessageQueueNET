@@ -30,7 +30,7 @@ namespace MessageQueueNET.ProcService
 
                 $"Starting process - arguments: { context.Arguments }".Log(context);
 
-                using (Process process = Process.Start(processStartInfo))
+                using (Process process = Process.Start(processStartInfo)!)
                 {
                     var output = new List<string>();
 

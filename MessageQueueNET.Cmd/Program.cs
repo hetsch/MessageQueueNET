@@ -149,7 +149,7 @@ namespace MessageQueueNET.Cmd
                 {
                     foreach (var m in messagesResult.Messages)
                     {
-                        if (cmdArguments.ShowFullItem || messagesResult.RequireConfirmation)
+                        if (cmdArguments.ShowFullItem || m.RequireConfirmation == true)
                         {
                             Console.WriteLine($"{ m.Id }:{ m?.Value ?? "<null>"}");
                         }
@@ -227,7 +227,7 @@ namespace MessageQueueNET.Cmd
                 }
 
                 if ((cmdArguments.ShowFullItem || cmdArguments.UnconfirmedOnly)  &&
-                    messagesResult.UnconfirmedMessages != null &&
+                    messagesResult?.UnconfirmedMessages != null &&
                     messagesResult.UnconfirmedMessages.Count() > 0)
                 {
                     Console.WriteLine("Dequeued unconfirmed messages:");
@@ -274,7 +274,7 @@ namespace MessageQueueNET.Cmd
 
                 //Console.WriteLine("args: [\n" + String.Join("\n", args) + "\n]");
 
-                CmdArguments cmdArguments = null;
+                CmdArguments? cmdArguments = null;
 
                 if (args.Length == 1 && (args[0] == "exit" || args[0] == "quit"))
                 {
@@ -327,8 +327,8 @@ namespace MessageQueueNET.Cmd
 
         public static string Version =>
             Assembly
-            .GetAssembly(typeof(MessageQueueNET.Client.QueueClient))
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .GetAssembly(typeof(MessageQueueNET.Client.QueueClient))!
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
             .InformationalVersion;
     }
 }

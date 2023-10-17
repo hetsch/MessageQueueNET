@@ -1,9 +1,6 @@
 ﻿using MessageQueueNET.ProcService.Abstraction;
 using MessageQueueNET.ProcService.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.ProcService
@@ -17,9 +14,9 @@ namespace MessageQueueNET.ProcService
         public delegate void TaskCanceledHandler(T parameter);
         public delegate void TaskCrashedHandler(T parameter, Exception ex);
 
-        public event TaskCompletedHandler TaskCompleted;
-        public event TaskCanceledHandler TaskCanceled;
-        public event TaskCrashedHandler TaskCrashed;
+        public event TaskCompletedHandler? TaskCompleted;
+        public event TaskCanceledHandler? TaskCanceled;
+        public event TaskCrashedHandler? TaskCrashed;
 
         private readonly CancelTracker _cancelTracker;
 
@@ -30,7 +27,7 @@ namespace MessageQueueNET.ProcService
         private object locker = new object();
 
         public TaskQueue(int maxParallelTask)
-            : this(maxParallelTask, int.MaxValue, null)
+            : this(maxParallelTask, int.MaxValue, new CancelTracker())
         {
             this.MaxParallelTasks = maxParallelTask;
         }
@@ -40,7 +37,7 @@ namespace MessageQueueNET.ProcService
             this.MaxParallelTasks = maxParallelTask;
             this.MaxQueueLength = maxQueueLength;
 
-            _cancelTracker = cancelTracker ?? new CancelTracker();
+            _cancelTracker = cancelTracker;
         }
 
         public int CurrentCapacity => MaxQueueLength - (int)(TaskId - ProcessedTasks);
@@ -95,7 +92,11 @@ namespace MessageQueueNET.ProcService
                 }
 
                 parameter.StartTime = DateTime.Now;
-                await method?.Invoke(parameter);
+
+                if (method != null)
+                {
+                    await method.Invoke(parameter);
+                }
 
                 TaskCompleted?.Invoke(parameter);
 

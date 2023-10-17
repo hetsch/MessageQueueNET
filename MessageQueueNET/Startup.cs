@@ -44,7 +44,7 @@ namespace MessageQueueNET
                 case "filesystem":
                     services.AddQueuePersitFileSystem(config =>
                         {
-                            config.RootPath = Configuration["MessageQueue:Persist:RootPath"];
+                            config.RootPath = Configuration["MessageQueue:Persist:RootPath"] ?? string.Empty;
                         });
                     break;
                 default:

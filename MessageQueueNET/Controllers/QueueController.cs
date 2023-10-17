@@ -1,10 +1,12 @@
 ﻿using MessageQueueNET.Client.Models;
+using MessageQueueNET.Extensions;
 using MessageQueueNET.Models;
 using MessageQueueNET.Services;
 using MessageQueueNET.Services.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,63 +27,64 @@ namespace MessageQueueNET.Controllers
         }
 
         [HttpGet]
-        [Route("dequeue/{id}")]
-        async public Task<MessagesResult> Dequeue(string id, int count = 1, bool register = false)
+        [Route("dequeue/{idPattern}")]
+        async public Task<MessagesResult> Dequeue(string idPattern, int count = 1, bool register = false)
         {
             var result = new MessagesResult();
 
             try
             {
-                if (register == true || _queues.QueueExists(id))
+                if (register == true
+                    && idPattern.IsPattern() == false
+                    && _queues.QueueExists(idPattern) == false)
                 {
-                    var queue = _queues.GetQueue(id);
-
-                    result.RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0;
-                    if (result.RequireConfirmation == true)
-                    {
-                        result.ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds;
-                    }
-
-                    if (queue.Properties.SuspendDequeue == true)
-                    {
-                        return result;
-                    }
-
-                    List<MessageResult> items = new List<MessageResult>();
-
-                    while (items.Count() < count)
-                    {
-                        if (queue.TryDequeue(out QueueItem? item))
-                        {
-                            if (queue.Properties.ConfirmationPeriodSeconds > 0)
-                            {
-                                var unconfirmedItem = item.Clone();
-                                if (!await _persist.PersistUnconfirmedQueueItem(id, unconfirmedItem))
-                                {
-                                    throw new Exception("Can't unable to persist unconfirmed queue item");
-                                }
-
-                                _queues.AddToUnconfirmedMessage(queue, unconfirmedItem);
-                            }
-
-                            if (await _persist.RemoveQueueItem(id, item.Id) && item.IsValid(queue))
-                            {
-                                items.Add(new MessageResult()
-                                {
-                                    Queue = id,
-                                    Id = item.Id,
-                                    Value = item.Message
-                                });
-                            }
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    result.Messages = items;
+                    _queues.GetQueue(idPattern);  // register Queue
                 }
+
+                var queryQueues = _queues.GetQueues(idPattern);
+                if (queryQueues.Any() == false)
+                {
+                    return result;
+                }
+
+                List<MessageResult> items = new List<MessageResult>();
+
+                while (items.Count() < count)
+                {
+                    var queue = queryQueues.QueueWithOldestDequeueAbleItem();
+                    if (queue == null)
+                    {
+                        break;
+                    }
+
+                    if (queue.TryDequeue(out QueueItem? item))
+                    {
+                        if (queue.Properties.ConfirmationPeriodSeconds > 0)
+                        {
+                            var unconfirmedItem = item.Clone();
+                            if (!await _persist.PersistUnconfirmedQueueItem(queue.Name, unconfirmedItem))
+                            {
+                                throw new Exception("Can't unable to persist unconfirmed queue item");
+                            }
+
+                            _queues.AddToUnconfirmedMessage(queue, unconfirmedItem);
+                        }
+
+                        if (await _persist.RemoveQueueItem(queue.Name, item.Id) && item.IsValid(queue))
+                        {
+                            items.Add(new MessageResult()
+                            {
+                                Queue = queue.Name,
+                                Id = item.Id,
+                                Value = item.Message,
+                                RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0 ? true : null,
+                                ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
+                            });
+                        }
+                    }
+                }
+
+                result.Messages = items;
             }
             catch
             {
@@ -168,7 +171,9 @@ namespace MessageQueueNET.Controllers
                                 {
                                     Queue = queue.Name,
                                     Id = message.Id,
-                                    Value = message.Message
+                                    Value = message.Message,
+                                    RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0 ? true : null,
+                                    ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
                                 }));
 
                             if (max > 0)
@@ -187,8 +192,6 @@ namespace MessageQueueNET.Controllers
 
                     return new MessagesResult()
                     {
-                        //RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0,
-                        //ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
                         Messages = messages,
                         UnconfirmedMessages = unconfirmedMessages
                     };

@@ -151,7 +151,7 @@ namespace MessageQueueNET.ProcService
                                 var task = taskQueue.AwaitRequest(new ProcessTask().Run, new ProccessContext()
                                 {
                                     Command = command,
-                                    Arguments = message.Value,
+                                    Arguments = message.Value ?? string.Empty,
                                     LogFile = logFile
                                 });
                             }
@@ -196,8 +196,8 @@ namespace MessageQueueNET.ProcService
 
         public static string Version =>
             Assembly
-            .GetAssembly(typeof(MessageQueueNET.Client.QueueClient))
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .GetAssembly(typeof(MessageQueueNET.Client.QueueClient))!
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
             .InformationalVersion;
     }
 }
