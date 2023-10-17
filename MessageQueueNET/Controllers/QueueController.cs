@@ -51,7 +51,7 @@ namespace MessageQueueNET.Controllers
 
                     while (items.Count() < count)
                     {
-                        if (queue.TryDequeue(out QueueItem item))
+                        if (queue.TryDequeue(out QueueItem? item))
                         {
                             if (queue.Properties.ConfirmationPeriodSeconds > 0)
                             {
@@ -68,6 +68,7 @@ namespace MessageQueueNET.Controllers
                             {
                                 items.Add(new MessageResult()
                                 {
+                                    Queue = id,
                                     Id = item.Id,
                                     Value = item.Message
                                 });
@@ -108,7 +109,7 @@ namespace MessageQueueNET.Controllers
             }
             catch
             {
-                
+
             }
 
             return false;
@@ -147,44 +148,47 @@ namespace MessageQueueNET.Controllers
         }
 
         [HttpGet]
-        [Route("all/{id}")]
-        public MessagesResult AllMessages(string id, int max = 0, bool unconfirmedOnly = false)
+        [Route("all/{idPattern}")]
+        public MessagesResult AllMessages(string idPattern, int max = 0, bool unconfirmedOnly = false)
         {
             try
             {
-                if (_queues.QueueExists(id))
+                if (_queues.AnyQueueExists(idPattern))
                 {
-                    var queue = _queues.GetQueue(id);
+                    var messages = new List<MessageResult>();
+                    var unconfirmedMessages = new List<MessageResult>();
 
-                    IEnumerable<MessageResult> messages = null, unconfirmedMessages = null;
-
-                    if (unconfirmedOnly == false)
+                    foreach (var queue in _queues.GetQueues(idPattern))
                     {
-                        messages = queue
-                            .Where(message => message.IsValid(queue))
-                            .Select(message => new MessageResult()
+                        if (unconfirmedOnly == false)
+                        {
+                            messages.AddRange(queue
+                                .Where(message => message.IsValid(queue))
+                                .Select(message => new MessageResult()
+                                {
+                                    Queue = queue.Name,
+                                    Id = message.Id,
+                                    Value = message.Message
+                                }));
+
+                            if (max > 0)
                             {
-                                Id = message.Id,
-                                Value = message.Message
-                            });
+                                messages = messages.Take(max).ToList();
+                            }
+                        }
+
+                        unconfirmedMessages.AddRange(_queues.UnconfirmedItems(queue) ?? Array.Empty<MessageResult>());
 
                         if (max > 0)
                         {
-                            messages = messages.Take(max);
+                            unconfirmedMessages = unconfirmedMessages.Take(max).ToList();
                         }
-                    }
-
-                    unconfirmedMessages = _queues.UnconfirmedItems(queue);
-
-                    if(max>0)
-                    {
-                        unconfirmedMessages = unconfirmedMessages?.Take(max);
                     }
 
                     return new MessagesResult()
                     {
-                        RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0,
-                        ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
+                        //RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0,
+                        //ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
                         Messages = messages,
                         UnconfirmedMessages = unconfirmedMessages
                     };
@@ -246,7 +250,7 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("register/{id}")]
-        public MessageQueueNET.Client.Models.QueueProperties Register(string id,
+        public Client.Models.QueueProperties Register(string id,
                              int? lifetimeSeconds = null,
                              int? itemLifetimeSeconds = null,
                              int? confirmationPeriodSeconds = null,
@@ -268,7 +272,7 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("properties/{id}")]
-        public MessageQueueNET.Client.Models.QueueProperties QueueProperties(string id)
+        public Client.Models.QueueProperties QueueProperties(string id)
         {
             var queue = _queues.GetQueue(id);
 

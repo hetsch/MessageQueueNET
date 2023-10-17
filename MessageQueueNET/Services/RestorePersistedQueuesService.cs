@@ -1,7 +1,5 @@
-﻿using MessageQueueNET.Services.Abstraction;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using MessageQueueNET.Models;
+using MessageQueueNET.Services.Abstraction;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Services
@@ -25,7 +23,7 @@ namespace MessageQueueNET.Services
                 foreach (var queueName in await _persist.QueueNames())
                 {
                     _queues.Restore(queueName,
-                                    await _persist.GetQueueProperties(queueName),
+                                    await _persist.GetQueueProperties(queueName) ?? new QueueProperties(),
                                     await _persist.GetAllItems(queueName),
                                     await _persist.GetAllUnconfirmedItems(queueName));
                 }

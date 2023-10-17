@@ -1,4 +1,5 @@
 ﻿using MessageQueueNET.Services.Abstraction;
+using System;
 using System.Reflection;
 
 namespace MessageQueueNET.Services
@@ -7,8 +8,8 @@ namespace MessageQueueNET.Services
     {
         public string Version =>
             Assembly
-            .GetAssembly(typeof(MessageQueueNET.Client.QueueClient))
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .GetAssembly(typeof(MessageQueueNET.Client.QueueClient))!
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
             .InformationalVersion;
     }
 }

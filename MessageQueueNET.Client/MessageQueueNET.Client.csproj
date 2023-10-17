@@ -12,6 +12,8 @@
     <Product />
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	  <Nullable>enable</Nullable>
+	  <LangVersion>11</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

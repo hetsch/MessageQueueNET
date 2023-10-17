@@ -29,7 +29,7 @@ namespace MessageQueueNET.Services
                 {
                     FileInfo fi = new FileInfo(Path.Combine(_options.RootPath, queue.Name, QueuePropertiesFilename));
 
-                    if (!fi.Directory.Exists)
+                    if (!fi.Directory!.Exists)
                     {
                         fi.Directory.Create();
                     }
@@ -46,7 +46,7 @@ namespace MessageQueueNET.Services
             }
         }
 
-        async public Task<QueueProperties> GetQueueProperties(string queueName)
+        async public Task<QueueProperties?> GetQueueProperties(string queueName)
         {
             try
             {
@@ -76,7 +76,7 @@ namespace MessageQueueNET.Services
                     }
 
                     var jsonString = await File.ReadAllTextAsync(fi.FullName);
-                    result.Add(JsonSerializer.Deserialize<QueueItem>(jsonString));
+                    result.Add(JsonSerializer.Deserialize<QueueItem>(jsonString)!);
                 }
             }
             return result;
@@ -97,7 +97,7 @@ namespace MessageQueueNET.Services
                     }
 
                     var jsonString = await File.ReadAllTextAsync(fi.FullName);
-                    result.Add(JsonSerializer.Deserialize<QueueItem>(jsonString));
+                    result.Add(JsonSerializer.Deserialize<QueueItem>(jsonString)!);
                 }
             }
 

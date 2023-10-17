@@ -51,13 +51,13 @@ namespace MessageQueueNET
                         {
                             Console.WriteLine(configContent);
 
-                            var configTargetes = new List<string>(new string[] { $"{ fiConfig.Directory.FullName }/message-queue.json" });
+                            var configTargetes = new List<string>(new string[] { $"{ fiConfig.Directory!.FullName }/message-queue.json" });
 
                             foreach (var configTarget in configTargetes)
                             {
                                 fiConfig = new FileInfo(configTarget);
 
-                                if (!fiConfig.Directory.Exists)
+                                if (!fiConfig.Directory!.Exists)
                                 {
                                     fiConfig.Directory.Create();
                                 }
@@ -122,7 +122,7 @@ namespace MessageQueueNET
 
         #region Helper
 
-        private string GetEnvironmentVariable(string name)
+        private string? GetEnvironmentVariable(string name)
         {
             var environmentVariables = Environment.GetEnvironmentVariables();
 
@@ -139,7 +139,7 @@ namespace MessageQueueNET
             if (SystemInfo.IsWindows)
             {
                 var fi = new FileInfo(configTemplateFile);
-                return $"{ fi.Directory.Parent.Parent.Parent.Parent.FullName }";
+                return $"{ fi.Directory!.Parent!.Parent!.Parent!.Parent!.FullName }";
             }
             else if (SystemInfo.IsLinux)
             {

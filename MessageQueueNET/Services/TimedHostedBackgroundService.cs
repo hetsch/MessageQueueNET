@@ -9,7 +9,7 @@ namespace MessageQueueNET.Services
 {
     public class TimedHostedBackgroundService : IHostedService, IDisposable
     {
-        private Timer _timer;
+        private Timer? _timer;
         private int counter = 0;
         private bool _working = false;
 
@@ -49,7 +49,7 @@ namespace MessageQueueNET.Services
 
         #endregion
 
-        private void DoWork(object state)
+        private void DoWork(object? state)
         {
             if (_working)
             {

@@ -4,6 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>MessageQueueNET</RootNamespace>
     <AssemblyName>MessageQueueNET</AssemblyName>
+	<LangVersion>11</LangVersion>
+	<Nullable>enable</Nullable>  
     <UserSecretsId>dac92db3-dbf3-47e8-81ec-7f3e54481482</UserSecretsId>
   </PropertyGroup>
 

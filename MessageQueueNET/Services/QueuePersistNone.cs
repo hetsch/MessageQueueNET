@@ -13,8 +13,8 @@ namespace MessageQueueNET.Services
         public Task<IEnumerable<QueueItem>> GetAllUnconfirmedItems(string queueName)
             => Task.FromResult<IEnumerable<QueueItem>>(new QueueItem[0]);
 
-        public Task<QueueProperties> GetQueueProperties(string queueName)
-            => Task.FromResult<QueueProperties>(null);
+        public Task<QueueProperties?> GetQueueProperties(string queueName)
+            => Task.FromResult<QueueProperties?>(null);
 
         public Task<bool> PersistQueueItem(string queueName, QueueItem item) 
             => Task.FromResult(true);

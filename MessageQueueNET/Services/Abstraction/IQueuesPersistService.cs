@@ -10,7 +10,7 @@ namespace MessageQueueNET.Services.Abstraction
     {
         Task<bool> PersistQueueProperties(Queue queue);
 
-        Task<QueueProperties> GetQueueProperties(string queueName);
+        Task<QueueProperties?> GetQueueProperties(string queueName);
 
         Task<bool> PersistQueueItem(string queueName, QueueItem item);
 

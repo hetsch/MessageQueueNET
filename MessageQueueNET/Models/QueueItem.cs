@@ -12,7 +12,7 @@ namespace MessageQueueNET.Models
 
         public Guid Id { get; set; }
         public DateTime CreationDateUTC { get; set; }
-        public string Message { get; set; }
+        public string Message { get; set; } = "";
 
         private void ResetCreationDate()
         {

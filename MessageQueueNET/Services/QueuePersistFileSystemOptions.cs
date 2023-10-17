@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace MessageQueueNET.Services
+﻿namespace MessageQueueNET.Services
 {
     public class QueuePersistFileSystemOptions
     {
-        public string RootPath { get; set; }
+        public string RootPath { get; set; } = string.Empty;
     }
 }

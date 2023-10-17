@@ -1,4 +1,5 @@
-﻿using MessageQueueNET.Models;
+﻿using MessageQueueNET.Extensions;
+using MessageQueueNET.Models;
 using MessageQueueNET.Services.Abstraction;
 using System;
 using System.Collections.Concurrent;
@@ -19,6 +20,27 @@ namespace MessageQueueNET.Services
             _unconfirmedItems = new ConcurrentDictionary<string, ConcurrentDictionary<Guid, QueueItem>>();
         }
 
+        public IEnumerable<Queue> GetQueues(string queueNamePattern, bool forAccess = true)
+        {
+            if (!queueNamePattern.IsPattern())
+            {
+                return new Queue[] { GetQueue(queueNamePattern) };
+            }
+
+            string regexPattern = queueNamePattern.ToRegexPattern();
+            List<Queue> queues = new List<Queue>();
+
+            foreach (var key in _queues.Keys)
+            {
+                if (key.FitsRegexPattern(regexPattern))
+                {
+                    queues.Add(GetQueue(key, forAccess));
+                }
+            }
+
+            return queues;
+        }
+
         public Queue GetQueue(string queueName, bool forAccess = true)
         {
             var queue = _queues.GetOrAdd(queueName, (key) => new Queue(queueName));
@@ -36,12 +58,31 @@ namespace MessageQueueNET.Services
             return _queues.ContainsKey(queueName);
         }
 
+        public bool AnyQueueExists(string queueNamePattern)
+        {
+            if (!queueNamePattern.IsPattern())
+            {
+                return _queues.ContainsKey(queueNamePattern);
+            }
+
+            string regexPattern = queueNamePattern.ToRegexPattern();
+            foreach (var key in _queues.Keys)
+            {
+                if (key.FitsRegexPattern(regexPattern))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public bool RemoveQueue(string queueName)
         {
             try
             {
-                _queues.TryRemove(queueName, out Queue queue);
-                _unconfirmedItems.TryRemove(queueName, out ConcurrentDictionary<Guid, QueueItem> unconfirmedItems);
+                _queues.TryRemove(queueName, out _);
+                _unconfirmedItems.TryRemove(queueName, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems);
 
                 return true;
             }
@@ -64,7 +105,7 @@ namespace MessageQueueNET.Services
                 if (queueItem != null)
                 {
                     var unconfirmed = _unconfirmedItems.GetOrAdd(queue.Name, (key) => new ConcurrentDictionary<Guid, QueueItem>());
-                    
+
                     return unconfirmed.TryAdd(queueItem.Id, queueItem);
                 }
             }
@@ -80,13 +121,13 @@ namespace MessageQueueNET.Services
         {
             try
             {
-                if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem> unconfirmedItems))
+                if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
                 {
                     foreach (var queueItem in unconfirmedItems.Values
                                                               .ToArray()
                                                               .Where(i => (DateTime.UtcNow - i.CreationDateUTC).TotalSeconds > queue.Properties.ConfirmationPeriodSeconds))
                     {
-                        if (unconfirmedItems.TryRemove(queueItem.Id, out QueueItem item))
+                        if (unconfirmedItems.TryRemove(queueItem.Id, out QueueItem? item))
                         {
                             if (await persist.RemoveUnconfirmedQueueItem(queue.Name, item.Id) &&
                                 await persist.PersistQueueItem(queue.Name, item))
@@ -113,11 +154,11 @@ namespace MessageQueueNET.Services
         {
             try
             {
-                if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem> unconfirmedItems))
+                if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
                 {
-                    if (unconfirmedItems.TryGetValue(messageId, out QueueItem queueItem))
+                    if (unconfirmedItems.TryGetValue(messageId, out _))
                     {
-                        return unconfirmedItems.TryRemove(messageId, out queueItem);
+                        return unconfirmedItems.TryRemove(messageId, out _);
                     }
                 }
             }
@@ -136,7 +177,7 @@ namespace MessageQueueNET.Services
                 return null;
             }
 
-            if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem> unconfirmedItems))
+            if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
             {
                 return unconfirmedItems.Count;
             }
@@ -144,12 +185,12 @@ namespace MessageQueueNET.Services
             return 0;
         }
 
-        public IEnumerable<Client.Models.MessageResult> UnconfirmedItems(Queue queue)
+        public IEnumerable<Client.Models.MessageResult>? UnconfirmedItems(Queue queue)
         {
             try
             {
                 if (queue.Properties.ConfirmationPeriodSeconds >= 0 &&
-                    _unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem> unconfirmedItems))
+                    _unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
                 {
                     var items = unconfirmedItems.Values
                                            .ToArray()
@@ -174,8 +215,8 @@ namespace MessageQueueNET.Services
 
         #region Restore
 
-        public bool Restore(string queueName, 
-                            QueueProperties properties, 
+        public bool Restore(string queueName,
+                            QueueProperties properties,
                             IEnumerable<QueueItem> items,
                             IEnumerable<QueueItem> unconfirmedItems)
         {
@@ -197,7 +238,7 @@ namespace MessageQueueNET.Services
                 {
                     var unconfirmed = _unconfirmedItems.GetOrAdd(queue.Name, (key) => new ConcurrentDictionary<Guid, QueueItem>());
 
-                    foreach(var item in unconfirmedItems)
+                    foreach (var item in unconfirmedItems)
                     {
                         unconfirmed.TryAdd(item.Id, item);
                     }

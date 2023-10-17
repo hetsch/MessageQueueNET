@@ -22,7 +22,7 @@ namespace MessageQueueNET.Client
 
         public QueueClient(string serverUrl, string queueName,
                            string clientId = "", string clientSecret = "",
-                           HttpClient httpClient = null)
+                           HttpClient? httpClient = null)
         {
             if (httpClient == null && ReuseableHttpClient == null)
             {
