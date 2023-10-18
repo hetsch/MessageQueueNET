@@ -43,6 +43,11 @@ namespace MessageQueueNET.Services
 
         public Queue GetQueue(string queueName, bool forAccess = true)
         {
+            if (!queueName.IsValidQueueName())
+            {
+                throw new ArgumentException("Invalid queue name. Only lowercase characters, numbers, minus, underscore and point are allwed");
+            }
+
             var queue = _queues.GetOrAdd(queueName, (key) => new Queue(queueName));
 
             if (forAccess == true)

@@ -206,21 +206,28 @@ namespace MessageQueueNET.Controllers
         }
 
         [HttpGet]
-        [Route("length/{id}")]
-        public QueueLengthResult Length(string id)
+        [Route("length/{idPattern}")]
+        public QueueLengthResult Length(string idPattern)
         {
             try
             {
-                if (_queues.QueueExists(id))
+                if (_queues.AnyQueueExists(idPattern))
                 {
-                    var queue = _queues.GetQueue(id);
+                    var queueLengthItems = new Dictionary<string, QueueLengthItem>(); 
+
+                    foreach (var queue in _queues.GetQueues(idPattern))
+                    {
+                        queueLengthItems[queue.Name] = new QueueLengthItem()
+                        {
+                            QueueLength = queue.Where(item => item.IsValid(queue))
+                                               .Count(),
+                            UnconfirmedItems = _queues.UnconfirmedMessagesCount(queue)
+                        };
+                    }
 
                     return new QueueLengthResult()
                     {
-                        QueueLength = _queues.GetQueue(id)
-                                             .Where(item => item.IsValid(queue))
-                                             .Count(),
-                        UnconfirmedItems = _queues.UnconfirmedMessagesCount(queue)
+                        Queues = queueLengthItems
                     };
                 }
             }

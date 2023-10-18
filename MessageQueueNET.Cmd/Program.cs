@@ -167,14 +167,29 @@ namespace MessageQueueNET.Cmd
             else if (cmdArguments.Command == "length")
             {
                 var lengthResult = await client.LengthAsync();
-                if (cmdArguments.ShowFullItem && lengthResult.UnconfirmedItems.HasValue)
+                if (lengthResult?.Queues != null)
                 {
-                    Console.WriteLine($"{ lengthResult.QueueLength } (+{ lengthResult.UnconfirmedItems.Value } unconfirmed)");
+                    foreach (var queueName in lengthResult.Queues.Keys)
+                    {
+                        var item = lengthResult.Queues[queueName];
+                        
+                        if (item != null)
+                        {
+                            Console.WriteLine($"{queueName}:");
+
+                            if (cmdArguments.ShowFullItem && item.UnconfirmedItems.HasValue)
+                            {
+                                Console.WriteLine($"{item.QueueLength} (+{item.UnconfirmedItems.Value} unconfirmed)");
+                            }
+                            else
+                            {
+                                Console.WriteLine(item.QueueLength);
+                            }
+                        }
+                    }
+
                 }
-                else
-                {
-                    Console.WriteLine(lengthResult.QueueLength);
-                }
+                
             }
             else if (cmdArguments.Command == "register")
             {
