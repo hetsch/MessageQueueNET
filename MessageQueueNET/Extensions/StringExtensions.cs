@@ -10,14 +10,14 @@ public static class StringExtensions
 
     public static string ToRegexPattern(this string pattern)
         // Replace '*' with '.*' to convert it into a Regex pattern
-        => $"^{pattern.Replace(" *", ".*")}$"; 
+        => $"^{Regex.Escape(pattern).Replace(@"\*", ".*")}$"; // $"^{pattern.Replace("*", ".*")}$"; 
 
     public static bool FitsPattern(this string aString, string pattern)
         => aString.FitsRegexPattern(pattern.ToRegexPattern());
 
     public static bool FitsRegexPattern(this string aString, string regexPattern)
         // Use Regex.IsMatch to check if the string matches the pattern
-        => System.Text.RegularExpressions.Regex.IsMatch(aString, regexPattern);
+        => Regex.IsMatch(aString, regexPattern);
 
     private const string QueueNamePattern = "^[a-z0-9-_.]+$";
     public static bool IsValidQueueName(this string queueName) =>
