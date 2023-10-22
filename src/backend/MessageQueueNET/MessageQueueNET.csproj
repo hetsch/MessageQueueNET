@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MessageQueueNET.Client\MessageQueueNET.Client.csproj" />
+    <ProjectReference Include="..\..\shared\MessageQueueNET.Client\MessageQueueNET.Client.csproj" />
   </ItemGroup>
 
 </Project>

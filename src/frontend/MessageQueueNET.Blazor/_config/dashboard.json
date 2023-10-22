@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "Queues": [
+      {
+        "Name": "Server1",
+        "Url": "https://localhost:44301"
+      }
+    ]
+  }
+}
