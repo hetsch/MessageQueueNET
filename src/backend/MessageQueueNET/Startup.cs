@@ -75,7 +75,7 @@ namespace MessageQueueNET
             if (env.IsDevelopment() || "true".Equals(Configuration["swaggerUI"], StringComparison.OrdinalIgnoreCase))
             {
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("../swagger/v1/swagger.json", $"MessageQueue.NET v{ appVersion.Version }"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("../swagger/v1/swagger.json", $"MessageQueue.NET v{appVersion.Version}"));
             }
 
             restoreQueues.Restore().Wait();

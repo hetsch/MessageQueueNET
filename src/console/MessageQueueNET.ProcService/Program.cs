@@ -3,7 +3,6 @@ using MessageQueueNET.ProcService.Extensions;
 using System;
 using System.Globalization;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.ProcService
@@ -14,7 +13,7 @@ namespace MessageQueueNET.ProcService
         {
             #region Parse Command Line
 
-            string serverUrl = String.Empty, 
+            string serverUrl = String.Empty,
                    queueName = String.Empty,
                    command = String.Empty;
 
@@ -25,7 +24,7 @@ namespace MessageQueueNET.ProcService
 
             if (args.Length > 0)
             {
-                if(args[0] == "-version" || args[0]=="--version")
+                if (args[0] == "-version" || args[0] == "--version")
                 {
                     Console.WriteLine(Version);
                     return 0;
@@ -68,7 +67,7 @@ namespace MessageQueueNET.ProcService
                             }
                             if (runUntil < DateTime.Now)
                             {
-                                throw new Exception($"Invalid time format { timeString }. Use something like 09:00 or 14:30 or 07:00 pm");
+                                throw new Exception($"Invalid time format {timeString}. Use something like 09:00 or 14:30 or 07:00 pm");
                             }
                             break;
                         case "-log":
@@ -100,22 +99,22 @@ namespace MessageQueueNET.ProcService
                 {
                     if (context.ExitCode > 0)
                     {
-                        $"completed with exitcode { context.ExitCode } after { Math.Round((DateTime.Now - context.StartTime).TotalSeconds, 3) }s)".Log(context);
-                        $"output: { context.Output }".Log(context);
+                        $"completed with exitcode {context.ExitCode} after {Math.Round((DateTime.Now - context.StartTime).TotalSeconds, 3)}s)".Log(context);
+                        $"output: {context.Output}".Log(context);
                     }
                     else
                     {
-                        $"completed successfully ({ Math.Round((DateTime.Now - context.StartTime).TotalSeconds, 3) }s)".Log(context);
+                        $"completed successfully ({Math.Round((DateTime.Now - context.StartTime).TotalSeconds, 3)}s)".Log(context);
                     }
                 };
                 taskQueue.TaskCanceled += async (ProccessContext context) =>
                 {
                     await client.EnqueueAsync(new string[] { context.Arguments });
-                    $"cancelled. { context.Arguments } requeued to { queueName }".Log(context);
+                    $"cancelled. {context.Arguments} requeued to {queueName}".Log(context);
                 };
                 taskQueue.TaskCrashed += (ProccessContext context, Exception ex) =>
                 {
-                    $"crashed with exception:  { ex.Message }".Log(context);
+                    $"crashed with exception:  {ex.Message}".Log(context);
                 };
 
                 #endregion
@@ -126,10 +125,10 @@ namespace MessageQueueNET.ProcService
 
                 if (runUntil > DateTime.Now)
                 {
-                    $"Application running until { runUntil.ToShortDateString() } {runUntil.ToLongTimeString() }".Log(logFile: logFile);
+                    $"Application running until {runUntil.ToShortDateString()} {runUntil.ToLongTimeString()}".Log(logFile: logFile);
                 }
-                $"Service triggers { command }".Log(logFile: logFile);
-                $"Service monitors queue { queueName }".Log(logFile: logFile);
+                $"Service triggers {command}".Log(logFile: logFile);
+                $"Service monitors queue {queueName}".Log(logFile: logFile);
                 "Press Ctrl-C to stop...".Log(logFile: logFile);
 
                 Console.CancelKeyPress += (sender, e) =>
@@ -178,7 +177,7 @@ namespace MessageQueueNET.ProcService
                     if (taskQueue.RunningTask != runningTasks)
                     {
                         runningTasks = taskQueue.RunningTask;
-                        $"Waiting for { runningTasks } tasks to finsish...".Log(logFile: logFile); ;
+                        $"Waiting for {runningTasks} tasks to finsish...".Log(logFile: logFile); ;
                     }
                     await Task.Delay(1000);
                 }
@@ -187,9 +186,9 @@ namespace MessageQueueNET.ProcService
 
                 return 0;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                $"Ends with exception: { ex.Message }".Log(logFile: logFile); ;
+                $"Ends with exception: {ex.Message}".Log(logFile: logFile); ;
                 return 1;
             }
         }

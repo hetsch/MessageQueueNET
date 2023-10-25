@@ -6,10 +6,13 @@ namespace MessageQueueNET.Razor.Extensions.DependencyInjection;
 static public class ServiceCollectionExtensions
 {
     static public IServiceCollection AddDashboardService(this IServiceCollection services,
-                                                         Action<DashboardServiceOptions> setupConfig)
+                                                         Action<DashboardServiceOptions> setupAction)
     {
         return services
-            .Configure(setupConfig)
-            .AddTransient<DashboardService>();
+            .Configure(setupAction)
+            .AddSingleton<QueryQueueEventBus>()
+            .AddHostedService<QueryQueueBackgroundService>()
+            .AddTransient<DashboardEventBusService>()
+            .AddScoped<DashboardService>();
     }
 }

@@ -12,7 +12,7 @@ namespace MessageQueueNET.Extensions
             Queue? result = null;
             DateTime? oldestItemTime = null;
 
-            foreach(var queue in  queues)
+            foreach (var queue in queues)
             {
                 if (queue.Properties.SuspendDequeue == true || queue.Count() == 0)
                 {

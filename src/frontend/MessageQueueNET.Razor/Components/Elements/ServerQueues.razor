@@ -1,0 +1,135 @@
+@using MessageQueueNET.Client.Models;
+@implements IDisposable
+
+@inject DashboardService DashboardService
+@inject QueryQueueEventBus QueryEvents
+@inject IDialogService DialogService
+
+@if (_queueLengthResults.TryGetValue(DashboardService.SelectedServerName, out IEnumerable<QueueInfoModel>? queueInfoModels))
+{
+    <MudDataGrid Items="queueInfoModels.FitsSearchString(_searchString.Trim())" Style="white-space:nowrap">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Queues</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.QueueName" Title="Queue" Sortable="true" />
+            <PropertyColumn Property="x=>x.LastAccessUTC.ToLocalTime()" Title="Last Access" Sortable="true" />
+
+            <TemplateColumn Title="Suspend" Sortable="false">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Medium"
+                                   Color="context.Item.SuspendEnqueue ? Color.Error : Color.Primary"
+                                   Icon="@Icons.Material.Outlined.ArrowCircleUp" />
+                    <MudIconButton Size="@Size.Medium"
+                                   Color="context.Item.SuspendDequeue ? Color.Error : Color.Primary"
+                                   Icon="@Icons.Material.Outlined.ArrowCircleDown" />
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Items" Sortable="true">
+                <CellTemplate>
+                    <MudChip Color="Color.Secondary"
+                             Variant="Variant.Filled">@context.Item.QueueLength</MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Unconfirmed Items" Sortable="true">
+                <CellTemplate>
+                    @if (context.Item.UnconfirmedItems.HasValue) {
+                        <MudChip Color="Color.Success"
+                                 Variant="Variant.Filled">@context.Item.UnconfirmedItems</MudChip>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            @*
+            <PropertyColumn Property="x => x.QueueLength" Title="Items" Sortable="true" />
+            <PropertyColumn Property="x => x.UnconfirmedItems" Title="Unconfirmed Items" Sortable="true" />
+            *@
+            <TemplateColumn CellClass="d-flex justify-end">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Medium"
+                                   Icon="@Icons.Material.Outlined.More"
+                                   OnClick="async () => await ShowQueueItems(context.Item.QueueName)" />
+                    <MudIconButton Size="@Size.Medium"
+                                   Icon="@Icons.Material.Outlined.Settings" 
+                                   OnClick="async () => await EditQueueProperties(context.Item.QueueName)" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+}
+
+@code{
+    private string _searchString = "";
+    private ConcurrentDictionary<string, IEnumerable<QueueInfoModel>> _queueLengthResults = new ConcurrentDictionary<string, IEnumerable<QueueInfoModel>>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        QueryEvents.OnQueuePropertiesResultAsync += QueueLengthReceived;
+        DashboardService.EventBus.OnQueueServerChangedAsync += QueueServerChanged;
+    }
+
+    #region EventBus Handlers
+
+    private async Task QueueLengthReceived(string serverName, QueuePropertiesResult result) 
+        => await InvokeAsync(() =>  // invoke async, event not triggerd from the UI Thread
+        {
+            _queueLengthResults[serverName] = result.ToQueueInfoModels();
+
+            if (serverName == DashboardService.SelectedServerName)
+            {
+                StateHasChanged();
+            }
+        });
+
+    private Task QueueServerChanged()
+    {
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    #endregion
+
+    async private Task EditQueueProperties(string queueName)
+    {
+        await DialogService.ShowAsync<QueuePropertiesDialog>(queueName,
+            new DialogParameters()
+            {
+                { "QueueName", queueName }
+            },
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraExtraLarge,
+                CloseButton = true,
+                CloseOnEscapeKey = true
+            });
+    }
+
+    async private Task ShowQueueItems(string queueName)
+    {
+        await DialogService.ShowAsync<QueueMessagesDialog>("",
+            new DialogParameters()
+            {
+                { "QueueName", queueName }
+            },
+            new DialogOptions()
+            {
+                MaxWidth = MaxWidth.ExtraExtraLarge,
+                FullScreen = true,
+                CloseButton = true,
+                CloseOnEscapeKey = true
+            });
+    }
+
+    public void Dispose()
+    {
+        QueryEvents.OnQueuePropertiesResultAsync -= QueueLengthReceived;
+        DashboardService.EventBus.OnQueueServerChangedAsync -= QueueServerChanged;
+    }
+}

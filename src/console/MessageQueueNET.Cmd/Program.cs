@@ -51,7 +51,7 @@ namespace MessageQueueNET.Cmd
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception: { ex.Message }");
+                Console.WriteLine($"Exception: {ex.Message}");
                 return 1;
             }
         }
@@ -151,7 +151,7 @@ namespace MessageQueueNET.Cmd
                     {
                         if (cmdArguments.ShowFullItem || m.RequireConfirmation == true)
                         {
-                            Console.WriteLine($"{ m.Id }:{ m?.Value ?? "<null>"}");
+                            Console.WriteLine($"{m.Id}:{m?.Value ?? "<null>"}");
                         }
                         else
                         {
@@ -162,7 +162,7 @@ namespace MessageQueueNET.Cmd
             }
             else if (cmdArguments.Command == "confirm" || cmdArguments.Command == "confirmdequeue")
             {
-                Console.WriteLine($"Result: { await client.ConfirmDequeueAsync(cmdArguments.MessageId) }");
+                Console.WriteLine($"Result: {await client.ConfirmDequeueAsync(cmdArguments.MessageId)}");
             }
             else if (cmdArguments.Command == "length")
             {
@@ -172,7 +172,7 @@ namespace MessageQueueNET.Cmd
                     foreach (var queueName in lengthResult.Queues.Keys)
                     {
                         var item = lengthResult.Queues[queueName];
-                        
+
                         if (item != null)
                         {
                             Console.WriteLine($"{queueName}:");
@@ -189,7 +189,7 @@ namespace MessageQueueNET.Cmd
                     }
 
                 }
-                
+
             }
             else if (cmdArguments.Command == "register")
             {
@@ -204,16 +204,28 @@ namespace MessageQueueNET.Cmd
                 Console.WriteLine("----------------------------");
                 foreach (var propertyInfo in typeof(QueueProperties).GetProperties())
                 {
-                    Console.WriteLine($"{ propertyInfo.Name }: { propertyInfo.GetValue(queueProperties) }");
+                    Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(queueProperties)}");
                 }
             }
             else if (cmdArguments.Command == "properties")
             {
-                var queueProperties = await client.PropertiesAsync();
+                var queuePropertiesResult = await client.PropertiesAsync();
 
-                foreach (var propertyInfo in typeof(QueueProperties).GetProperties())
+                if (queuePropertiesResult?.Queues != null)
                 {
-                    Console.WriteLine($"{ propertyInfo.Name }: { propertyInfo.GetValue(queueProperties) }");
+                    foreach (var queueName in queuePropertiesResult.Queues.Keys)
+                    {
+                        var queueProperties = queuePropertiesResult.Queues[queueName];
+                        if (queueProperties != null)
+                        {
+                            Console.WriteLine($"{queueName}:");
+
+                            foreach (var propertyInfo in typeof(QueueProperties).GetProperties())
+                            {
+                                Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(queueProperties)}");
+                            }
+                        }
+                    }
                 }
             }
             else if (cmdArguments.Command == "queuenames")
@@ -232,7 +244,7 @@ namespace MessageQueueNET.Cmd
                     {
                         if (cmdArguments.ShowFullItem)
                         {
-                            Console.WriteLine($"{ m.Id }:{ m?.Value ?? "<null>"}");
+                            Console.WriteLine($"{m.Id}:{m?.Value ?? "<null>"}");
                         }
                         else
                         {
@@ -241,20 +253,20 @@ namespace MessageQueueNET.Cmd
                     }
                 }
 
-                if ((cmdArguments.ShowFullItem || cmdArguments.UnconfirmedOnly)  &&
+                if ((cmdArguments.ShowFullItem || cmdArguments.UnconfirmedOnly) &&
                     messagesResult?.UnconfirmedMessages != null &&
                     messagesResult.UnconfirmedMessages.Count() > 0)
                 {
                     Console.WriteLine("Dequeued unconfirmed messages:");
                     foreach (var m in messagesResult.UnconfirmedMessages)
                     {
-                        Console.WriteLine($"{ m.Id }:{ m?.Value ?? "<null>"}");
+                        Console.WriteLine($"{m.Id}:{m?.Value ?? "<null>"}");
                     }
                 }
             }
             else
             {
-                throw new Exception($"Unknown command: { cmdArguments.Command  }");
+                throw new Exception($"Unknown command: {cmdArguments.Command}");
             }
         }
 
@@ -335,7 +347,7 @@ namespace MessageQueueNET.Cmd
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Exception: { ex.Message }");
+                    Console.WriteLine($"Exception: {ex.Message}");
                 }
             }
         }

@@ -43,7 +43,7 @@ namespace MessageQueueNET.Client
                 _clientId = userInfo.Substring(0, userInfo.IndexOf(':'));
                 _clientSecret = userInfo.Substring(userInfo.IndexOf(':') + 1);
 
-                _serverUrl = _serverUrl.Replace($"{ userInfo }@", "");
+                _serverUrl = _serverUrl.Replace($"{userInfo}@", "");
             }
             else
             {
@@ -59,7 +59,7 @@ namespace MessageQueueNET.Client
 
         async public Task<MessagesResult> DequeueAsync(int count = 1, bool register = false)
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/dequeue/{ _queueName }?count={ count }&register={ register }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/dequeue/{_queueName}?count={count}&register={register}"))
             {
                 ModifyHttpRequest(requestMessage);
 
@@ -76,7 +76,7 @@ namespace MessageQueueNET.Client
 
         async public Task<bool> ConfirmDequeueAsync(Guid messageId)
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/confirmdequeue/{ _queueName }?messageId={ messageId }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/confirmdequeue/{_queueName}?messageId={messageId}"))
             {
                 ModifyHttpRequest(requestMessage);
 
@@ -90,7 +90,7 @@ namespace MessageQueueNET.Client
 
         async public Task<bool> EnqueueAsync(IEnumerable<string> messages)
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Put, $"{ _serverUrl }/queue/enqueue/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Put, $"{_serverUrl}/queue/enqueue/{_queueName}"))
             {
                 ModifyHttpRequest(requestMessage);
 
@@ -109,7 +109,7 @@ namespace MessageQueueNET.Client
 
         async public Task<MessagesResult> AllMessagesAsync(int max = 0, bool unconfirmedOnly = false)
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/all/{ _queueName }?max={ max }&unconfirmedOnly={ unconfirmedOnly }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/all/{_queueName}?max={max}&unconfirmedOnly={unconfirmedOnly}"))
             {
                 ModifyHttpRequest(requestMessage);
 
@@ -120,13 +120,13 @@ namespace MessageQueueNET.Client
                     if (result == null)
                         throw new InvalidOperationException("Deserialization returned null.");
                     return result;
-                 }
+                }
             }
         }
 
         async public Task<QueueLengthResult> LengthAsync()
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/length/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/length/{_queueName}"))
             {
                 ModifyHttpRequest(requestMessage);
 
@@ -144,7 +144,7 @@ namespace MessageQueueNET.Client
 
         async public Task<bool> RemoveAsync()
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/remove/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/remove/{_queueName}"))
             {
                 ModifyHttpRequest(requestMessage);
 
@@ -166,26 +166,26 @@ namespace MessageQueueNET.Client
 
             if (lifetimeSeconds.HasValue)
             {
-                urlParameters.Add($"lifetimeSeconds={ lifetimeSeconds.Value }");
+                urlParameters.Add($"lifetimeSeconds={lifetimeSeconds.Value}");
             }
             if (itemLifetimeSeconds.HasValue)
             {
-                urlParameters.Add($"itemLifetimeSeconds={ itemLifetimeSeconds.Value }");
+                urlParameters.Add($"itemLifetimeSeconds={itemLifetimeSeconds.Value}");
             }
-            if(confirmationPeriodSeconds.HasValue)
+            if (confirmationPeriodSeconds.HasValue)
             {
-                urlParameters.Add($"confirmationPeriodSeconds={ confirmationPeriodSeconds.Value }");
+                urlParameters.Add($"confirmationPeriodSeconds={confirmationPeriodSeconds.Value}");
             }
             if (suspendEnqueue.HasValue)
             {
-                urlParameters.Add($"suspendEnqueue={ suspendEnqueue.Value }");
+                urlParameters.Add($"suspendEnqueue={suspendEnqueue.Value}");
             }
             if (suspendDequeue.HasValue)
             {
-                urlParameters.Add($"suspendDequeue={ suspendDequeue.Value }");
+                urlParameters.Add($"suspendDequeue={suspendDequeue.Value}");
             }
 
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/register/{ _queueName }?{ String.Join("&", urlParameters) }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/register/{_queueName}?{String.Join("&", urlParameters)}"))
             {
                 ModifyHttpRequest(requestMessage);
 
@@ -200,9 +200,9 @@ namespace MessageQueueNET.Client
             }
         }
 
-        async public Task<QueueProperties> PropertiesAsync()
+        async public Task<QueuePropertiesResult> PropertiesAsync()
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/properties/{ _queueName }"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/properties/{_queueName}"))
             {
                 ModifyHttpRequest(requestMessage);
 
@@ -212,7 +212,7 @@ namespace MessageQueueNET.Client
 
                     string jsonResponse = await httpResponse.Content.ReadAsStringAsync();
 
-                    var result = JsonSerializer.Deserialize<QueueProperties>(jsonResponse, _jsonOptions);
+                    var result = JsonSerializer.Deserialize<QueuePropertiesResult>(jsonResponse, _jsonOptions);
 
                     if (result == null) throw new InvalidOperationException("Deserialization returned null.");
                     return result;
@@ -222,7 +222,7 @@ namespace MessageQueueNET.Client
 
         async public Task<IEnumerable<string>> QueueNamesAsync()
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{ _serverUrl }/queue/queuenames"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/queuenames"))
             {
                 ModifyHttpRequest(requestMessage);
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
@@ -243,7 +243,7 @@ namespace MessageQueueNET.Client
             if (!String.IsNullOrEmpty(_clientId) && !String.IsNullOrEmpty(_clientSecret))
             {
                 // Add Basic Auth
-                var authenticationString = $"{ _clientId }:{ _clientSecret }";
+                var authenticationString = $"{_clientId}:{_clientSecret}";
                 var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(authenticationString));
 
                 requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
@@ -254,7 +254,7 @@ namespace MessageQueueNET.Client
         {
             if (!httpResponse.IsSuccessStatusCode)
             {
-                throw new Exception($"Error connecting with queue message service. Status code: { httpResponse.StatusCode }");
+                throw new Exception($"Error connecting with queue message service. Status code: {httpResponse.StatusCode}");
             }
         }
 

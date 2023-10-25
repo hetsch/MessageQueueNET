@@ -7,12 +7,8 @@ using System.Threading.Tasks;
 
 namespace MessageQueueNET.Services
 {
-    public class TimedHostedBackgroundService : IHostedService, IDisposable
+    public class TimedHostedBackgroundService : BackgroundService
     {
-        private Timer? _timer;
-        private int counter = 0;
-        private bool _working = false;
-
         private readonly QueuesService _queues;
         private readonly IQueuesPersistService _persist;
 
@@ -22,44 +18,19 @@ namespace MessageQueueNET.Services
             _persist = persist;
         }
 
-        #region IDisposable
-
-        public void Dispose()
+        async protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _timer?.Dispose();
-        }
-
-        #endregion
-
-        #region IHostedService
-
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-
-            return Task.CompletedTask;
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _timer?.Change(Timeout.Infinite, 0);
-
-            return Task.CompletedTask;
-        }
-
-        #endregion
-
-        private void DoWork(object? state)
-        {
-            if (_working)
+            while(!stoppingToken.IsCancellationRequested)
             {
-                return;
+                DoWork();
+                await Task.Delay(1000);
             }
+        }
 
+        private void DoWork()
+        {
             try
             {
-                _working = true;
-
                 foreach (var queue in _queues.Queues)
                 {
                     if (queue.Properties.ConfirmationPeriodSeconds > 0)
@@ -70,7 +41,8 @@ namespace MessageQueueNET.Services
                     if (queue.Properties.LifetimeSeconds > 0 &&
                         (DateTime.UtcNow - queue.LastAccessUTC).TotalSeconds > queue.Properties.LifetimeSeconds)
                     {
-                        var itemCount = queue.Where(item => item.IsValid(queue)).Count();
+                        var itemCount = queue.Where(item => item.IsValid(queue)).Count() +
+                                        _queues.UnconfirmedMessagesCount(queue);
                         if (itemCount == 0)
                         {
                             if (_persist.RemoveQueue(queue.Name).Result)
@@ -80,16 +52,9 @@ namespace MessageQueueNET.Services
                         }
                     }
                 }
-
-                counter++;
-                if (counter >= 86400)
-                {
-                    counter = 0;
-                }
             }
-            finally
+            catch
             {
-                _working = false;
             }
         }
     }

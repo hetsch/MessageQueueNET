@@ -2,8 +2,14 @@
   "dashboard": {
     "Queues": [
       {
-        "Name": "Server1",
-        "Url": "https://localhost:44301"
+        "Name": "localhost",
+        "Url": "https://localhost:5001",
+        "Filter": "q1,q2"
+      },
+      {
+        "Name": "test",
+        "Url": "https://localhost:5001",
+        "Filter": "test.*"
       }
     ]
   }

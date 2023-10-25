@@ -1,7 +1,6 @@
 ﻿using MessageQueueNET.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Services.Abstraction
@@ -21,7 +20,7 @@ namespace MessageQueueNET.Services.Abstraction
         Task<bool> PersistUnconfirmedQueueItem(string queueName, QueueItem item);
         Task<bool> RemoveUnconfirmedQueueItem(string queueName, Guid itemId);
         Task<IEnumerable<QueueItem>> GetAllUnconfirmedItems(string queueName);
-        
+
 
         Task<bool> RemoveQueue(string queueName);
 

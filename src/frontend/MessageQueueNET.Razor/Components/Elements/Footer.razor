@@ -1,0 +1,24 @@
+<div class="footer">
+    <table>
+        <tr>
+            <td>
+                Timezone: @TimeZoneInfo.Local.ToString()
+            </td>
+            <td align="left">
+                <MudFab Color="Color.Primary" 
+                        Size="Size.Small"
+                        OnClick="DarkmodeClick"
+                        StartIcon="@Icons.Material.Filled.DarkMode" />
+            </td>
+        </tr>
+    </table>
+</div>
+
+@code {
+    [Parameter] public EventCallback ToggleDarkmode { get; set; }
+
+    async private Task DarkmodeClick()
+    {
+        await ToggleDarkmode.InvokeAsync();
+    }
+}

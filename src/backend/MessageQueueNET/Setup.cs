@@ -51,7 +51,7 @@ namespace MessageQueueNET
                         {
                             Console.WriteLine(configContent);
 
-                            var configTargetes = new List<string>(new string[] { $"{ fiConfig.Directory!.FullName }/message-queue.json" });
+                            var configTargetes = new List<string>(new string[] { $"{fiConfig.Directory!.FullName}/message-queue.json" });
 
                             foreach (var configTarget in configTargetes)
                             {
@@ -139,7 +139,7 @@ namespace MessageQueueNET
             if (SystemInfo.IsWindows)
             {
                 var fi = new FileInfo(configTemplateFile);
-                return $"{ fi.Directory!.Parent!.Parent!.Parent!.Parent!.FullName }";
+                return $"{fi.Directory!.Parent!.Parent!.Parent!.Parent!.FullName}";
             }
             else if (SystemInfo.IsLinux)
             {

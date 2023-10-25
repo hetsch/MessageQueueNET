@@ -1,12 +1,11 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace MessageQueueNET.Extensions;
 
 public static class StringExtensions
 {
     public static bool IsPattern(this string pattern)
-        => string.IsNullOrEmpty(pattern) ? false : pattern.Contains("*");
+        => string.IsNullOrEmpty(pattern) ? false : pattern.Contains("*") || pattern.Contains(',');
 
     public static string ToRegexPattern(this string pattern)
         // Replace '*' with '.*' to convert it into a Regex pattern

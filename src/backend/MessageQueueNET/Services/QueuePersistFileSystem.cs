@@ -65,7 +65,7 @@ namespace MessageQueueNET.Services
         {
             var result = new List<QueueItem>();
             DirectoryInfo di = new DirectoryInfo(Path.Combine(_options.RootPath, queueName));
-  
+
             if (di.Exists)
             {
                 foreach (var fi in di.GetFiles("*.json"))
@@ -86,7 +86,7 @@ namespace MessageQueueNET.Services
         {
             var result = new List<QueueItem>();
             DirectoryInfo di = new DirectoryInfo(Path.Combine(_options.RootPath, queueName, "_unconfirmed"));
-            
+
             if (di.Exists)
             {
                 foreach (var fi in di.GetFiles("*.json"))
@@ -116,7 +116,7 @@ namespace MessageQueueNET.Services
                 }
 
                 var jsonString = JsonSerializer.Serialize(item);
-                await File.WriteAllTextAsync(Path.Combine(di.FullName, $"{ item.Id.ToString().ToLower() }.json"), jsonString);
+                await File.WriteAllTextAsync(Path.Combine(di.FullName, $"{item.Id.ToString().ToLower()}.json"), jsonString);
 
                 return true;
             }
@@ -165,7 +165,7 @@ namespace MessageQueueNET.Services
         {
             try
             {
-                FileInfo fi = new FileInfo(Path.Combine(_options.RootPath, queueName, $"{ itemId.ToString().ToLower() }.json"));
+                FileInfo fi = new FileInfo(Path.Combine(_options.RootPath, queueName, $"{itemId.ToString().ToLower()}.json"));
                 if (fi.Exists)
                 {
                     fi.Delete();
@@ -191,7 +191,7 @@ namespace MessageQueueNET.Services
                 }
 
                 var jsonString = JsonSerializer.Serialize(item);
-                await File.WriteAllTextAsync(Path.Combine(di.FullName, $"{ item.Id.ToString().ToLower() }.json"), jsonString);
+                await File.WriteAllTextAsync(Path.Combine(di.FullName, $"{item.Id.ToString().ToLower()}.json"), jsonString);
 
                 return true;
             }
@@ -205,7 +205,7 @@ namespace MessageQueueNET.Services
         {
             try
             {
-                FileInfo fi = new FileInfo(Path.Combine(_options.RootPath, queueName, "_unconfirmed", $"{ itemId.ToString().ToLower() }.json"));
+                FileInfo fi = new FileInfo(Path.Combine(_options.RootPath, queueName, "_unconfirmed", $"{itemId.ToString().ToLower()}.json"));
                 if (fi.Exists)
                 {
                     fi.Delete();

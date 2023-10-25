@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.ProcService
@@ -19,7 +17,7 @@ namespace MessageQueueNET.ProcService
             var task = new Task(() =>
             {
                 var processStartInfo = new ProcessStartInfo();
-                
+
                 processStartInfo.FileName = context.Command;
                 processStartInfo.Arguments = context.Arguments;
 
@@ -28,7 +26,7 @@ namespace MessageQueueNET.ProcService
                 processStartInfo.RedirectStandardOutput = true;
                 processStartInfo.RedirectStandardError = true;
 
-                $"Starting process - arguments: { context.Arguments }".Log(context);
+                $"Starting process - arguments: {context.Arguments}".Log(context);
 
                 using (Process process = Process.Start(processStartInfo)!)
                 {

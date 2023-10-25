@@ -30,7 +30,7 @@ namespace MessageQueueNET.Models
 
         public bool IsValid(Queue queue)
         {
-            if (queue.Properties.ItemLifetimeSeconds > 0 && 
+            if (queue.Properties.ItemLifetimeSeconds > 0 &&
                 (DateTime.UtcNow - this.CreationDateUTC).TotalSeconds > queue.Properties.ItemLifetimeSeconds)
             {
                 return false;

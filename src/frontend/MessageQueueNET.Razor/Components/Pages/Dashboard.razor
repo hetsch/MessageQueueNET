@@ -1,1 +1,19 @@
-<NavHeader Heading="Dashboard" />
+@inject DashboardService DashboardService
+
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+
+<NavHeader />
+
+<ServerQueues />
+
+<Footer ToggleDarkmode="ToggleDarkmode" />
+
+@code {
+    private MudTheme _theme = new();
+    private bool _isDarkMode = true;
+
+    private void ToggleDarkmode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+}

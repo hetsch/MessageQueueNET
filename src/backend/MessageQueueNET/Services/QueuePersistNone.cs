@@ -16,24 +16,24 @@ namespace MessageQueueNET.Services
         public Task<QueueProperties?> GetQueueProperties(string queueName)
             => Task.FromResult<QueueProperties?>(null);
 
-        public Task<bool> PersistQueueItem(string queueName, QueueItem item) 
+        public Task<bool> PersistQueueItem(string queueName, QueueItem item)
             => Task.FromResult(true);
 
         public Task<bool> PersistUnconfirmedQueueItem(string queueName, QueueItem item)
             => Task.FromResult(true);
-        public Task<bool> RemoveUnconfirmedQueueItem(string queueName, Guid itemId) 
+        public Task<bool> RemoveUnconfirmedQueueItem(string queueName, Guid itemId)
             => Task.FromResult(true);
 
-        public Task<bool> PersistQueueProperties(Queue queue) 
+        public Task<bool> PersistQueueProperties(Queue queue)
             => Task.FromResult(true);
 
         public Task<IEnumerable<string>> QueueNames()
             => Task.FromResult<IEnumerable<string>>(new string[0]);
 
-        public Task<bool> RemoveQueue(string queueName) 
+        public Task<bool> RemoveQueue(string queueName)
             => Task.FromResult(true);
 
-        public Task<bool> RemoveQueueItem(string queueName, Guid itemId) 
+        public Task<bool> RemoveQueueItem(string queueName, Guid itemId)
             => Task.FromResult(false);
 
     }

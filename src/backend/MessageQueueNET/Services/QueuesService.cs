@@ -7,256 +7,267 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MessageQueueNET.Services
-{
-    public class QueuesService
-    {
-        private readonly ConcurrentDictionary<string, Queue> _queues;
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<Guid, QueueItem>> _unconfirmedItems;
+namespace MessageQueueNET.Services;
 
-        public QueuesService()
+public class QueuesService
+{
+    private readonly ConcurrentDictionary<string, Queue> _queues;
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<Guid, QueueItem>> _unconfirmedItems;
+
+    public QueuesService()
+    {
+        _queues = new ConcurrentDictionary<string, Queue>();
+        _unconfirmedItems = new ConcurrentDictionary<string, ConcurrentDictionary<Guid, QueueItem>>();
+    }
+
+    public IEnumerable<Queue> GetQueues(string queueNamePattern, bool forAccess = true)
+    {
+        if (!queueNamePattern.IsPattern())
         {
-            _queues = new ConcurrentDictionary<string, Queue>();
-            _unconfirmedItems = new ConcurrentDictionary<string, ConcurrentDictionary<Guid, QueueItem>>();
+            return new Queue[] { GetQueue(queueNamePattern) };
         }
 
-        public IEnumerable<Queue> GetQueues(string queueNamePattern, bool forAccess = true)
-        {
-            if (!queueNamePattern.IsPattern())
-            {
-                return new Queue[] { GetQueue(queueNamePattern) };
-            }
+        List<Queue> queues = new List<Queue>();
 
-            string regexPattern = queueNamePattern.ToRegexPattern();
-            List<Queue> queues = new List<Queue>();
+        foreach (var pattern in queueNamePattern.Split(',').Select(p => p.Trim()))
+        {
+            string regexPattern = pattern.ToRegexPattern();
 
             foreach (var key in _queues.Keys)
             {
-                if (key.FitsRegexPattern(regexPattern))
+                if (key == pattern || key.FitsRegexPattern(regexPattern))
                 {
-                    queues.Add(GetQueue(key, forAccess));
+                    if (queues.Any(q => q.Name == key) == false)
+                    {
+                        queues.Add(GetQueue(key, forAccess));
+                    }
                 }
             }
-
-            return queues;
         }
 
-        public Queue GetQueue(string queueName, bool forAccess = true)
+        return queues;
+
+    }
+
+    public Queue GetQueue(string queueName, bool forAccess = true)
+    {
+        if (!queueName.IsValidQueueName())
         {
-            if (!queueName.IsValidQueueName())
-            {
-                throw new ArgumentException("Invalid queue name. Only lowercase characters, numbers, minus, underscore and point are allwed");
-            }
-
-            var queue = _queues.GetOrAdd(queueName, (key) => new Queue(queueName));
-
-            if (forAccess == true)
-            {
-                queue.LastAccessUTC = DateTime.UtcNow;
-            }
-
-            return queue;
+            throw new ArgumentException("Invalid queue name. Only lowercase characters, numbers, minus, underscore and point are allwed");
         }
 
-        public bool QueueExists(string queueName)
+        var queue = _queues.GetOrAdd(queueName, (key) => new Queue(queueName));
+
+        if (forAccess == true)
         {
-            return _queues.ContainsKey(queueName);
+            queue.LastAccessUTC = DateTime.UtcNow;
         }
 
-        public bool AnyQueueExists(string queueNamePattern)
-        {
-            if (!queueNamePattern.IsPattern())
-            {
-                return _queues.ContainsKey(queueNamePattern);
-            }
+        return queue;
+    }
 
-            string regexPattern = queueNamePattern.ToRegexPattern();
+    public bool QueueExists(string queueName)
+    {
+        return _queues.ContainsKey(queueName);
+    }
+
+    public bool AnyQueueExists(string queueNamePattern)
+    {
+        if (!queueNamePattern.IsPattern())
+        {
+            return _queues.ContainsKey(queueNamePattern);
+        }
+
+        foreach (var pattern in queueNamePattern.Split(',').Select(x => x.Trim()))
+        {
+            string regexPattern = pattern.ToRegexPattern();
             foreach (var key in _queues.Keys)
             {
-                if (key.FitsRegexPattern(regexPattern))
+                if (key == pattern || key.FitsRegexPattern(regexPattern))
                 {
                     return true;
                 }
             }
+        }
 
+        return false;
+    }
+
+    public bool RemoveQueue(string queueName)
+    {
+        try
+        {
+            _queues.TryRemove(queueName, out _);
+            _unconfirmedItems.TryRemove(queueName, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems);
+
+            return true;
+        }
+        catch
+        {
             return false;
         }
+    }
 
-        public bool RemoveQueue(string queueName)
+    public IEnumerable<string> QueueNames => _queues.Keys.ToArray();
+
+    public IEnumerable<Queue> Queues => _queues.Values.ToArray();
+
+    #region Handle Processing Confirmations
+
+    public bool AddToUnconfirmedMessage(Queue queue, QueueItem queueItem)
+    {
+        try
         {
-            try
+            if (queueItem != null)
             {
-                _queues.TryRemove(queueName, out _);
-                _unconfirmedItems.TryRemove(queueName, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems);
+                var unconfirmed = _unconfirmedItems.GetOrAdd(queue.Name, (key) => new ConcurrentDictionary<Guid, QueueItem>());
 
-                return true;
-            }
-            catch
-            {
-                return false;
+                return unconfirmed.TryAdd(queueItem.Id, queueItem);
             }
         }
-
-        public IEnumerable<string> QueueNames => _queues.Keys.ToArray();
-
-        public IEnumerable<Queue> Queues => _queues.Values.ToArray();
-
-        #region Handle Processing Confirmations
-
-        public bool AddToUnconfirmedMessage(Queue queue, QueueItem queueItem)
+        catch
         {
-            try
-            {
-                if (queueItem != null)
-                {
-                    var unconfirmed = _unconfirmedItems.GetOrAdd(queue.Name, (key) => new ConcurrentDictionary<Guid, QueueItem>());
 
-                    return unconfirmed.TryAdd(queueItem.Id, queueItem);
-                }
-            }
-            catch
-            {
-
-            }
-
-            return false;
         }
 
-        async public Task<bool> ReEnqueueUnconfirmedMessages(Queue queue, IQueuesPersistService persist)
+        return false;
+    }
+
+    async public Task<bool> ReEnqueueUnconfirmedMessages(Queue queue, IQueuesPersistService persist)
+    {
+        try
         {
-            try
+            if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
             {
-                if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
+                foreach (var queueItem in unconfirmedItems.Values
+                                                          .ToArray()
+                                                          .Where(i => (DateTime.UtcNow - i.CreationDateUTC).TotalSeconds > queue.Properties.ConfirmationPeriodSeconds))
                 {
-                    foreach (var queueItem in unconfirmedItems.Values
-                                                              .ToArray()
-                                                              .Where(i => (DateTime.UtcNow - i.CreationDateUTC).TotalSeconds > queue.Properties.ConfirmationPeriodSeconds))
+                    if (unconfirmedItems.TryRemove(queueItem.Id, out QueueItem? item))
                     {
-                        if (unconfirmedItems.TryRemove(queueItem.Id, out QueueItem? item))
+                        if (await persist.RemoveUnconfirmedQueueItem(queue.Name, item.Id) &&
+                            await persist.PersistQueueItem(queue.Name, item))
                         {
-                            if (await persist.RemoveUnconfirmedQueueItem(queue.Name, item.Id) &&
-                                await persist.PersistQueueItem(queue.Name, item))
-                            {
-                                queue.Enqueue(item);
-                            }
-                            else
-                            {
-                                unconfirmedItems.TryAdd(queueItem.Id, queueItem);
-                            }
+                            queue.Enqueue(item);
+                        }
+                        else
+                        {
+                            unconfirmedItems.TryAdd(queueItem.Id, queueItem);
                         }
                     }
                 }
+            }
 
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return true;
         }
-
-        public bool ConfirmDequeuedMessage(Queue queue, Guid messageId)
+        catch
         {
-            try
-            {
-                if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
-                {
-                    if (unconfirmedItems.TryGetValue(messageId, out _))
-                    {
-                        return unconfirmedItems.TryRemove(messageId, out _);
-                    }
-                }
-            }
-            catch
-            {
-
-            }
-
             return false;
         }
+    }
 
-        public int? UnconfirmedMessagesCount(Queue queue)
+    public bool ConfirmDequeuedMessage(Queue queue, Guid messageId)
+    {
+        try
         {
-            if (queue?.Properties == null || queue.Properties.ConfirmationPeriodSeconds <= 0)
-            {
-                return null;
-            }
-
             if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
             {
-                return unconfirmedItems.Count;
-            }
-
-            return 0;
-        }
-
-        public IEnumerable<Client.Models.MessageResult>? UnconfirmedItems(Queue queue)
-        {
-            try
-            {
-                if (queue.Properties.ConfirmationPeriodSeconds >= 0 &&
-                    _unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
+                if (unconfirmedItems.TryGetValue(messageId, out _))
                 {
-                    var items = unconfirmedItems.Values
-                                           .ToArray()
-                                           .Select(i => new Client.Models.MessageResult()
-                                           {
-                                               Id = i.Id,
-                                               Value = i.Message
-                                           });
-
-                    return items.Count() > 0 ? items : null;
+                    return unconfirmedItems.TryRemove(messageId, out _);
                 }
             }
-            catch
-            {
+        }
+        catch
+        {
 
-            }
+        }
 
+        return false;
+    }
+
+    public int? UnconfirmedMessagesCount(Queue queue)
+    {
+        if (queue?.Properties == null || queue.Properties.ConfirmationPeriodSeconds <= 0)
+        {
             return null;
         }
 
-        #endregion
-
-        #region Restore
-
-        public bool Restore(string queueName,
-                            QueueProperties properties,
-                            IEnumerable<QueueItem> items,
-                            IEnumerable<QueueItem> unconfirmedItems)
+        if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
         {
-            try
-            {
-                var queue = GetQueue(queueName);
-                queue.Properties = properties;
-                queue.Clear();
-
-                if (items != null)
-                {
-                    foreach (var item in items.OrderBy(i => i.CreationDateUTC))
-                    {
-                        queue.Enqueue(item);
-                    }
-                }
-
-                if (unconfirmedItems != null && unconfirmedItems.Count() > 0)
-                {
-                    var unconfirmed = _unconfirmedItems.GetOrAdd(queue.Name, (key) => new ConcurrentDictionary<Guid, QueueItem>());
-
-                    foreach (var item in unconfirmedItems)
-                    {
-                        unconfirmed.TryAdd(item.Id, item);
-                    }
-                }
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return unconfirmedItems.Count;
         }
 
-        #endregion
+        return 0;
     }
+
+    public IEnumerable<Client.Models.MessageResult>? UnconfirmedItems(Queue queue)
+    {
+        try
+        {
+            if (queue.Properties.ConfirmationPeriodSeconds >= 0 &&
+                _unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
+            {
+                var items = unconfirmedItems.Values
+                                       .ToArray()
+                                       .Select(i => new Client.Models.MessageResult()
+                                       {
+                                           Id = i.Id,
+                                           Value = i.Message,
+                                           CreationDateUTC = i.CreationDateUTC,
+                                       });
+
+                return items.Count() > 0 ? items : null;
+            }
+        }
+        catch
+        {
+
+        }
+
+        return null;
+    }
+
+    #endregion
+
+    #region Restore
+
+    public bool Restore(string queueName,
+                        QueueProperties properties,
+                        IEnumerable<QueueItem> items,
+                        IEnumerable<QueueItem> unconfirmedItems)
+    {
+        try
+        {
+            var queue = GetQueue(queueName);
+            queue.Properties = properties;
+            queue.Clear();
+
+            if (items != null)
+            {
+                foreach (var item in items.OrderBy(i => i.CreationDateUTC))
+                {
+                    queue.Enqueue(item);
+                }
+            }
+
+            if (unconfirmedItems != null && unconfirmedItems.Count() > 0)
+            {
+                var unconfirmed = _unconfirmedItems.GetOrAdd(queue.Name, (key) => new ConcurrentDictionary<Guid, QueueItem>());
+
+                foreach (var item in unconfirmedItems)
+                {
+                    unconfirmed.TryAdd(item.Id, item);
+                }
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    #endregion
 }

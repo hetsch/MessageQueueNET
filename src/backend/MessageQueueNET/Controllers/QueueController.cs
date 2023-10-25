@@ -6,7 +6,6 @@ using MessageQueueNET.Services.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -161,7 +160,7 @@ namespace MessageQueueNET.Controllers
                     var messages = new List<MessageResult>();
                     var unconfirmedMessages = new List<MessageResult>();
 
-                    foreach (var queue in _queues.GetQueues(idPattern))
+                    foreach (var queue in _queues.GetQueues(idPattern, false))
                     {
                         if (unconfirmedOnly == false)
                         {
@@ -172,6 +171,7 @@ namespace MessageQueueNET.Controllers
                                     Queue = queue.Name,
                                     Id = message.Id,
                                     Value = message.Message,
+                                    CreationDateUTC = message.CreationDateUTC,
                                     RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0 ? true : null,
                                     ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
                                 }));
@@ -213,9 +213,9 @@ namespace MessageQueueNET.Controllers
             {
                 if (_queues.AnyQueueExists(idPattern))
                 {
-                    var queueLengthItems = new Dictionary<string, QueueLengthItem>(); 
+                    var queueLengthItems = new Dictionary<string, QueueLengthItem>();
 
-                    foreach (var queue in _queues.GetQueues(idPattern))
+                    foreach (var queue in _queues.GetQueues(idPattern, false))
                     {
                         queueLengthItems[queue.Name] = new QueueLengthItem()
                         {
@@ -260,7 +260,8 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("register/{id}")]
-        public Client.Models.QueueProperties Register(string id,
+        public QueuePropertiesResult Register(
+                             string id,
                              int? lifetimeSeconds = null,
                              int? itemLifetimeSeconds = null,
                              int? confirmationPeriodSeconds = null,
@@ -281,24 +282,42 @@ namespace MessageQueueNET.Controllers
         }
 
         [HttpGet]
-        [Route("properties/{id}")]
-        public Client.Models.QueueProperties QueueProperties(string id)
+        [Route("properties/{idPattern}")]
+        public QueuePropertiesResult QueueProperties(string idPattern)
         {
-            var queue = _queues.GetQueue(id);
-
-            return new Client.Models.QueueProperties()
+            try
             {
-                LastAccessUTC = queue.LastAccessUTC,
-                Length = queue.Where(item => item.IsValid(queue))
-                              .Count(),
+                if (_queues.AnyQueueExists(idPattern))
+                {
+                    var queuePropertiesResult = new QueuePropertiesResult()
+                    {
+                        Queues = new Dictionary<string, Client.Models.QueueProperties>()
+                    };
 
-                LifetimeSeconds = queue.Properties.LifetimeSeconds,
-                ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds,
-                ConfirmationPeriodSeconds = queue.Properties.ConfirmationPeriodSeconds,
+                    foreach (var queue in _queues.GetQueues(idPattern, false))
+                    {
+                        queuePropertiesResult.Queues[queue.Name] = new Client.Models.QueueProperties()
+                        {
+                            LastAccessUTC = queue.LastAccessUTC,
+                            Length = queue.Where(item => item.IsValid(queue))
+                                  .Count(),
+                            UnconfirmedItems = queue.Properties.ConfirmationPeriodSeconds > 0 ? _queues.UnconfirmedMessagesCount(queue) : (int?)null,
 
-                SuspendDequeue = queue.Properties.SuspendDequeue,
-                SuspendEnqueue = queue.Properties.SuspendEnqueue,
-            };
+                            LifetimeSeconds = queue.Properties.LifetimeSeconds,
+                            ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds,
+                            ConfirmationPeriodSeconds = queue.Properties.ConfirmationPeriodSeconds,
+
+                            SuspendDequeue = queue.Properties.SuspendDequeue,
+                            SuspendEnqueue = queue.Properties.SuspendEnqueue,
+                        };
+                    }
+
+                    return queuePropertiesResult;
+                }
+            }
+            catch { }
+
+            return new QueuePropertiesResult();
         }
 
         [HttpGet]
