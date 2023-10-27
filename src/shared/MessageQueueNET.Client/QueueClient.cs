@@ -1,4 +1,5 @@
-﻿using MessageQueueNET.Client.Models;
+﻿using MessageQueueNET.Client.Extensions;
+using MessageQueueNET.Client.Models;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -57,6 +58,21 @@ namespace MessageQueueNET.Client
             };
         }
 
+        async public Task<InfoResult> ApiInfoAsync()
+        {
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/info"))
+            {
+                ModifyHttpRequest(requestMessage);
+
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+
+                    return Result.Deserialize<InfoResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                }
+            }
+        }
+
         async public Task<MessagesResult> DequeueAsync(int count = 1, bool register = false)
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/dequeue/{_queueName}?count={count}&register={register}"))
@@ -66,15 +82,13 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    var result = JsonSerializer.Deserialize<MessagesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
-                    if (result == null)
-                        throw new InvalidOperationException("Deserialization returned null.");
-                    return result;
+
+                    return Result.Deserialize<MessagesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
 
-        async public Task<bool> ConfirmDequeueAsync(Guid messageId)
+        async public Task<ApiResult> ConfirmDequeueAsync(Guid messageId)
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/confirmdequeue/{_queueName}?messageId={messageId}"))
             {
@@ -83,12 +97,13 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return Convert.ToBoolean(await httpResponse.Content.ReadAsStringAsync());
+
+                    return Result.Deserialize<ApiResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
 
-        async public Task<bool> EnqueueAsync(IEnumerable<string> messages)
+        async public Task<ApiResult> EnqueueAsync(IEnumerable<string> messages)
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Put, $"{_serverUrl}/queue/enqueue/{_queueName}"))
             {
@@ -102,7 +117,8 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return Convert.ToBoolean(await httpResponse.Content.ReadAsStringAsync());
+
+                    return Result.Deserialize<ApiResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
@@ -116,10 +132,8 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    var result = JsonSerializer.Deserialize<MessagesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
-                    if (result == null)
-                        throw new InvalidOperationException("Deserialization returned null.");
-                    return result;
+
+                    return Result.Deserialize<MessagesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
@@ -134,33 +148,32 @@ namespace MessageQueueNET.Client
                 {
                     CheckHttpResponse(httpResponse);
 
-                    var result = JsonSerializer.Deserialize<QueueLengthResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
-
-                    if (result == null) throw new InvalidOperationException("Deserialization returned null.");
-                    return result;
+                    return Result.Deserialize<QueueLengthResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);;
                 }
             }
         }
 
-        async public Task<bool> RemoveAsync()
+        async public Task<ApiResult> RemoveAsync(RemoveType removeType = RemoveType.Queue)
         {
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/remove/{_queueName}"))
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/remove/{_queueName}?removeType={removeType}"))
             {
                 ModifyHttpRequest(requestMessage);
 
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    return JsonSerializer.Deserialize<bool>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+
+                    return Result.Deserialize<ApiResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
 
-        async public Task<QueueProperties> RegisterAsync(int? lifetimeSeconds = null,
-                                              int? itemLifetimeSeconds = null,
-                                              int? confirmationPeriodSeconds = null,
-                                              bool? suspendEnqueue = null,
-                                              bool? suspendDequeue = null)
+        async public Task<QueuePropertiesResult> RegisterAsync(int? lifetimeSeconds = null,
+                                                               int? itemLifetimeSeconds = null,
+                                                               int? confirmationPeriodSeconds = null,
+                                                               int? maxUnconfirmedItems = null,
+                                                               bool? suspendEnqueue = null,
+                                                               bool? suspendDequeue = null)
         {
             List<string> urlParameters = new List<string>();
 
@@ -175,6 +188,10 @@ namespace MessageQueueNET.Client
             if (confirmationPeriodSeconds.HasValue)
             {
                 urlParameters.Add($"confirmationPeriodSeconds={confirmationPeriodSeconds.Value}");
+            }
+            if (maxUnconfirmedItems.HasValue)
+            {
+                urlParameters.Add($"maxUnconfirmedItems={maxUnconfirmedItems.Value}");
             }
             if (suspendEnqueue.HasValue)
             {
@@ -192,10 +209,8 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    var result = JsonSerializer.Deserialize<QueueProperties>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
-                    if (result == null)
-                        throw new InvalidOperationException("Deserialization returned null.");
-                    return result;
+
+                    return Result.Deserialize<QueuePropertiesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }
@@ -212,15 +227,12 @@ namespace MessageQueueNET.Client
 
                     string jsonResponse = await httpResponse.Content.ReadAsStringAsync();
 
-                    var result = JsonSerializer.Deserialize<QueuePropertiesResult>(jsonResponse, _jsonOptions);
-
-                    if (result == null) throw new InvalidOperationException("Deserialization returned null.");
-                    return result;
+                    return Result.Deserialize<QueuePropertiesResult>(jsonResponse, _jsonOptions);
                 }
             }
         }
 
-        async public Task<IEnumerable<string>> QueueNamesAsync()
+        async public Task<QueueNamesResult> QueueNamesAsync()
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_serverUrl}/queue/queuenames"))
             {
@@ -228,10 +240,8 @@ namespace MessageQueueNET.Client
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage))
                 {
                     CheckHttpResponse(httpResponse);
-                    var result = JsonSerializer.Deserialize<IEnumerable<string>>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
 
-                    if (result == null) throw new InvalidOperationException("Deserialization returned null.");
-                    return result;
+                    return Result.Deserialize<QueueNamesResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
                 }
             }
         }

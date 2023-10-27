@@ -16,4 +16,5 @@ internal class QueueInfoModel
     public int ItemLifetimeSeconds { get; set; }
 
     public int ConfirmationPeriodSeconds { get; set; }
+    public int? MaxUnconfirmedItems { get; set; }
 }

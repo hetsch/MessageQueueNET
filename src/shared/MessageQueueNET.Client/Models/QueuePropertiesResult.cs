@@ -2,7 +2,7 @@
 
 namespace MessageQueueNET.Client.Models;
 
-public class QueuePropertiesResult
+public class QueuePropertiesResult : ApiResult
 {
     public Dictionary<string, QueueProperties>? Queues { get; set; }
 }

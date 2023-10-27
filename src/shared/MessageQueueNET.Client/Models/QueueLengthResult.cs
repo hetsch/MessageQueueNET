@@ -2,7 +2,7 @@
 
 namespace MessageQueueNET.Client.Models
 {
-    public class QueueLengthResult
+    public class QueueLengthResult : ApiResult
     {
         public Dictionary<string, QueueLengthItem>? Queues { get; set; }
     }

@@ -1,4 +1,5 @@
-﻿using MessageQueueNET.Client.Models;
+﻿using MessageQueueNET.Client;
+using MessageQueueNET.Client.Models;
 using MessageQueueNET.Extensions;
 using MessageQueueNET.Models;
 using MessageQueueNET.Services;
@@ -50,8 +51,8 @@ namespace MessageQueueNET.Controllers
 
                 while (items.Count() < count)
                 {
-                    var queue = queryQueues.QueueWithOldestDequeueAbleItem();
-                    if (queue == null)
+                    var queue = queryQueues.QueueWithOldestDequeueAbleItem(_queues);
+                    if (queue is null)
                     {
                         break;
                     }
@@ -85,9 +86,9 @@ namespace MessageQueueNET.Controllers
 
                 result.Messages = items;
             }
-            catch
+            catch(Exception ex)
             {
-
+                result.AddExceptionMessage(ex);
             }
 
             return result;
@@ -95,8 +96,9 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("confirmdequeue/{id}")]
-        async public Task<bool> ConfirmDequeue(string id, Guid messageId)
+        async public Task<ApiResult> ConfirmDequeue(string id, Guid messageId)
         {
+            var result = new ApiResult();
             try
             {
                 var queue = _queues.GetQueue(id);
@@ -105,29 +107,31 @@ namespace MessageQueueNET.Controllers
                 {
                     if (await _persist.RemoveUnconfirmedQueueItem(queue.Name, messageId))
                     {
-                        return _queues.ConfirmDequeuedMessage(queue, messageId);
+                        result.Success = _queues.ConfirmDequeuedMessage(queue, messageId);
                     }
                 }
             }
-            catch
+            catch(Exception ex)
             {
-
+                result.AddExceptionMessage(ex);
             }
 
-            return false;
+            return result;
         }
 
         [HttpPut]
         [Route("enqueue/{id}")]
-        async public Task<bool> Enqueue(string id, IEnumerable<string> messages)
+        async public Task<ApiResult> Enqueue(string id, IEnumerable<string> messages)
         {
+            var result = new ApiResult();
+
             try
             {
                 var queue = _queues.GetQueue(id);
 
                 if (queue.Properties.SuspendEnqueue == true)
                 {
-                    return false;
+                    throw new Exception($"Enqueue suspended");
                 }
 
                 foreach (var message in messages)
@@ -135,24 +139,28 @@ namespace MessageQueueNET.Controllers
                     var item = new QueueItem() { Message = message };
                     if (!await _persist.PersistQueueItem(id, item))
                     {
-                        return false;
+                        throw new Exception($"Error when persisting item");
                     }
 
                     queue.Enqueue(item);
                 }
 
-                return true;
+                return result;
             }
-            catch
+            catch(Exception ex)
             {
-                return false;
+                result.AddExceptionMessage(ex);
             }
+
+            return result;
         }
 
         [HttpGet]
         [Route("all/{idPattern}")]
         public MessagesResult AllMessages(string idPattern, int max = 0, bool unconfirmedOnly = false)
         {
+            var result = new MessagesResult();
+
             try
             {
                 if (_queues.AnyQueueExists(idPattern))
@@ -190,25 +198,24 @@ namespace MessageQueueNET.Controllers
                         }
                     }
 
-                    return new MessagesResult()
-                    {
-                        Messages = messages,
-                        UnconfirmedMessages = unconfirmedMessages
-                    };
+                    result.Messages = messages;
+                    result.UnconfirmedMessages = unconfirmedMessages;
                 }
             }
-            catch
+            catch(Exception ex)
             {
-
+                result.AddExceptionMessage(ex);
             }
 
-            return new MessagesResult();
+            return result;
         }
 
         [HttpGet]
         [Route("length/{idPattern}")]
         public QueueLengthResult Length(string idPattern)
         {
+            var result = new QueueLengthResult();
+
             try
             {
                 if (_queues.AnyQueueExists(idPattern))
@@ -225,37 +232,64 @@ namespace MessageQueueNET.Controllers
                         };
                     }
 
-                    return new QueueLengthResult()
-                    {
-                        Queues = queueLengthItems
-                    };
+                    result.Queues = queueLengthItems;
                 }
             }
-            catch
+            catch(Exception ex)
             {
-
+                result.AddExceptionMessage(ex);
             }
 
-            return new QueueLengthResult();
+            return result;
         }
 
         [HttpGet]
-        [Route("remove/{id}")]
-        async public Task<bool> Remove(string id)
+        [Route("remove/{idPattern}")]
+        async public Task<ApiResult> Remove(string idPattern, RemoveType removeType = RemoveType.Queue)
         {
+            var result = new ApiResult();
+
             try
             {
-                if (await _persist.RemoveQueue(id))
+                if (_queues.AnyQueueExists(idPattern))
                 {
-                    return _queues.RemoveQueue(id);
+                    foreach (var queue in _queues.GetQueues(idPattern, false))
+                    {
+                        if (removeType == RemoveType.Messages)
+                        {
+                            if (await _persist.RemoveQueueMessages(queue.Name))
+                            {
+                                result.Success &= _queues.RemoveQueueMessages(queue);
+                            }
+                            else { result.Success = false; }
+                        }
+                        else if (removeType == RemoveType.UnconfirmedMessages)
+                        {
+                            if (await _persist.RemoveQueueUnconfirmedMessages(queue.Name))
+                            {
+                                result.Success &= _queues.RemoveUnconfirmedQueueItems(queue);
+                            }
+                            else { result.Success = false; }
+                        }
+                        else
+                        {
+                            if (await _persist.RemoveQueue(queue.Name))
+                            {
+                                result.Success &= _queues.RemoveQueue(queue.Name);
+                            }
+                            else { result.Success = false; }
+                        }
+                    }
                 }
+
+                return result;
             }
-            catch
+            catch(Exception ex)
             {
-
+                result.AddExceptionMessage(ex);
             }
 
-            return false;
+            return result;
         }
 
         [HttpGet]
@@ -265,20 +299,29 @@ namespace MessageQueueNET.Controllers
                              int? lifetimeSeconds = null,
                              int? itemLifetimeSeconds = null,
                              int? confirmationPeriodSeconds = null,
+                             int? maxUnconfirmedItems = null,
                              bool? suspendEnqueue = null,
                              bool? suspendDequeue = null)
         {
-            var queue = _queues.GetQueue(id);
+            try
+            {
+                var queue = _queues.GetQueue(id);
 
-            queue.Properties.LifetimeSeconds = lifetimeSeconds.HasValue ? lifetimeSeconds.Value : queue.Properties.LifetimeSeconds;
-            queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds.HasValue ? itemLifetimeSeconds.Value : queue.Properties.ItemLifetimeSeconds;
-            queue.Properties.ConfirmationPeriodSeconds = confirmationPeriodSeconds.HasValue ? confirmationPeriodSeconds.Value : queue.Properties.ConfirmationPeriodSeconds;
-            queue.Properties.SuspendEnqueue = suspendEnqueue.HasValue ? suspendEnqueue.Value : queue.Properties.SuspendEnqueue;
-            queue.Properties.SuspendDequeue = suspendDequeue.HasValue ? suspendDequeue.Value : queue.Properties.SuspendDequeue;
+                queue.Properties.LifetimeSeconds = lifetimeSeconds.GetValueOrDefault(queue.Properties.LifetimeSeconds);
+                queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds.GetValueOrDefault(queue.Properties.ItemLifetimeSeconds);
+                queue.Properties.ConfirmationPeriodSeconds = confirmationPeriodSeconds.GetValueOrDefault(queue.Properties.ConfirmationPeriodSeconds);
+                queue.Properties.MaxUnconfiredItems = maxUnconfirmedItems.GetValueOrDefault(queue.Properties.MaxUnconfiredItems);
+                queue.Properties.SuspendEnqueue = suspendEnqueue.GetValueOrDefault(queue.Properties.SuspendEnqueue);
+                queue.Properties.SuspendDequeue = suspendDequeue.GetValueOrDefault(queue.Properties.SuspendDequeue);
 
-            _persist.PersistQueueProperties(queue);
+                _persist.PersistQueueProperties(queue);
 
-            return QueueProperties(id);
+                return QueueProperties(id);
+            }
+            catch (Exception ex)
+            {
+                return new QueuePropertiesResult().AddExceptionMessage(ex);
+            }
         }
 
         [HttpGet]
@@ -294,18 +337,21 @@ namespace MessageQueueNET.Controllers
                         Queues = new Dictionary<string, Client.Models.QueueProperties>()
                     };
 
-                    foreach (var queue in _queues.GetQueues(idPattern, false))
+                    foreach (var queue in _queues.GetQueues(idPattern, false)
+                                                 .OrderBy(q => q.Name))
                     {
                         queuePropertiesResult.Queues[queue.Name] = new Client.Models.QueueProperties()
                         {
                             LastAccessUTC = queue.LastAccessUTC,
                             Length = queue.Where(item => item.IsValid(queue))
-                                  .Count(),
-                            UnconfirmedItems = queue.Properties.ConfirmationPeriodSeconds > 0 ? _queues.UnconfirmedMessagesCount(queue) : (int?)null,
+                                          .Count(),
+                            UnconfirmedItems = queue.Properties.ConfirmationPeriodSeconds > 0 ? _queues.UnconfirmedMessagesCount(queue) : null,
 
                             LifetimeSeconds = queue.Properties.LifetimeSeconds,
                             ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds,
+
                             ConfirmationPeriodSeconds = queue.Properties.ConfirmationPeriodSeconds,
+                            MaxUnconfirmedItems = queue.Properties.MaxUnconfiredItems > 0 ? queue.Properties.MaxUnconfiredItems : null,
 
                             SuspendDequeue = queue.Properties.SuspendDequeue,
                             SuspendEnqueue = queue.Properties.SuspendEnqueue,
@@ -315,16 +361,27 @@ namespace MessageQueueNET.Controllers
                     return queuePropertiesResult;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                return new QueuePropertiesResult().AddExceptionMessage(ex);
+            }
+
 
             return new QueuePropertiesResult();
         }
 
         [HttpGet]
         [Route("queuenames")]
-        public IEnumerable<string> QueueNames()
+        public QueueNamesResult QueueNames()
         {
-            return _queues.QueueNames;
+            try
+            {
+                return new QueueNamesResult() { QueueNames = _queues.QueueNames };
+            }
+            catch (Exception ex) 
+            {
+                return new QueueNamesResult().AddExceptionMessage(ex);
+            }
         }
     }
 }

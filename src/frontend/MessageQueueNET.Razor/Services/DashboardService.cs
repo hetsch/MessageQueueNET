@@ -32,10 +32,10 @@ internal class DashboardService
         await _eventBus.FireQueueServerChangedAsync();
     }
 
-    async public Task<MessagesResult> GetAllQueueMessages(string queueName)
+    async public Task<MessagesResult> GetAllQueueMessages(string queueName, bool unconfirmed)
     {
         var client = _options.GetQueueClient(SelectedServerName, queueName);
-        var messages = await client.AllMessagesAsync();
+        var messages = await client.AllMessagesAsync(unconfirmedOnly: unconfirmed);
 
         return messages;
     }
@@ -45,7 +45,7 @@ internal class DashboardService
         var client = _options.GetQueueClient(SelectedServerName, queueName);
         var propertiesResult = await client.PropertiesAsync();
 
-        if(propertiesResult?.Queues == null ||
+        if (propertiesResult?.Queues == null ||
            propertiesResult.Queues.ContainsKey(queueName) == false)
         {
             throw new Exception($"Can't get properties for queue: {queueName}");
@@ -56,14 +56,62 @@ internal class DashboardService
 
     async public Task<bool> SetQueueProperties(string queueName, QueueProperties queueProperties)
     {
-        var client = _options.GetQueueClient(SelectedServerName, queueName); 
+        var client = _options.GetQueueClient(SelectedServerName, queueName);
 
         await client.RegisterAsync(
             lifetimeSeconds: queueProperties.LifetimeSeconds,
             itemLifetimeSeconds: queueProperties.ItemLifetimeSeconds,
+            
             confirmationPeriodSeconds: queueProperties.ConfirmationPeriodSeconds,
+            maxUnconfirmedItems: queueProperties.MaxUnconfirmedItems,
+
             suspendEnqueue: queueProperties.SuspendEnqueue,
             suspendDequeue: queueProperties.SuspendDequeue);
+
+        return true;
+    }
+
+    async public Task<bool> AddMessages(string queueName, IEnumerable<string> messages)
+    {
+        var client = _options.GetQueueClient(SelectedServerName, queueName);
+
+        return (await client.EnqueueAsync(messages)).Success;
+    }
+
+    async public Task<bool> DeleteQueue(string queueName, RemoveType removeType)
+    {
+        var client = _options.GetQueueClient(SelectedServerName, queueName);
+
+        return (await client.RemoveAsync(removeType)).Success;
+    }
+
+    public bool CanDeleteMany()
+        => !string.IsNullOrEmpty(DeleteManyQueuePattern());
+
+    public string DeleteManyQueuePattern()
+        => _options.DeleteQueueNamePattern(SelectedServerName);
+
+    public bool CanCreateQueue()
+        => !String.IsNullOrEmpty(CreateQueuePattern());
+
+    public string CreateQueuePattern()
+        => _options.NewQueueNamePattern(SelectedServerName);
+
+    async public Task<bool> CreateQueue(string queueName)
+    {
+        if (String.IsNullOrEmpty(queueName))
+        {
+            return false;
+        }
+
+        if (!queueName.StartsWith(CreateQueuePattern().Replace("*", "")))
+        {
+            queueName = CreateQueuePattern().Replace("*", queueName);
+        }
+
+        var client = _options.GetQueueClient(SelectedServerName, queueName);
+
+        await client.RegisterAsync();
 
         return true;
     }

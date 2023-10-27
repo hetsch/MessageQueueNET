@@ -2,7 +2,7 @@
 
 namespace MessageQueueNET.Client.Models
 {
-    public class MessagesResult
+    public class MessagesResult : ApiResult
     {
         public IEnumerable<MessageResult>? Messages { get; set; }
 

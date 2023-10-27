@@ -4,6 +4,11 @@
       {
         "Name": "localhost",
         "Url": "https://localhost:5001",
+        "Filter": "*"
+      },
+      {
+        "Name": "q1+q2",
+        "Url": "https://localhost:5001",
         "Filter": "q1,q2"
       },
       {

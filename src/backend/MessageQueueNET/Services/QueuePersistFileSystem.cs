@@ -161,6 +161,52 @@ namespace MessageQueueNET.Services
             }
         }
 
+        public Task<bool> RemoveQueueMessages(string queueName)
+        {
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(Path.Combine(_options.RootPath, queueName));
+                if (di.Exists)
+                {
+                    foreach (var fi in di.GetFiles())
+                    {
+                        if(fi.Name.StartsWith("_"))
+                        {
+                            continue;  // eg: _queue.properties.json
+                        }
+                        fi.Delete();
+                    }
+                }
+
+                return Task.FromResult(true);
+            }
+            catch
+            {
+                return Task.FromResult(false);
+            }
+        }
+
+        public Task<bool> RemoveQueueUnconfirmedMessages(string queueName)
+        {
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(Path.Combine(_options.RootPath, queueName, "_unconfirmed"));
+                if (di.Exists)
+                {
+                    foreach (var fi in di.GetFiles())
+                    {
+                        fi.Delete();
+                    }
+                }
+
+                return Task.FromResult(true);
+            }
+            catch
+            {
+                return Task.FromResult(false);
+            }
+        }
+
         public Task<bool> RemoveQueueItem(string queueName, Guid itemId)
         {
             try

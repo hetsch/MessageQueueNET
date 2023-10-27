@@ -2,6 +2,8 @@
 @inject DashboardService DashboardService
 @inject IDialogService DialogService
 
+@inherits BaseComponent
+
 @if (_properties != null)
 {
     <MudDialog>
@@ -21,6 +23,8 @@
                 <MudTabPanel Text="Confirmation">
                     <MudNumericField Label="Period [Seconds]"
                                      @bind-Value="_properties.ConfirmationPeriodSeconds" />
+                    <MudNumericField Label="Max Unconfirmed Items"
+                                     @bind-Value="_properties.MaxUnconfirmedItems" />
                 </MudTabPanel>
                 <MudTabPanel Text="Lifetime">
                     <MudNumericField Label="Queue [Seconds]"

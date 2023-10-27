@@ -1,7 +1,9 @@
 @using MessageQueueNET.Client.Models;
 @inject DashboardService DashboardService
 
-@if(_messages != null)
+@inherits BaseComponent
+
+@if (_messages is not null)
 {
     <MudDialog>
         <TitleContent>
@@ -10,9 +12,8 @@
             </MudText>
         </TitleContent>
         <DialogContent>
-            @if (_messages.Messages is not null)
-            {
-                <MudDataGrid Items="_messages.Messages?.FitsSearchString(_searchString.Trim())">
+            <MudContainer Style="width:100%;max-heigth:80%;overflow-y: scroll">
+                <MudDataGrid Items="_messages.FitsSearchString(_searchString.Trim())">
                     <ToolBarContent>
                         <MudText Typo="Typo.h6">Messages</MudText>
                         <MudSpacer />
@@ -25,21 +26,27 @@
                         <PropertyColumn Property="x => x.Value" Title="Message" Sortable="false" />
                     </Columns>
                 </MudDataGrid>
-            }
+            </MudContainer>
         </DialogContent>
     </MudDialog>
 }
 
 @code {
     [Parameter] public string QueueName { get; set; } = "";
+    [Parameter] public bool Unconfirmed { get; set; } = false;
 
-    private MessagesResult? _messages = null;
     private string _searchString = "";
+
+    private IEnumerable<MessageResult>? _messages = null;
 
     async protected override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        _messages = await DashboardService.GetAllQueueMessages(QueueName);
+        var messagesResult = await DashboardService.GetAllQueueMessages(QueueName, Unconfirmed);
+
+        _messages = Unconfirmed
+            ? messagesResult.UnconfirmedMessages
+            : messagesResult.Messages;
     }
 }

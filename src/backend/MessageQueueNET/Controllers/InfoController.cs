@@ -1,5 +1,8 @@
-﻿using MessageQueueNET.Services.Abstraction;
+﻿using MessageQueueNET.Client.Models;
+using MessageQueueNET.Services.Abstraction;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using MessageQueueNET.Extensions;
 
 namespace MessageQueueNET.Controllers
 {
@@ -15,12 +18,20 @@ namespace MessageQueueNET.Controllers
 
         [HttpGet]
         [Route("")]
-        public object Info()
+        public InfoResult Info()
         {
-            return new
+            var result = new InfoResult();
+
+            try
             {
-                Version = _appVersionService.Version
-            };
+                result.Version = new System.Version(_appVersionService.Version);
+            }
+            catch (Exception ex)
+            {
+                result.AddExceptionMessage(ex);
+            }
+
+            return result;
         }
     }
 }

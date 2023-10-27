@@ -23,6 +23,8 @@ namespace MessageQueueNET.Services.Abstraction
 
 
         Task<bool> RemoveQueue(string queueName);
+        Task<bool> RemoveQueueMessages(string queueName);
+        Task<bool> RemoveQueueUnconfirmedMessages(string queueName);
 
         Task<IEnumerable<string>> QueueNames();
     }

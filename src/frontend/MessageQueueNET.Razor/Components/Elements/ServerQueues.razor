@@ -1,5 +1,6 @@
 @using MessageQueueNET.Client.Models;
 @implements IDisposable
+@inherits BaseComponent
 
 @inject DashboardService DashboardService
 @inject QueryQueueEventBus QueryEvents
@@ -9,7 +10,23 @@
 {
     <MudDataGrid Items="queueInfoModels.FitsSearchString(_searchString.Trim())" Style="white-space:nowrap">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">Queues</MudText>
+            <MudText Typo="Typo.h6">
+
+                Queues
+                @if(DashboardService.CanCreateQueue()) {
+                    <MudIconButton Size="@Size.Medium"
+                                   Icon="@Icons.Material.Outlined.AddCircleOutline"
+                                   Color="Color.Primary"
+                                   OnClick="async () => await CreateQueue()" />
+                }
+                @if(DashboardService.CanDeleteMany()) 
+                {
+                    <MudIconButton Size="@Size.Medium"
+                                   Icon="@Icons.Material.Outlined.Delete"
+                                   Color="Color.Secondary"
+                                   OnClick="async () => await DeleteQueue(DashboardService.DeleteManyQueuePattern())" />
+                }
+            </MudText>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
                           AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
@@ -22,9 +39,11 @@
                 <CellTemplate>
                     <MudIconButton Size="@Size.Medium"
                                    Color="context.Item.SuspendEnqueue ? Color.Error : Color.Primary"
+                                   OnClick="async () => await EditQueueProperties(context.Item.QueueName)"
                                    Icon="@Icons.Material.Outlined.ArrowCircleUp" />
                     <MudIconButton Size="@Size.Medium"
                                    Color="context.Item.SuspendDequeue ? Color.Error : Color.Primary"
+                                   OnClick="async () => await EditQueueProperties(context.Item.QueueName)"
                                    Icon="@Icons.Material.Outlined.ArrowCircleDown" />
                 </CellTemplate>
             </TemplateColumn>
@@ -32,6 +51,7 @@
             <TemplateColumn Title="Items" Sortable="true">
                 <CellTemplate>
                     <MudChip Color="Color.Secondary"
+                             OnClick="async () => await ShowQueueMessages(context.Item.QueueName)"
                              Variant="Variant.Filled">@context.Item.QueueLength</MudChip>
                 </CellTemplate>
             </TemplateColumn>
@@ -40,21 +60,30 @@
                 <CellTemplate>
                     @if (context.Item.UnconfirmedItems.HasValue) {
                         <MudChip Color="Color.Success"
-                                 Variant="Variant.Filled">@context.Item.UnconfirmedItems</MudChip>
+                                 OnClick="async () => await ShowQueueMessages(context.Item.QueueName, true)"
+                                 Disabled="context.Item.UnconfirmedItems == 0"
+                                 Variant="Variant.Filled">
+                            @(context.Item.MaxUnconfirmedItems.HasValue && context.Item.MaxUnconfirmedItems.Value>0
+                                ? $"{context.Item.UnconfirmedItems}/{context.Item.MaxUnconfirmedItems.Value}"
+                                : $"{context.Item.UnconfirmedItems}")
+                             </MudChip>
                     }
                 </CellTemplate>
             </TemplateColumn>
-            @*
-            <PropertyColumn Property="x => x.QueueLength" Title="Items" Sortable="true" />
-            <PropertyColumn Property="x => x.UnconfirmedItems" Title="Unconfirmed Items" Sortable="true" />
-            *@
+
             <TemplateColumn CellClass="d-flex justify-end">
                 <CellTemplate>
                     <MudIconButton Size="@Size.Medium"
-                                   Icon="@Icons.Material.Outlined.More"
-                                   OnClick="async () => await ShowQueueItems(context.Item.QueueName)" />
+                                   Icon="@Icons.Material.Outlined.Delete"
+                                   Color="Color.Secondary"
+                                   OnClick="async () => await DeleteQueue(context.Item.QueueName)" />
+                    <MudIconButton Size="@Size.Medium"
+                                   Icon="@Icons.Material.Outlined.AddToQueue"
+                                   Color="Color.Primary"
+                                   OnClick="async () => await AddMessages(context.Item.QueueName)" />
                     <MudIconButton Size="@Size.Medium"
                                    Icon="@Icons.Material.Outlined.Settings" 
+                                   Color="Color.Primary"
                                    OnClick="async () => await EditQueueProperties(context.Item.QueueName)" />
                 </CellTemplate>
             </TemplateColumn>
@@ -111,17 +140,59 @@
             });
     }
 
-    async private Task ShowQueueItems(string queueName)
+    async private Task CreateQueue()
     {
-        await DialogService.ShowAsync<QueueMessagesDialog>("",
+        await DialogService.ShowAsync<CreateQueueDialog>("",
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraExtraLarge,
+                CloseButton = true,
+                CloseOnEscapeKey = true
+            });
+    }
+
+    async private Task DeleteQueue(string queueName)
+    {
+        await DialogService.ShowAsync<DeleteQueueDialog>(queueName,
             new DialogParameters()
             {
                 { "QueueName", queueName }
             },
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraExtraLarge,
+                CloseButton = true,
+                CloseOnEscapeKey = true
+            });
+    }
+
+    async private Task AddMessages(string queueName)
+    {
+        await DialogService.ShowAsync<AddQueueMessagesDialog>(queueName,
+            new DialogParameters()
+            {
+                { "QueueName", queueName }
+            },
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraExtraLarge,
+                CloseButton = true,
+                CloseOnEscapeKey = true
+            });
+    }
+
+    async private Task ShowQueueMessages(string queueName, bool unconfirmed = false)
+    {
+        await DialogService.ShowAsync<QueueMessagesDialog>("",
+            new DialogParameters()
+            {
+                { "QueueName", queueName },
+                { "Unconfirmed", unconfirmed }
+            },
             new DialogOptions()
             {
                 MaxWidth = MaxWidth.ExtraExtraLarge,
-                FullScreen = true,
+                //FullScreen = true,
                 CloseButton = true,
                 CloseOnEscapeKey = true
             });

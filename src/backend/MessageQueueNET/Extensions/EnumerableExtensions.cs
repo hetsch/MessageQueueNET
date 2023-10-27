@@ -1,4 +1,5 @@
 ﻿using MessageQueueNET.Models;
+using MessageQueueNET.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,8 @@ namespace MessageQueueNET.Extensions
 {
     static public class EnumerableExtensions
     {
-        static public Queue? QueueWithOldestDequeueAbleItem(this IEnumerable<Queue> queues)
+        static public Queue? QueueWithOldestDequeueAbleItem(this IEnumerable<Queue> queues,
+                                                            QueuesService queueService)
         {
             Queue? result = null;
             DateTime? oldestItemTime = null;
@@ -15,6 +17,12 @@ namespace MessageQueueNET.Extensions
             foreach (var queue in queues)
             {
                 if (queue.Properties.SuspendDequeue == true || queue.Count() == 0)
+                {
+                    continue;
+                }
+
+                if (queue.Properties.MaxUnconfiredItems > 0
+                    && queueService.UnconfirmedMessagesCount(queue) >= queue.Properties.MaxUnconfiredItems)
                 {
                     continue;
                 }

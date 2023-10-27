@@ -130,14 +130,14 @@ namespace MessageQueueNET.Cmd
 
             if (cmdArguments.Command == "remove")
             {
-                if (!await client.RemoveAsync())
+                if (!(await client.RemoveAsync()).Success)
                 {
                     throw new Exception("Can't remove queue");
                 }
             }
             else if (cmdArguments.Command == "enqueue")
             {
-                if (!await client.EnqueueAsync(cmdArguments.Messages))
+                if (!(await client.EnqueueAsync(cmdArguments.Messages)).Success)
                 {
                     throw new Exception($"Can't enqueue messages...");
                 }
@@ -230,7 +230,7 @@ namespace MessageQueueNET.Cmd
             }
             else if (cmdArguments.Command == "queuenames")
             {
-                foreach (var name in await client.QueueNamesAsync())
+                foreach (var name in (await client.QueueNamesAsync()).QueueNames ?? Array.Empty<string>())
                 {
                     Console.WriteLine(name);
                 }

@@ -9,7 +9,7 @@ static internal class QueueModelExtensions
         => queuePropertiesResult.Queues?.Keys.Select(q => new QueueInfoModel()
         {
             QueueName = q,
-            
+
             LastAccessUTC = queuePropertiesResult.Queues[q].LastAccessUTC,
 
             QueueLength = queuePropertiesResult.Queues[q].Length,
@@ -21,7 +21,8 @@ static internal class QueueModelExtensions
             LifetimeSeconds = queuePropertiesResult.Queues[q].LifetimeSeconds,
             ItemLifetimeSeconds = queuePropertiesResult.Queues[q].ItemLifetimeSeconds,
 
-            ConfirmationPeriodSeconds = queuePropertiesResult.Queues[q].ConfirmationPeriodSeconds
+            ConfirmationPeriodSeconds = queuePropertiesResult.Queues[q].ConfirmationPeriodSeconds,
+            MaxUnconfirmedItems = queuePropertiesResult.Queues[q].MaxUnconfirmedItems
         }) ?? Array.Empty<QueueInfoModel>();
 
     public static IEnumerable<QueueInfoModel> FitsSearchString(this IEnumerable<QueueInfoModel> items, string searchString)

@@ -25,6 +25,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueueNET.Blazor", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueueNET.Razor", "src\frontend\MessageQueueNET.Razor\MessageQueueNET.Razor.csproj", "{48C7191D-063E-457F-B1C1-D0AAA3695DDE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3B9D7D8F-1588-4623-A7D1-7BAC56F5BF2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueueNET.StressTest", "test\MessageQueueNET.StressTest\MessageQueueNET.StressTest.csproj", "{E5DCD2EB-416B-46F3-8B21-29B6A4808074}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +59,10 @@ Global
 		{48C7191D-063E-457F-B1C1-D0AAA3695DDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48C7191D-063E-457F-B1C1-D0AAA3695DDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48C7191D-063E-457F-B1C1-D0AAA3695DDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5DCD2EB-416B-46F3-8B21-29B6A4808074}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5DCD2EB-416B-46F3-8B21-29B6A4808074}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5DCD2EB-416B-46F3-8B21-29B6A4808074}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5DCD2EB-416B-46F3-8B21-29B6A4808074}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -70,6 +78,7 @@ Global
 		{6680B95A-5C55-407E-B340-84AEDC61E955} = {90400040-C2F7-4714-BAD0-B6A384777990}
 		{1BAFF78D-57F1-4807-BBA8-AA6D3C8DF707} = {6680B95A-5C55-407E-B340-84AEDC61E955}
 		{48C7191D-063E-457F-B1C1-D0AAA3695DDE} = {6680B95A-5C55-407E-B340-84AEDC61E955}
+		{E5DCD2EB-416B-46F3-8B21-29B6A4808074} = {3B9D7D8F-1588-4623-A7D1-7BAC56F5BF2A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C03DE594-F8A9-4016-9E7E-63E54E9D94BA}

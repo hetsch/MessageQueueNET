@@ -24,7 +24,7 @@ public class QueuesService
     {
         if (!queueNamePattern.IsPattern())
         {
-            return new Queue[] { GetQueue(queueNamePattern) };
+            return new Queue[] { GetQueue(queueNamePattern, forAccess) };
         }
 
         List<Queue> queues = new List<Queue>();
@@ -106,6 +106,22 @@ public class QueuesService
         {
             return false;
         }
+    }
+
+    public bool RemoveQueueMessages(Queue queue)
+    {
+        queue.Clear();
+
+        return true;
+    }
+
+    public bool RemoveUnconfirmedQueueItems(Queue queue)
+    {
+        if (!_unconfirmedItems.ContainsKey(queue.Name))
+        {
+            return true;
+        }
+        return _unconfirmedItems.TryRemove(queue.Name, out _);
     }
 
     public IEnumerable<string> QueueNames => _queues.Keys.ToArray();
