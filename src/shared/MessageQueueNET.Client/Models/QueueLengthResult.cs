@@ -4,6 +4,9 @@ namespace MessageQueueNET.Client.Models
 {
     public class QueueLengthResult : ApiResult
     {
+        public QueueLengthResult() { }
+        public QueueLengthResult(int hashCode) : base(hashCode) { }
+
         public Dictionary<string, QueueLengthItem>? Queues { get; set; }
     }
 

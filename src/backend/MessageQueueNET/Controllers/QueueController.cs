@@ -4,7 +4,9 @@ using MessageQueueNET.Extensions;
 using MessageQueueNET.Models;
 using MessageQueueNET.Services;
 using MessageQueueNET.Services.Abstraction;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +32,6 @@ namespace MessageQueueNET.Controllers
         [Route("dequeue/{idPattern}")]
         async public Task<MessagesResult> Dequeue(string idPattern, int count = 1, bool register = false)
         {
-            var result = new MessagesResult();
-
             try
             {
                 if (register == true
@@ -42,6 +42,9 @@ namespace MessageQueueNET.Controllers
                 }
 
                 var queryQueues = _queues.GetQueues(idPattern);
+                var result = new MessagesResult(queryQueues.CalcHashCode());
+                var modifiedQueues=new List<Queue>();
+
                 if (queryQueues.Any() == false)
                 {
                     return result;
@@ -81,50 +84,53 @@ namespace MessageQueueNET.Controllers
                                 ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
                             });
                         }
+
+                        modifiedQueues.Add(queue);
                     }
                 }
 
                 result.Messages = items;
+                queryQueues.SetModified();
+
+                return result;
             }
             catch(Exception ex)
             {
-                result.AddExceptionMessage(ex);
+                return new MessagesResult().AddExceptionMessage(ex);
             }
-
-            return result;
         }
 
         [HttpGet]
         [Route("confirmdequeue/{id}")]
         async public Task<ApiResult> ConfirmDequeue(string id, Guid messageId)
         {
-            var result = new ApiResult();
             try
             {
                 var queue = _queues.GetQueue(id);
+
+                var result = new ApiResult(queue.CalcHashCode());
 
                 if (queue.Properties.ConfirmationPeriodSeconds > 0)
                 {
                     if (await _persist.RemoveUnconfirmedQueueItem(queue.Name, messageId))
                     {
                         result.Success = _queues.ConfirmDequeuedMessage(queue, messageId);
+                        queue.SetModified();
                     }
                 }
+
+                return result;
             }
             catch(Exception ex)
             {
-                result.AddExceptionMessage(ex);
+                return new ApiResult().AddExceptionMessage(ex);
             }
-
-            return result;
         }
 
         [HttpPut]
         [Route("enqueue/{id}")]
         async public Task<ApiResult> Enqueue(string id, IEnumerable<string> messages)
         {
-            var result = new ApiResult();
-
             try
             {
                 var queue = _queues.GetQueue(id);
@@ -145,22 +151,20 @@ namespace MessageQueueNET.Controllers
                     queue.Enqueue(item);
                 }
 
-                return result;
+                queue.SetModified();
+
+                return new ApiResult(queue.CalcHashCode());
             }
             catch(Exception ex)
             {
-                result.AddExceptionMessage(ex);
+                return new ApiResult().AddExceptionMessage(ex);
             }
-
-            return result;
         }
 
         [HttpGet]
         [Route("all/{idPattern}")]
         public MessagesResult AllMessages(string idPattern, int max = 0, bool unconfirmedOnly = false)
         {
-            var result = new MessagesResult();
-
             try
             {
                 if (_queues.AnyQueueExists(idPattern))
@@ -168,7 +172,10 @@ namespace MessageQueueNET.Controllers
                     var messages = new List<MessageResult>();
                     var unconfirmedMessages = new List<MessageResult>();
 
-                    foreach (var queue in _queues.GetQueues(idPattern, false))
+                    var queues = _queues.GetQueues(idPattern);
+                    var result = new MessagesResult(queues.CalcHashCode());
+
+                    foreach (var queue in queues)
                     {
                         if (unconfirmedOnly == false)
                         {
@@ -200,29 +207,32 @@ namespace MessageQueueNET.Controllers
 
                     result.Messages = messages;
                     result.UnconfirmedMessages = unconfirmedMessages;
+
+                    return result;
                 }
             }
             catch(Exception ex)
             {
-                result.AddExceptionMessage(ex);
+                new MessagesResult().AddExceptionMessage(ex);
             }
 
-            return result;
+            return new MessagesResult(0);
         }
 
         [HttpGet]
         [Route("length/{idPattern}")]
         public QueueLengthResult Length(string idPattern)
         {
-            var result = new QueueLengthResult();
-
             try
             {
                 if (_queues.AnyQueueExists(idPattern))
                 {
+                    var queues = _queues.GetQueues(idPattern);
+                    var result = new QueueLengthResult(queues.CalcHashCode());
+
                     var queueLengthItems = new Dictionary<string, QueueLengthItem>();
 
-                    foreach (var queue in _queues.GetQueues(idPattern, false))
+                    foreach (var queue in queues)
                     {
                         queueLengthItems[queue.Name] = new QueueLengthItem()
                         {
@@ -237,29 +247,32 @@ namespace MessageQueueNET.Controllers
             }
             catch(Exception ex)
             {
-                result.AddExceptionMessage(ex);
+                new QueueLengthResult().AddExceptionMessage(ex);
             }
 
-            return result;
+            return new QueueLengthResult(0);
         }
 
         [HttpGet]
         [Route("remove/{idPattern}")]
         async public Task<ApiResult> Remove(string idPattern, RemoveType removeType = RemoveType.Queue)
         {
-            var result = new ApiResult();
-
+            
             try
             {
                 if (_queues.AnyQueueExists(idPattern))
                 {
-                    foreach (var queue in _queues.GetQueues(idPattern, false))
+                    var queues = _queues.GetQueues(idPattern);
+                    var result = new ApiResult(queues.CalcHashCode());
+
+                    foreach (var queue in queues)
                     {
                         if (removeType == RemoveType.Messages)
                         {
                             if (await _persist.RemoveQueueMessages(queue.Name))
                             {
                                 result.Success &= _queues.RemoveQueueMessages(queue);
+                                queue.SetModified();
                             }
                             else { result.Success = false; }
                         }
@@ -268,6 +281,7 @@ namespace MessageQueueNET.Controllers
                             if (await _persist.RemoveQueueUnconfirmedMessages(queue.Name))
                             {
                                 result.Success &= _queues.RemoveUnconfirmedQueueItems(queue);
+                                queue.SetModified();
                             }
                             else { result.Success = false; }
                         }
@@ -280,16 +294,16 @@ namespace MessageQueueNET.Controllers
                             else { result.Success = false; }
                         }
                     }
-                }
 
-                return result;
+                    return result;
+                }  
             }
             catch(Exception ex)
             {
-                result.AddExceptionMessage(ex);
+                new ApiResult().AddExceptionMessage(ex);
             }
 
-            return result;
+            return new ApiResult(0);
         }
 
         [HttpGet]
@@ -316,6 +330,8 @@ namespace MessageQueueNET.Controllers
 
                 _persist.PersistQueueProperties(queue);
 
+                queue.SetModified();
+
                 return QueueProperties(id);
             }
             catch (Exception ex)
@@ -332,17 +348,21 @@ namespace MessageQueueNET.Controllers
             {
                 if (_queues.AnyQueueExists(idPattern))
                 {
-                    var queuePropertiesResult = new QueuePropertiesResult()
+                    var queues = _queues.GetQueues(idPattern)
+                                        .OrderBy(q => q.Name);
+
+                    var queuePropertiesResult = new QueuePropertiesResult(queues.CalcHashCode())
                     {
                         Queues = new Dictionary<string, Client.Models.QueueProperties>()
                     };
 
-                    foreach (var queue in _queues.GetQueues(idPattern, false)
-                                                 .OrderBy(q => q.Name))
+                    foreach (var queue in queues)
                     {
                         queuePropertiesResult.Queues[queue.Name] = new Client.Models.QueueProperties()
                         {
                             LastAccessUTC = queue.LastAccessUTC,
+                            LastModifiedUTC = queue.LastModifiedUTC,
+
                             Length = queue.Where(item => item.IsValid(queue))
                                           .Count(),
                             UnconfirmedItems = queue.Properties.ConfirmationPeriodSeconds > 0 ? _queues.UnconfirmedMessagesCount(queue) : null,
@@ -367,7 +387,7 @@ namespace MessageQueueNET.Controllers
             }
 
 
-            return new QueuePropertiesResult();
+            return new QueuePropertiesResult(0);
         }
 
         [HttpGet]

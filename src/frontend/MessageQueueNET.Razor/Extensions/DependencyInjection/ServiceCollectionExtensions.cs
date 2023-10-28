@@ -1,4 +1,5 @@
-﻿using MessageQueueNET.Razor.Services;
+﻿using MessageQueueNET.Client.Extensions.DependencyInjetion;
+using MessageQueueNET.Razor.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MessageQueueNET.Razor.Extensions.DependencyInjection;
@@ -13,6 +14,7 @@ static public class ServiceCollectionExtensions
             .AddSingleton<QueryQueueEventBus>()
             .AddHostedService<QueryQueueBackgroundService>()
             .AddTransient<DashboardEventBusService>()
+            .AddMessageQueueClientService()
             .AddScoped<DashboardService>();
     }
 }

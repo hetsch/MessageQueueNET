@@ -1,5 +1,6 @@
 ﻿using MessageQueueNET.Client;
 using MessageQueueNET.Client.Models;
+using MessageQueueNET.Client.Services;
 using MessageQueueNET.Razor.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -9,11 +10,14 @@ internal class DashboardService
 {
     private readonly DashboardEventBusService _eventBus;
     private readonly DashboardServiceOptions _options;
+    private readonly MessageQueueClientService _clientService;
 
     public DashboardService(DashboardEventBusService eventBus,
+                            MessageQueueClientService clientService,
                             IOptions<DashboardServiceOptions> options)
     {
         _eventBus = eventBus;
+        _clientService = clientService;
         _options = options.Value;
 
         SelectedServerName = _options.Queues?.FirstOrDefault()?.Name ?? String.Empty;
@@ -34,7 +38,7 @@ internal class DashboardService
 
     async public Task<MessagesResult> GetAllQueueMessages(string queueName, bool unconfirmed)
     {
-        var client = _options.GetQueueClient(SelectedServerName, queueName);
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
         var messages = await client.AllMessagesAsync(unconfirmedOnly: unconfirmed);
 
         return messages;
@@ -42,7 +46,7 @@ internal class DashboardService
 
     async public Task<QueueProperties> GetQueueProperties(string queueName)
     {
-        var client = _options.GetQueueClient(SelectedServerName, queueName);
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
         var propertiesResult = await client.PropertiesAsync();
 
         if (propertiesResult?.Queues == null ||
@@ -56,7 +60,7 @@ internal class DashboardService
 
     async public Task<bool> SetQueueProperties(string queueName, QueueProperties queueProperties)
     {
-        var client = _options.GetQueueClient(SelectedServerName, queueName);
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
 
         await client.RegisterAsync(
             lifetimeSeconds: queueProperties.LifetimeSeconds,
@@ -73,14 +77,14 @@ internal class DashboardService
 
     async public Task<bool> AddMessages(string queueName, IEnumerable<string> messages)
     {
-        var client = _options.GetQueueClient(SelectedServerName, queueName);
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
 
         return (await client.EnqueueAsync(messages)).Success;
     }
 
     async public Task<bool> DeleteQueue(string queueName, RemoveType removeType)
     {
-        var client = _options.GetQueueClient(SelectedServerName, queueName);
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
 
         return (await client.RemoveAsync(removeType)).Success;
     }
@@ -109,7 +113,7 @@ internal class DashboardService
             queueName = CreateQueuePattern().Replace("*", queueName);
         }
 
-        var client = _options.GetQueueClient(SelectedServerName, queueName);
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
 
         await client.RegisterAsync();
 

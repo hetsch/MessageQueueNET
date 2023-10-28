@@ -1,8 +1,8 @@
 ﻿using MessageQueueNET.Client.Models;
-using MessageQueueNET.Services.Abstraction;
+using MessageQueueNET.Client.Services.Abstraction;
+using MessageQueueNET.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using MessageQueueNET.Extensions;
 
 namespace MessageQueueNET.Controllers
 {
@@ -10,10 +10,10 @@ namespace MessageQueueNET.Controllers
     [ApiController]
     public class InfoController : ControllerBase
     {
-        private readonly IAppVersionService _appVersionService;
-        public InfoController(IAppVersionService appVersionService)
+        private readonly IMessageQueueApiVersionService _apiVersionService;
+        public InfoController(IMessageQueueApiVersionService apiVersionService)
         {
-            _appVersionService = appVersionService;
+            _apiVersionService = apiVersionService;
         }
 
         [HttpGet]
@@ -24,7 +24,7 @@ namespace MessageQueueNET.Controllers
 
             try
             {
-                result.Version = new System.Version(_appVersionService.Version);
+                result.Version = _apiVersionService.Version;
             }
             catch (Exception ex)
             {

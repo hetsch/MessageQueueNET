@@ -126,7 +126,8 @@ namespace MessageQueueNET.Cmd
 
         async static private Task Exec(CmdArguments cmdArguments)
         {
-            var client = new QueueClient(cmdArguments.ServerUrl, cmdArguments.QueueName);
+            var client = new QueueClient(
+                new MessageQueueConnection(cmdArguments.ServerUrl), cmdArguments.QueueName);
 
             if (cmdArguments.Command == "remove")
             {

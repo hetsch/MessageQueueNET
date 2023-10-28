@@ -11,6 +11,7 @@ static internal class QueueModelExtensions
             QueueName = q,
 
             LastAccessUTC = queuePropertiesResult.Queues[q].LastAccessUTC,
+            LastModifiedUTC = queuePropertiesResult.Queues[q].LastModifiedUTC,
 
             QueueLength = queuePropertiesResult.Queues[q].Length,
             UnconfirmedItems = queuePropertiesResult.Queues[q].UnconfirmedItems,

@@ -1,4 +1,6 @@
 ﻿using MessageQueueNET.Client;
+using MessageQueueNET.Client.Models;
+using MessageQueueNET.Client.Services;
 using MessageQueueNET.Razor.Services;
 
 namespace MessageQueueNET.Razor.Extensions;
@@ -8,8 +10,12 @@ static internal class DashboardServiceOptionsExtensions
     static public DashboardServiceOptions.QueueModel QueueModelByName(this DashboardServiceOptions options, string modelName)
         => options.Queues?.First(q => q.Name == modelName) ?? throw new Exception($"Unknown server: {modelName}");
 
-    static public QueueClient GetQueueClient(this DashboardServiceOptions options, string modelName, string queueName)
-        => new QueueClient(options.QueueModelByName(modelName).Url, queueName);
+    async static public ValueTask<QueueClient> GetQueueClient(this DashboardServiceOptions options,
+                                                              MessageQueueClientService clientService,
+                                                              string modelName, 
+                                                              string queueName)
+        => await clientService.CreateClient(
+            new MessageQueueConnection(options.QueueModelByName(modelName).Url), queueName);
 
     static public string NewQueueNamePattern(this DashboardServiceOptions options, string modelName)
     {

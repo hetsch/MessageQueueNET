@@ -1,24 +1,15 @@
-<div class="footer">
-    <table>
-        <tr>
-            <td>
-                Timezone: @TimeZoneInfo.Local.ToString()
-            </td>
-            <td align="left">
-                <MudFab Color="Color.Primary" 
-                        Size="Size.Small"
-                        OnClick="DarkmodeClick"
-                        StartIcon="@Icons.Material.Filled.DarkMode" />
-            </td>
-        </tr>
-    </table>
-</div>
+<table style="width:100%">
+    <tr>
+        <td>
+            Timezone: @TimeZone
+        </td>
+        <td>
+            <a href="@RepoUrl" target="_blank">GitHub Repository</a>
+        </td>
+    </tr>
+</table>
 
 @code {
-    [Parameter] public EventCallback ToggleDarkmode { get; set; }
-
-    async private Task DarkmodeClick()
-    {
-        await ToggleDarkmode.InvokeAsync();
-    }
+    private string TimeZone => TimeZoneInfo.Local.ToString();
+    private const string RepoUrl = "https://github.com/jugstalt/messagequeuenet";
 }

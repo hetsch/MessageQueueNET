@@ -1,7 +1,9 @@
+using MessageQueueNET.Client.Extensions.DependencyInjetion;
+using MessageQueueNET.Client.Services.Abstraction;
 using MessageQueueNET.Extensions.DependencyInjection;
+using MessageQueueNET.Middleware;
 using MessageQueueNET.Middleware.Authentication;
 using MessageQueueNET.Services;
-using MessageQueueNET.Services.Abstraction;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,7 +26,7 @@ namespace MessageQueueNET
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IAppVersionService, AppVersionService>();
+            services.AddMessageQueueAppVersionService();
 
             services.AddControllers()
                     .AddJsonOptions(options =>
@@ -65,7 +67,7 @@ namespace MessageQueueNET
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
                               RestorePersistedQueuesService restoreQueues,
-                              IAppVersionService appVersion)
+                              IMessageQueueApiVersionService appVersion)
         {
             if (env.IsDevelopment())
             {
@@ -85,6 +87,8 @@ namespace MessageQueueNET
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseMiddleware<HashCodeMiddleware>();
 
             switch (Configuration["Authorization:Type"]?.ToLower())
             {

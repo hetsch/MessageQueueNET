@@ -52,7 +52,7 @@ namespace MessageQueueNET.Middleware.Authentication
                 }
 
                 context.Response.StatusCode = 401;
-                context.Response.Headers.Add("WWW-Authenticate", @"Basic realm=""Access to message queue""");
+                context.Response.Headers.Append("WWW-Authenticate", @"Basic realm=""Access to message queue""");
             }
             else
             {

@@ -3,11 +3,26 @@
 
 <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
 
-<NavHeader />
 
-<ServerQueues />
+<div class="main-layout">
+    <!-- Top Bar -->
+    <MudAppBar>
+        <NavHeader ToggleDarkmode="ToggleDarkmode" />
+    </MudAppBar>
 
-<Footer ToggleDarkmode="ToggleDarkmode" />
+    <!-- scrollable Content -->
+    <div class="scrollable-content">
+        <MudContainer>
+            <ServerQueues />
+        </MudContainer>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <Footer />
+    </div>
+</div>
+
 
 @code {
     private MudTheme _theme = new();

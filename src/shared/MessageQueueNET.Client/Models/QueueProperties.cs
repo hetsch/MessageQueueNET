@@ -5,6 +5,8 @@ namespace MessageQueueNET.Client.Models
     public class QueueProperties
     {
         public DateTime LastAccessUTC { get; set; }
+        public DateTime LastModifiedUTC { get; set; }
+
         public int Length { get; set; }
         public int? UnconfirmedItems { get; set; }
 

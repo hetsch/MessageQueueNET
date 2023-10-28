@@ -26,16 +26,29 @@
         </MudButton>
     }
 </MudButtonGroup>
+<MudSpacer />
+<MudFab Color="Color.Primary"
+        Size="Size.Small"
+        OnClick="DarkmodeClick"
+        StartIcon="@Icons.Material.Filled.DarkMode" />
 
 @code {
+    [Parameter] public EventCallback ToggleDarkmode { get; set; }
+
     private ConcurrentDictionary<string, int> _itemCounters = new();
     private ConcurrentDictionary<string, int> _unconfirmedCounters = new();
 
-    protected override void OnInitialized()
+    async protected override Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
 
-        QueryEvents.OnQueuePropertiesResultAsync += QueueLengthReceived;
+        // initalise with already queried
+        foreach (var serverName in QueryEvents.QueuePropertiesResult.Keys)
+        {
+            await QueuePropertiesReceived(serverName, QueryEvents.QueuePropertiesResult[serverName]);
+        }
+
+        QueryEvents.OnQueuePropertiesResultAsync += QueuePropertiesReceived;
     }
 
     async private Task SetQueueServer(string queueServerName)
@@ -45,7 +58,7 @@
 
     #region EventBus Handlers
 
-    private async Task QueueLengthReceived(string serverName, QueuePropertiesResult result)
+    private async Task QueuePropertiesReceived(string serverName, QueuePropertiesResult result)
         => await InvokeAsync(() =>  // invoke async, event not triggerd from the UI Thread
         {
 
@@ -79,8 +92,13 @@
 
     #endregion
 
+    async private Task DarkmodeClick()
+    {
+        await ToggleDarkmode.InvokeAsync();
+    }
+
     public void Dispose()
     {
-        QueryEvents.OnQueuePropertiesResultAsync -= QueueLengthReceived;
+        QueryEvents.OnQueuePropertiesResultAsync -= QueuePropertiesReceived;
     }
 }

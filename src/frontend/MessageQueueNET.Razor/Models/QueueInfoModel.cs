@@ -5,6 +5,7 @@ internal class QueueInfoModel
     public string QueueName { get; set; } = "";
 
     public DateTime LastAccessUTC { get; set; }
+    public DateTime LastModifiedUTC { get; set; }
 
     public int QueueLength { get; set; }
     public int? UnconfirmedItems { get; set; }

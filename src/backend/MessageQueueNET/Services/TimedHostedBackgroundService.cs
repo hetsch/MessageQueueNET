@@ -12,7 +12,8 @@ namespace MessageQueueNET.Services
         private readonly QueuesService _queues;
         private readonly IQueuesPersistService _persist;
 
-        public TimedHostedBackgroundService(QueuesService queues, IQueuesPersistService persist)
+        public TimedHostedBackgroundService(QueuesService queues,
+                                            IQueuesPersistService persist)
         {
             _queues = queues;
             _persist = persist;
@@ -20,14 +21,14 @@ namespace MessageQueueNET.Services
 
         async protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while(!stoppingToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                DoWork();
+                await DoWork();
                 await Task.Delay(1000);
             }
         }
 
-        private void DoWork()
+        async private Task DoWork()
         {
             try
             {
@@ -35,7 +36,7 @@ namespace MessageQueueNET.Services
                 {
                     if (queue.Properties.ConfirmationPeriodSeconds > 0)
                     {
-                        _queues.ReEnqueueUnconfirmedMessages(queue, _persist).Wait();
+                        await _queues.ReEnqueueUnconfirmedMessages(queue, _persist);
                     }
 
                     if (queue.Properties.LifetimeSeconds > 0 &&

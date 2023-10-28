@@ -1,4 +1,5 @@
 ﻿using MessageQueueNET.Client;
+using MessageQueueNET.Client.Models;
 
 namespace MessageQueueNET.StressTest;
 
@@ -12,7 +13,7 @@ internal class QueueClientThread
     {
         _queueName = queueName;
         _cancellationToken = cancellationToken;
-        _client = new QueueClient("https://localhost:5001", _queueName);
+        _client = new QueueClient(new MessageQueueConnection("https://localhost:5001"), _queueName);
     }
 
     public void Start()

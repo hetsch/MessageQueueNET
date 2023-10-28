@@ -37,5 +37,19 @@ namespace MessageQueueNET.Extensions
 
             return result;
         }
+
+        static public int CalcHashCode(this IEnumerable<Queue> queues)
+        {
+            int hashCode = 0;
+
+            foreach (var queue in queues.OrderBy(q=>q.Name))
+            {
+                hashCode = HashCode.Combine(hashCode, queue.LastModifiedUTC);
+            }
+
+            return hashCode;
+        }
+
+        static public int CalcHashCode(this Queue queue) => queue.LastAccessUTC.GetHashCode();
     }
 }

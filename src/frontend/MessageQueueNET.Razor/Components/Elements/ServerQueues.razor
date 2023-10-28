@@ -27,13 +27,17 @@
                                    OnClick="async () => await DeleteQueue(DashboardService.DeleteManyQueuePattern())" />
                 }
             </MudText>
+            
+            <MudText Typo="Typo.body2">
+                Last Access: @queueInfoModels.Max(q=>q.LastAccessUTC).ToLocalTime()
+            </MudText>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
                           AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
         </ToolBarContent>
         <Columns>
             <PropertyColumn Property="x => x.QueueName" Title="Queue" Sortable="true" />
-            <PropertyColumn Property="x=>x.LastAccessUTC.ToLocalTime()" Title="Last Access" Sortable="true" />
+            <PropertyColumn Property="x => x.LastModifiedUTC.ToLocalTime()" Title="Last Modified" Sortable="true" />
 
             <TemplateColumn Title="Suspend" Sortable="false">
                 <CellTemplate>
@@ -95,17 +99,23 @@
     private string _searchString = "";
     private ConcurrentDictionary<string, IEnumerable<QueueInfoModel>> _queueLengthResults = new ConcurrentDictionary<string, IEnumerable<QueueInfoModel>>();
 
-    protected override void OnInitialized()
+    async protected override Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
 
-        QueryEvents.OnQueuePropertiesResultAsync += QueueLengthReceived;
+        // initalise with already queried
+        foreach (var serverName in QueryEvents.QueuePropertiesResult.Keys)
+        {
+            await QueuePropertiesReceived(serverName, QueryEvents.QueuePropertiesResult[serverName]);
+        }
+
+        QueryEvents.OnQueuePropertiesResultAsync += QueuePropertiesReceived;
         DashboardService.EventBus.OnQueueServerChangedAsync += QueueServerChanged;
     }
 
     #region EventBus Handlers
 
-    private async Task QueueLengthReceived(string serverName, QueuePropertiesResult result) 
+    private async Task QueuePropertiesReceived(string serverName, QueuePropertiesResult result) 
         => await InvokeAsync(() =>  // invoke async, event not triggerd from the UI Thread
         {
             _queueLengthResults[serverName] = result.ToQueueInfoModels();
@@ -200,7 +210,7 @@
 
     public void Dispose()
     {
-        QueryEvents.OnQueuePropertiesResultAsync -= QueueLengthReceived;
+        QueryEvents.OnQueuePropertiesResultAsync -= QueuePropertiesReceived;
         DashboardService.EventBus.OnQueueServerChangedAsync -= QueueServerChanged;
     }
 }

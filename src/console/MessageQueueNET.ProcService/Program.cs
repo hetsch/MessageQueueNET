@@ -1,4 +1,5 @@
 ﻿using MessageQueueNET.Client;
+using MessageQueueNET.Client.Models;
 using MessageQueueNET.ProcService.Extensions;
 using System;
 using System.Globalization;
@@ -92,7 +93,7 @@ namespace MessageQueueNET.ProcService
                 #region Initialize Client and TaskQueue
 
                 var cancelTracker = new CancelTracker();
-                var client = new QueueClient(serverUrl, queueName);
+                var client = new QueueClient(new MessageQueueConnection(serverUrl), queueName);
                 var taskQueue = new TaskQueue<ProccessContext>(maxParallelTasks, queueSize > 0 ? queueSize : maxParallelTasks, cancelTracker);
 
                 taskQueue.TaskCompleted += (ProccessContext context) =>

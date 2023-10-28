@@ -171,6 +171,8 @@ public class QueuesService
                             unconfirmedItems.TryAdd(queueItem.Id, queueItem);
                         }
                     }
+
+                    queue.SetModified();
                 }
             }
 
