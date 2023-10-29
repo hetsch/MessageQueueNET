@@ -4,9 +4,7 @@ using MessageQueueNET.Extensions;
 using MessageQueueNET.Models;
 using MessageQueueNET.Services;
 using MessageQueueNET.Services.Abstraction;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +41,7 @@ namespace MessageQueueNET.Controllers
 
                 var queryQueues = _queues.GetQueues(idPattern);
                 var result = new MessagesResult(queryQueues.CalcHashCode());
-                var modifiedQueues=new List<Queue>();
+                var modifiedQueues = new List<Queue>();
 
                 if (queryQueues.Any() == false)
                 {
@@ -94,7 +92,7 @@ namespace MessageQueueNET.Controllers
 
                 return result;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new MessagesResult().AddExceptionMessage(ex);
             }
@@ -121,7 +119,7 @@ namespace MessageQueueNET.Controllers
 
                 return result;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new ApiResult().AddExceptionMessage(ex);
             }
@@ -155,7 +153,7 @@ namespace MessageQueueNET.Controllers
 
                 return new ApiResult(queue.CalcHashCode());
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new ApiResult().AddExceptionMessage(ex);
             }
@@ -211,7 +209,7 @@ namespace MessageQueueNET.Controllers
                     return result;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 new MessagesResult().AddExceptionMessage(ex);
             }
@@ -245,7 +243,7 @@ namespace MessageQueueNET.Controllers
                     result.Queues = queueLengthItems;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 new QueueLengthResult().AddExceptionMessage(ex);
             }
@@ -257,7 +255,7 @@ namespace MessageQueueNET.Controllers
         [Route("remove/{idPattern}")]
         async public Task<ApiResult> Remove(string idPattern, RemoveType removeType = RemoveType.Queue)
         {
-            
+
             try
             {
                 if (_queues.AnyQueueExists(idPattern))
@@ -296,9 +294,9 @@ namespace MessageQueueNET.Controllers
                     }
 
                     return result;
-                }  
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 new ApiResult().AddExceptionMessage(ex);
             }
@@ -401,7 +399,7 @@ namespace MessageQueueNET.Controllers
             {
                 return new QueueNamesResult() { QueueNames = _queues.QueueNames };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return new QueueNamesResult().AddExceptionMessage(ex);
             }
