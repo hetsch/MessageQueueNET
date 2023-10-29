@@ -1,11 +1,11 @@
 {
   "dashboard": {
     "Queues": [
-      {
+      /*{
         "Name": "localhost",
         "Url": "http://localhost:8082",
         "Filter": "*"
-      }/*,
+      },*/
       {
         "Name": "localhost",
         "Url": "https://localhost:5001",
@@ -20,7 +20,7 @@
         "Name": "test",
         "Url": "https://localhost:5001",
         "Filter": "test.*"
-      }*/
+      }
     ]
   }
 }
