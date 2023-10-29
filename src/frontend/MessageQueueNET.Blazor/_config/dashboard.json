@@ -3,6 +3,11 @@
     "Queues": [
       {
         "Name": "localhost",
+        "Url": "http://localhost:8082",
+        "Filter": "*"
+      }/*,
+      {
+        "Name": "localhost",
         "Url": "https://localhost:5001",
         "Filter": "*"
       },
@@ -15,7 +20,7 @@
         "Name": "test",
         "Url": "https://localhost:5001",
         "Filter": "test.*"
-      }
+      }*/
     ]
   }
 }

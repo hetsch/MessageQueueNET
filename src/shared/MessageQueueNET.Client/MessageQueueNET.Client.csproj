@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>MessageQueueNET.Client</AssemblyName>
-    <Version>2.23.4201</Version>
+    <Version>2.23.4301</Version>
     <Copyright>2022, Jürgen Gstaltmaier</Copyright>
     <PackageProjectUrl>https://github.com/jugstalt/MessageQueueNET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/jugstalt/MessageQueueNET</RepositoryUrl>
@@ -17,8 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-    <PackageReference Include="System.Text.Json" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="System.Text.Json" Version="8.0.0-rc.2.23479.6" />
   </ItemGroup>
 
 </Project>
