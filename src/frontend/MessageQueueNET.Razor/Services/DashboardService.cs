@@ -29,6 +29,8 @@ internal class DashboardService
         _options.Queues?.Select(q => q.Name) ?? Array.Empty<string>();
 
     public string SelectedServerName { get; private set; }
+    public string? SelectedServerFilter => _options.Queues?.FirstOrDefault(q => q.Name == SelectedServerName)?.Filter;
+
     async public Task SetSelectedServerName(string serverName)
     {
         this.SelectedServerName = serverName;
@@ -71,6 +73,17 @@ internal class DashboardService
 
             suspendEnqueue: queueProperties.SuspendEnqueue,
             suspendDequeue: queueProperties.SuspendDequeue);
+
+        return true;
+    }
+
+    async public Task<bool> SetQueuesSuspend(string queueName, bool suspendEnqueue, bool suspendDequeue)
+    {
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
+
+        await client.RegisterAsync(
+            suspendEnqueue: suspendEnqueue,
+            suspendDequeue: suspendDequeue);
 
         return true;
     }

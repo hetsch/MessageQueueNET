@@ -11,8 +11,7 @@
     <MudDataGrid Items="queueInfoModels.FitsSearchString(_searchString.Trim())" Style="white-space:nowrap">
         <ToolBarContent>
             <MudText Typo="Typo.h6">
-
-                Queues
+               Queues
                 @if(DashboardService.CanCreateQueue()) {
                     <MudIconButton Size="@Size.Medium"
                                    Icon="@Icons.Material.Outlined.AddCircleOutline"
@@ -43,6 +42,17 @@
             <PropertyColumn Property="x => x.LastModifiedUTC.ToLocalTime()" Title="Last Modified" Sortable="true" />
 
             <TemplateColumn Title="Suspend" Sortable="false">
+                <HeaderTemplate>
+                    <MudText Typo="Typo.body2">
+                        Suspend
+                        @if(!string.IsNullOrEmpty(DashboardService.SelectedServerFilter)) 
+                        {
+                            <MudIconButton Size="@Size.Medium" Color="Color.Primary"
+                                           OnClick="async () => await EditQueuesSuspend()"
+                                           Icon="@Icons.Material.Outlined.Edit" />
+                        }
+                    </MudText>
+                </HeaderTemplate>
                 <CellTemplate>
                     <MudIconButton Size="@Size.Medium"
                                    Color="context.Item.SuspendEnqueue ? Color.Error : Color.Primary"
@@ -151,6 +161,21 @@
                 CloseButton = true,
                 CloseOnEscapeKey = true
             });
+    }
+
+    async private Task EditQueuesSuspend()
+    {
+        await DialogService.ShowAsync<QueuesSuspendDialog>("",
+            new DialogParameters()
+            {
+                { "QueueFilter", DashboardService.SelectedServerFilter }
+            },
+            new DialogOptions
+                {
+                    MaxWidth = MaxWidth.ExtraExtraLarge,
+                    CloseButton = true,
+                    CloseOnEscapeKey = true
+                });
     }
 
     async private Task CreateQueue()

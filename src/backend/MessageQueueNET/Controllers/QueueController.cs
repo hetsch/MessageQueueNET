@@ -307,9 +307,9 @@ namespace MessageQueueNET.Controllers
         }
 
         [HttpGet]
-        [Route("register/{id}")]
+        [Route("register/{idPattern}")]
         public QueuePropertiesResult Register(
-                             string id,
+                             string idPattern,
                              int? lifetimeSeconds = null,
                              int? itemLifetimeSeconds = null,
                              int? confirmationPeriodSeconds = null,
@@ -319,20 +319,23 @@ namespace MessageQueueNET.Controllers
         {
             try
             {
-                var queue = _queues.GetQueue(id);
+                var queues = _queues.GetQueues(idPattern);
 
-                queue.Properties.LifetimeSeconds = lifetimeSeconds.GetValueOrDefault(queue.Properties.LifetimeSeconds);
-                queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds.GetValueOrDefault(queue.Properties.ItemLifetimeSeconds);
-                queue.Properties.ConfirmationPeriodSeconds = confirmationPeriodSeconds.GetValueOrDefault(queue.Properties.ConfirmationPeriodSeconds);
-                queue.Properties.MaxUnconfiredItems = maxUnconfirmedItems.GetValueOrDefault(queue.Properties.MaxUnconfiredItems);
-                queue.Properties.SuspendEnqueue = suspendEnqueue.GetValueOrDefault(queue.Properties.SuspendEnqueue);
-                queue.Properties.SuspendDequeue = suspendDequeue.GetValueOrDefault(queue.Properties.SuspendDequeue);
+                foreach (var queue in queues)
+                {
+                    queue.Properties.LifetimeSeconds = lifetimeSeconds.GetValueOrDefault(queue.Properties.LifetimeSeconds);
+                    queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds.GetValueOrDefault(queue.Properties.ItemLifetimeSeconds);
+                    queue.Properties.ConfirmationPeriodSeconds = confirmationPeriodSeconds.GetValueOrDefault(queue.Properties.ConfirmationPeriodSeconds);
+                    queue.Properties.MaxUnconfiredItems = maxUnconfirmedItems.GetValueOrDefault(queue.Properties.MaxUnconfiredItems);
+                    queue.Properties.SuspendEnqueue = suspendEnqueue.GetValueOrDefault(queue.Properties.SuspendEnqueue);
+                    queue.Properties.SuspendDequeue = suspendDequeue.GetValueOrDefault(queue.Properties.SuspendDequeue);
 
-                _persist.PersistQueueProperties(queue);
+                    _persist.PersistQueueProperties(queue);
+                }
 
-                queue.SetModified();
+                queues.SetModified();
 
-                return QueueProperties(id);
+                return QueueProperties(idPattern);
             }
             catch (Exception ex)
             {
