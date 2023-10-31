@@ -1,5 +1,6 @@
 ﻿using MessageQueueNET.Client.Services;
 using MessageQueueNET.Client.Services.Abstraction;
+using MessageQueueNET.Core.Services.Abstraction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
@@ -33,5 +34,15 @@ static public class ServiceCollectionExtensoins
         return services
             .AddMessageQueueAppVersionService()
             .AddTransient<MessageQueueClientService>();
+    }
+
+    static public IServiceCollection AddQueueWatcher(this IServiceCollection services,
+                                                     Action<QueueWatcherBackgroundServiceOptions> configAction)
+    {
+        return services
+            .Configure(configAction)
+            .AddMessageQueueClientService()
+            .AddTransient<IBaseQueueProcessor, PingWorker>()
+            .AddHostedService<QueueWatcherBackgroundService>();
     }
 }

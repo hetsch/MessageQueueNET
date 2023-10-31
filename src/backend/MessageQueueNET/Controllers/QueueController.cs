@@ -88,7 +88,11 @@ namespace MessageQueueNET.Controllers
                 }
 
                 result.Messages = items;
-                queryQueues.SetModified();
+
+                if (modifiedQueues.Count() > 0)
+                {
+                    modifiedQueues.SetModified();
+                }
 
                 return result;
             }
