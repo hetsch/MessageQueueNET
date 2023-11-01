@@ -1,8 +1,8 @@
 ﻿using MessageQueueNET.Worker.Models.Process;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Worker.Services;
@@ -35,14 +35,15 @@ public class ProcessRunnerService
 
             using (Process process = Process.Start(processStartInfo)!)
             {
-                var output = new List<string>();
+                StringBuilder output = new(),
+                              stdErr = new();
 
                 process.OutputDataReceived += (sender, outLine) =>
                 {
                     if (!String.IsNullOrEmpty(outLine.Data))
                     {
                         //Console.WriteLine($"Output received:{ outLine.Data }");
-                        output.Add(outLine.Data);
+                        output.AppendLine(outLine.Data);
                     }
                 };
 
@@ -51,7 +52,8 @@ public class ProcessRunnerService
                     if (!String.IsNullOrEmpty(outLine.Data))
                     {
                         //Console.WriteLine($"Error received:{ outLine.Data }");
-                        output.Add(outLine.Data);
+                        output.AppendLine(outLine.Data);
+                        stdErr.AppendLine(outLine.Data);
                     }
                 };
 
@@ -72,7 +74,8 @@ public class ProcessRunnerService
                 //}
 
                 context.ExitCode = process.ExitCode;
-                context.Output = String.Join('\n', output);
+                context.Output = output.ToString();
+                context.ErrorOutput = stdErr.Length > 0 ? stdErr.ToString() : null;
             }
         });
 

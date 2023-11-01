@@ -8,7 +8,8 @@ public class ProcessContext
     public string Arguments { get; set; } = string.Empty;
 
     public int ExitCode { get; set; }
-    public string Output { get; set; } = string.Empty;
+    public string? Output { get; set; }
+    public string? ErrorOutput { get; set; }
 
     #region ITaskContext
 
