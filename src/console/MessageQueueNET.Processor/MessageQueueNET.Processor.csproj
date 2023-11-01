@@ -16,5 +16,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\shared\MessageQueueNET.Client\MessageQueueNET.Client.csproj" />
     <ProjectReference Include="..\..\shared\MessageQueueNET.Core\MessageQueueNET.Core.csproj" />
+    <ProjectReference Include="..\..\shared\MessageQueueNET.Worker\MessageQueueNET.Worker.csproj" />
   </ItemGroup>
 </Project>

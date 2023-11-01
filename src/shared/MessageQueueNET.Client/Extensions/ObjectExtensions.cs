@@ -2,14 +2,16 @@
 using MessageQueueNET.Core.Services.Abstraction;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Client.Extensions;
 internal static class ObjectExtensions
 {
-    public static bool TryGetGenericJobProcessorType(this object obj, /*[NotNullWhen(true)]*/ out Type? genericType)
+    public static bool TryGetGenericJobProcessorType(this object obj, [NotNullWhen(true)] out Type? genericType)
     {
         genericType = null;
 
@@ -31,11 +33,11 @@ internal static class ObjectExtensions
         return false;
     }
 
-    public static Task<QueueProcessorResult> CallProcessGeneric(this object obj, object message)
+    public static Task<QueueProcessorResult> CallProcessGeneric(this IQueueProcessor processor, object message, CancellationToken cancellationToken)
     {
-        var task = obj.GetType()
+        var task = processor.GetType()
                       .GetMethod("ProcessGeneric")!
-                      .Invoke(obj, new object[] { message }) as Task<QueueProcessorResult>;
+                      .Invoke(processor, new object[] { message, cancellationToken }) as Task<QueueProcessorResult>;
 
         if (task is null)
         {

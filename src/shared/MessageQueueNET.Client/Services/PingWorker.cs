@@ -1,15 +1,16 @@
 ﻿using MessageQueueNET.Core.Models;
 using MessageQueueNET.Core.Services.Abstraction;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Client.Services;
-internal class PingWorker : IBaseQueueProcessor
+internal class PingWorker : INoneGenericQueueProcessor
 {
     public bool CanProcessMessage(BaseQueueProcessorMessage jobProcessMessage)
         => "ping".Equals(jobProcessMessage.JobType, StringComparison.OrdinalIgnoreCase);
 
-    public Task<QueueProcessorResult> Process(BaseQueueProcessorMessage jobProcessMessage)
+    public Task<QueueProcessorResult> Process(BaseQueueProcessorMessage jobProcessMessage, CancellationToken cancellationToken)
     {
         if (jobProcessMessage is not null)
         {

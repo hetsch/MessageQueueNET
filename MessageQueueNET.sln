@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueueNET.Core", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueueNET.Processor", "src\console\MessageQueueNET.Processor\MessageQueueNET.Processor.csproj", "{BD231107-FBB0-47BE-ACF4-20E91B2AC41E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueueNET.Worker", "src\shared\MessageQueueNET.Worker\MessageQueueNET.Worker.csproj", "{455D29DB-AA04-414E-932D-C7528D4B5EBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{BD231107-FBB0-47BE-ACF4-20E91B2AC41E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD231107-FBB0-47BE-ACF4-20E91B2AC41E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD231107-FBB0-47BE-ACF4-20E91B2AC41E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{455D29DB-AA04-414E-932D-C7528D4B5EBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{455D29DB-AA04-414E-932D-C7528D4B5EBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{455D29DB-AA04-414E-932D-C7528D4B5EBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{455D29DB-AA04-414E-932D-C7528D4B5EBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -93,6 +99,7 @@ Global
 		{E5DCD2EB-416B-46F3-8B21-29B6A4808074} = {3B9D7D8F-1588-4623-A7D1-7BAC56F5BF2A}
 		{7CC578A7-776A-4183-B2AB-F4CA70260D25} = {452DEE13-9461-401F-A180-466B3842EDF5}
 		{BD231107-FBB0-47BE-ACF4-20E91B2AC41E} = {1F43EC6F-B326-4C8D-8C6B-0DFD6018F3FE}
+		{455D29DB-AA04-414E-932D-C7528D4B5EBF} = {452DEE13-9461-401F-A180-466B3842EDF5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C03DE594-F8A9-4016-9E7E-63E54E9D94BA}

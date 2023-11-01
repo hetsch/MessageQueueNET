@@ -42,7 +42,7 @@ static public class ServiceCollectionExtensoins
         return services
             .Configure(configAction)
             .AddMessageQueueClientService()
-            .AddTransient<IBaseQueueProcessor, PingWorker>()
+            .AddTransient<IQueueProcessor, PingWorker>()
             .AddHostedService<QueueWatcherBackgroundService>();
     }
 }

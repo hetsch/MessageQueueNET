@@ -2,11 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Core.Services.Abstraction;
-public interface IGenericQueueProcessor<T> : IBaseQueueProcessor
+public interface IGenericQueueProcessor<T> : IQueueProcessor
     where T : new()
 {
-    Task<QueueProcessorResult> ProcessGeneric(GenericQueueProcessorMessage<T> message);
+    Task<QueueProcessorResult> ProcessGeneric(GenericQueueProcessorMessage<T> message, CancellationToken cancellationToken);
 }

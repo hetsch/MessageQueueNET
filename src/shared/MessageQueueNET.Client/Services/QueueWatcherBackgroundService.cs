@@ -90,7 +90,7 @@ internal class QueueWatcherBackgroundService : BackgroundService
 
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    var jobProcessors = scope.ServiceProvider.GetServices<IBaseQueueProcessor>();
+                    var jobProcessors = scope.ServiceProvider.GetServices<IQueueProcessor>();
 
                     var processor = jobProcessors.FirstOrDefault(j => j.CanProcessMessage(baseJobMessage));
                     if (processor is null)
@@ -101,11 +101,11 @@ internal class QueueWatcherBackgroundService : BackgroundService
                     if (processor.TryGetGenericJobProcessorType(out var bodyType))
                     {
                         var genericJobMessage = messageResult.Value.DeserializeJobProcessingMessage(bodyType)!;
-                        jobResult = await processor.CallProcessGeneric(genericJobMessage);
+                        jobResult = await processor.CallProcessGeneric(genericJobMessage, stoppingToken);
                     }
-                    else
+                    else if(processor is INoneGenericQueueProcessor nonGenericProcessor)
                     {
-                        jobResult = await processor.Process(baseJobMessage);
+                        jobResult = await nonGenericProcessor.Process(baseJobMessage, stoppingToken);
                     }
                 }
             }
@@ -115,7 +115,8 @@ internal class QueueWatcherBackgroundService : BackgroundService
             }
             finally
             {
-                if (messageResult.ConfirmationRequired()
+                if (!String.IsNullOrEmpty(messageResult.Queue) 
+                    && messageResult.ConfirmationRequired()
                     && jobResult.ConfirmationRecommended())
                 {
                     #region Confirm Message
@@ -156,3 +157,4 @@ internal class QueueWatcherBackgroundService : BackgroundService
         }, messageResult, stoppingToken);
     }
 }
+    
