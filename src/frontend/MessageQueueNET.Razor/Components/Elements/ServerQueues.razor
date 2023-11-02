@@ -56,11 +56,11 @@
                 <CellTemplate>
                     <MudIconButton Size="@Size.Medium"
                                    Color="context.Item.SuspendEnqueue ? Color.Error : Color.Primary"
-                                   OnClick="async () => await EditQueueProperties(context.Item.QueueName)"
+                                   OnClick="async () => await SetQueueSuspendEnqueue(context.Item.QueueName, !context.Item.SuspendEnqueue)"
                                    Icon="@Icons.Material.Outlined.ArrowCircleUp" />
                     <MudIconButton Size="@Size.Medium"
                                    Color="context.Item.SuspendDequeue ? Color.Error : Color.Primary"
-                                   OnClick="async () => await EditQueueProperties(context.Item.QueueName)"
+                                   OnClick="async () => await SetQueueSuspendDequeue(context.Item.QueueName, !context.Item.SuspendDequeue)"
                                    Icon="@Icons.Material.Outlined.ArrowCircleDown" />
                 </CellTemplate>
             </TemplateColumn>
@@ -176,6 +176,16 @@
                     CloseButton = true,
                     CloseOnEscapeKey = true
                 });
+    }
+
+    async private Task SetQueueSuspendEnqueue(string queueName, bool suspend)
+    {
+        await DashboardService.SetQueueSuspendEnqueue(queueName, suspend);
+    }
+
+    async private Task SetQueueSuspendDequeue(string queueName, bool suspend)
+    {
+        await DashboardService.SetQueueSuspendDequeue(queueName, suspend);
     }
 
     async private Task CreateQueue()

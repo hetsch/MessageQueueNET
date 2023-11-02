@@ -9,10 +9,12 @@ namespace MessageQueueNET.Extensions
     static public class EnumerableExtensions
     {
         static public Queue? QueueWithOldestDequeueAbleItem(this IEnumerable<Queue> queues,
-                                                            QueuesService queueService)
+                                                            QueuesService queueService,
+                                                            List<Queue> queueBag)
         {
             Queue? result = null;
             DateTime? oldestItemTime = null;
+            bool querymManyQueues = queues.Count() > 1;
 
             foreach (var queue in queues)
             {
@@ -27,11 +29,29 @@ namespace MessageQueueNET.Extensions
                     continue;
                 }
 
+                if(querymManyQueues && queueBag.Contains(queue)) // already took from here, take other if possible
+                {
+                    continue;
+                }
+
                 var oldestQueueItemTime = queue.Select(i => i.CreationDateUTC).Min();
                 if (oldestItemTime == null || oldestQueueItemTime < oldestItemTime)
                 {
                     oldestItemTime = oldestQueueItemTime;
                     result = queue;
+                }
+            }
+
+            if (querymManyQueues)
+            {
+                if (result != null)
+                {
+                    queueBag.Add(result);
+                }
+                else if (result == null && queueBag.Count() > 0)
+                {
+                    queueBag.Clear();
+                    return QueueWithOldestDequeueAbleItem(queues, queueService, queueBag);
                 }
             }
 

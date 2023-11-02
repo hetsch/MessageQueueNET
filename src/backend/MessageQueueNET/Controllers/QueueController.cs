@@ -49,10 +49,11 @@ namespace MessageQueueNET.Controllers
                 }
 
                 List<MessageResult> items = new List<MessageResult>();
+                List<Queue> queueBag = new List<Queue>();
 
                 while (items.Count() < count)
                 {
-                    var queue = queryQueues.QueueWithOldestDequeueAbleItem(_queues);
+                    var queue = queryQueues.QueueWithOldestDequeueAbleItem(_queues, queueBag);
                     if (queue is null)
                     {
                         break;

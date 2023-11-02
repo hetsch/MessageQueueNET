@@ -72,14 +72,14 @@ public class MessageQueueClientService
         MessageQueueConnection connection,
         string queueNamePattern,
         [EnumeratorCancellation] CancellationToken stoppingToken,
-        int count)
+        int constCount = 0)
     {
         int? hashCode = null;
         var client = await CreateClient(connection, queueNamePattern);
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            int max = count;
+            int max = constCount;
             if (max == 0)
             {
                 var propertiesResult = await client.PropertiesAsync();
@@ -99,13 +99,12 @@ public class MessageQueueClientService
             }
             await using (var minimumDelay = new MinimumDelay(1000))
             {
-                var messagesResult = await client.DequeueAsync(Math.Min(Math.Max(1, max), 1000),
+                var messagesResult = await client.DequeueAsync(Math.Min(Math.Max(1, max), 100),
                                                                cancelationToken: stoppingToken,
                                                                hashCode: hashCode);
                 hashCode = messagesResult.HashCode;
 
                 yield return messagesResult;
-
             }
         }
     }

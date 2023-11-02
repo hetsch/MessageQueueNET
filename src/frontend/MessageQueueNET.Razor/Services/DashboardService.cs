@@ -77,6 +77,24 @@ internal class DashboardService
         return true;
     }
 
+    async public Task<bool> SetQueueSuspendEnqueue(string queueName, bool suspend)
+    {
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
+
+        await client.RegisterAsync(suspendEnqueue: suspend);
+
+        return true;
+    }
+
+    async public Task<bool> SetQueueSuspendDequeue(string queueName, bool suspend)
+    {
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
+
+        await client.RegisterAsync(suspendDequeue: suspend);
+
+        return true;
+    }
+
     async public Task<bool> SetQueuesSuspend(string queueName, bool suspendEnqueue, bool suspendDequeue)
     {
         var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
