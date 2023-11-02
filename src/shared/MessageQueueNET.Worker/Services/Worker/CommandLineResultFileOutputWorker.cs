@@ -1,7 +1,10 @@
-﻿using MessageQueueNET.Core.Models;
+﻿using MessageQueueNET.Core.Concurrency;
+using MessageQueueNET.Core.Models;
 using MessageQueueNET.Core.Services.Abstraction;
 using MessageQueueNET.Worker.Models.Worker;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -13,8 +16,11 @@ internal class CommandLineResultFileOutputWorker : IGenericQueueProcessor<Comman
 {
     public const string WorkerIdentifier = "mq-commandline.result.file";
 
-    public CommandLineResultFileOutputWorker()
+    private readonly CommandLineResultFileOutputWorkerOptions _options;
+
+    public CommandLineResultFileOutputWorker(IOptions<CommandLineResultFileOutputWorkerOptions> options)
     {
+        _options = options.Value;
     }
 
     public string WorkerId => WorkerIdentifier;
@@ -24,24 +30,36 @@ internal class CommandLineResultFileOutputWorker : IGenericQueueProcessor<Comman
     async public Task<QueueProcessorResult> ProcessGeneric(GenericQueueProcessorMessage<CommandLineWorkerResultBody> message, 
                                                            CancellationToken cancellationToken)
     {
-        StringBuilder output = new StringBuilder();
-
-        output.AppendLine();
-        output.AppendLine($"{DateTime.Now.ToString()}: ProcessId: {message.ProcessId}");
-        if (message.Body != null)
+        if (!String.IsNullOrEmpty(_options.RootPath))
         {
-            output.AppendLine($"ExitCode: {message.Body.ExitCode}");
-            if (!String.IsNullOrEmpty(message.Body.ErrorOutput))
+            StringBuilder output = new StringBuilder();
+
+            output.AppendLine();
+            output.AppendLine($"{DateTime.Now.ToString()}: ProcessId: {message.ProcessId}");
+            if (message.Body != null)
             {
-                output.AppendLine($"Error: {message.Body.ErrorOutput}");
+                output.AppendLine($"ExitCode: {message.Body.ExitCode}");
+                if (!String.IsNullOrEmpty(message.Body.ErrorOutput))
+                {
+                    output.AppendLine($"Error: {message.Body.ErrorOutput}");
+                }
+                else
+                {
+                    output.AppendLine(message.Body.Output);
+                }
             }
-            else
+
+            string filename = Path.Combine(_options.RootPath, $"{message.ProcessId}.log");
+            using (var mutext = await MessageQueueFuzzyMutexAsync.LockAsync(filename))
             {
-                output.AppendLine(message.Body.Output);
+                if(!Directory.Exists(_options.RootPath))
+                {
+                    Directory.CreateDirectory(_options.RootPath);
+                }
+
+                await File.AppendAllTextAsync(filename, output.ToString(), cancellationToken);
             }
         }
-
-        await File.AppendAllTextAsync($"c:\\temp\\{message.ProcessId}.log", output.ToString(), cancellationToken);
 
         return new QueueProcessorResult();
     }

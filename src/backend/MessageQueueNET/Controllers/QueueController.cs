@@ -245,6 +245,8 @@ namespace MessageQueueNET.Controllers
                     }
 
                     result.Queues = queueLengthItems;
+
+                    return result;
                 }
             }
             catch (Exception ex)

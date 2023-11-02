@@ -79,9 +79,27 @@ public class MessageQueueClientService
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            int max = count;
+            if (max == 0)
+            {
+                var propertiesResult = await client.PropertiesAsync();
+
+                if (propertiesResult.Queues?.Values != null)
+                {
+                    foreach (var properties in propertiesResult.Queues.Values)
+                    {
+                        max += properties switch
+                        {
+                            { SuspendDequeue: true } => 0,
+                            { ConfirmationPeriodSeconds: > 0, MaxUnconfirmedItems: > 0 } => Math.Min(properties.Length, properties.MaxUnconfirmedItems - properties.UnconfirmedItems ?? 0),
+                            _ => properties.Length
+                        };
+                    }
+                }
+            }
             await using (var minimumDelay = new MinimumDelay(1000))
             {
-                var messagesResult = await client.DequeueAsync(count, 
+                var messagesResult = await client.DequeueAsync(Math.Min(Math.Max(1, max), 1000),
                                                                cancelationToken: stoppingToken,
                                                                hashCode: hashCode);
                 hashCode = messagesResult.HashCode;

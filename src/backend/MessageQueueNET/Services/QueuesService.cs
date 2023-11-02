@@ -46,7 +46,6 @@ public class QueuesService
         }
 
         return queues;
-
     }
 
     public Queue GetQueue(string queueName, bool forAccess = true)

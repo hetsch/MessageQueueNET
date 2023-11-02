@@ -1,8 +1,12 @@
 ﻿using MessageQueueNET.Client;
 using MessageQueueNET.Client.Models;
+using MessageQueueNET.Core.Models;
+using MessageQueueNET.Worker.Models.Worker;
+using MessageQueueNET.Worker.Services.Worker;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -78,11 +82,13 @@ namespace MessageQueueNET.Cmd
             Console.WriteLine("  register: register a new q1 or change the properties of an existing queue");
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
             Console.WriteLine("  options:");
-            Console.WriteLine("     -lifetime <number>          : The lifetime of the queue seconds if queue get empty. 0 => queue will never removed automatically");
-            Console.WriteLine("     -itemlifetime <number>      : The lifetime of items in seconds. 0 => items will never removed automatically");
-            Console.WriteLine("     -confirmationperiod <number>: Seconds a client can wail until confirming the messeage.");
-            Console.WriteLine("                                   if the message will not confirmed by the client, it will re-enqued");
-            Console.WriteLine("                                   0 => no confirmation needed");
+            Console.WriteLine("     -lifetime <number>           : The lifetime of the queue seconds if queue get empty. 0 => queue will never removed automatically");
+            Console.WriteLine("     -itemlifetime <number>       : The lifetime of items in seconds. 0 => items will never removed automatically");
+            Console.WriteLine("     -confirmationperiod <number> : Seconds a client can wail until confirming the messeage.");
+            Console.WriteLine("                                    if the message will not confirmed by the client, it will re-enqued");
+            Console.WriteLine("                                    0 => no confirmation needed");
+            Console.WriteLine("     -maxunconfirmeditems <number>: Maximum number of concurrent unconfirmed items.");
+            Console.WriteLine("                                    0 => Unlimited");
             Console.WriteLine("     -suspend-enqueue <true|false>: suspend enqueue items");
             Console.WriteLine("     -suspend-dequeue <true|false>: suspend dequeue items");
             Console.WriteLine();
@@ -97,6 +103,7 @@ namespace MessageQueueNET.Cmd
 
             Console.WriteLine("  length: number of messages in a queue");
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
+            Console.WriteLine("     -full   ... unconfirmed also"); 
             Console.WriteLine();
 
             Console.WriteLine("  all: lists all messages in a queue without dequeing any item");
@@ -104,6 +111,7 @@ namespace MessageQueueNET.Cmd
             Console.WriteLine("  options: (all optional)");
             Console.WriteLine("     -max <max number of results>");
             Console.WriteLine("     -unconfirmed   ... show only the unconfirmed messages");
+            Console.WriteLine("     -full   ... show id and message");
             Console.WriteLine();
 
             Console.WriteLine("  enqueue: enqueies messages");
@@ -116,7 +124,7 @@ namespace MessageQueueNET.Cmd
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
             Console.WriteLine();
 
-            Console.WriteLine("  confirm,confirmdequeue: dequeues a message");
+            Console.WriteLine("  confirm,confirmdequeue: confirms a message");
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
             Console.WriteLine("  options:");
             Console.WriteLine("     -id or -messageid MessageId (guid)");
@@ -138,9 +146,41 @@ namespace MessageQueueNET.Cmd
             }
             else if (cmdArguments.Command == "enqueue")
             {
-                if (!(await client.EnqueueAsync(cmdArguments.Messages)).Success)
+                if (!String.IsNullOrEmpty(cmdArguments.WorkerCommand))
                 {
-                    throw new Exception($"Can't enqueue messages...");
+                    foreach (var m in cmdArguments.Messages)
+                    {
+                        var message = new GenericQueueProcessorMessage<CommandLineWorkerMessage>()
+                        {
+                            ProcessId = m,
+                            Worker = CommandLineWorker.WorkerIdentifier,
+                            ResultQueue = $"{cmdArguments.QueueName}.results",
+                            Body = new()
+                            {
+                                Command = cmdArguments.WorkerCommand,
+                                Arguments = m
+                            }
+                        };
+
+                        if (!(await client.EnqueueAsync(new string[] 
+                            {
+                                JsonSerializer.Serialize(message)
+                            })).Success)
+                        {
+                            throw new Exception($"Can't enqueue messages...");
+                        }
+                    }
+                }
+                else
+                {
+                    #region Simple Messages
+
+                    if (!(await client.EnqueueAsync(cmdArguments.Messages)).Success)
+                    {
+                        throw new Exception($"Can't enqueue messages...");
+                    }
+
+                    #endregion
                 }
             }
             else if (cmdArguments.Command == "dequeue")
@@ -163,7 +203,7 @@ namespace MessageQueueNET.Cmd
             }
             else if (cmdArguments.Command == "confirm" || cmdArguments.Command == "confirmdequeue")
             {
-                Console.WriteLine($"Result: {await client.ConfirmDequeueAsync(cmdArguments.MessageId)}");
+                Console.WriteLine($"Result: {(await client.ConfirmDequeueAsync(cmdArguments.MessageId)).Success}");
             }
             else if (cmdArguments.Command == "length")
             {
@@ -186,6 +226,8 @@ namespace MessageQueueNET.Cmd
                             {
                                 Console.WriteLine(item.QueueLength);
                             }
+
+                            Console.WriteLine();
                         }
                     }
 
@@ -194,18 +236,31 @@ namespace MessageQueueNET.Cmd
             }
             else if (cmdArguments.Command == "register")
             {
-                var queueProperties = await client.RegisterAsync(
+                var queuePropertiesResult = await client.RegisterAsync(
                     lifetimeSeconds: cmdArguments.LifetimeSeconds,
                     itemLifetimeSeconds: cmdArguments.ItemLifetimeSeconds,
                     confirmationPeriodSeconds: cmdArguments.ConfirmationPeridSeconds,
+                    maxUnconfirmedItems: cmdArguments.MaxUnconfirmedItems,
                     suspendDequeue: cmdArguments.SuspendDequeue,
                     suspendEnqueue: cmdArguments.SuspendEnqueue);
 
                 Console.WriteLine("registered queue properties:");
                 Console.WriteLine("----------------------------");
-                foreach (var propertyInfo in typeof(QueueProperties).GetProperties())
+                if (queuePropertiesResult?.Queues != null) 
                 {
-                    Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(queueProperties)}");
+                    foreach (var queueName in queuePropertiesResult.Queues.Keys)
+                    {
+                        var queueProperties = queuePropertiesResult.Queues[queueName];
+                        if (queueProperties != null)
+                        {
+                            Console.WriteLine($"{queueName}:");
+                            foreach (var propertyInfo in typeof(QueueProperties).GetProperties())
+                            {
+                                Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(queueProperties)}");
+                            }
+                        }
+                        Console.WriteLine();
+                    }
                 }
             }
             else if (cmdArguments.Command == "properties")
@@ -226,6 +281,8 @@ namespace MessageQueueNET.Cmd
                                 Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(queueProperties)}");
                             }
                         }
+
+                        Console.WriteLine();
                     }
                 }
             }
@@ -241,16 +298,24 @@ namespace MessageQueueNET.Cmd
                 var messagesResult = await client.AllMessagesAsync(cmdArguments.Max, cmdArguments.UnconfirmedOnly);
                 if (messagesResult?.Messages != null)
                 {
-                    foreach (var m in messagesResult.Messages)
+                    foreach (var queueName in messagesResult.Messages.Select(m => m.Queue).Distinct())
                     {
-                        if (cmdArguments.ShowFullItem)
+                        Console.WriteLine($"{queueName}:");
+
+                        foreach (var m in messagesResult.Messages.Where(m=>m.Queue == queueName))
                         {
-                            Console.WriteLine($"{m.Id}:{m?.Value ?? "<null>"}");
+                            
+                            if (cmdArguments.ShowFullItem)
+                            {
+                                Console.WriteLine($"{m.Id}:{m?.Value ?? "<null>"}");
+                            }
+                            else
+                            {
+                                Console.WriteLine(m?.Value ?? "<null>");
+                            }
                         }
-                        else
-                        {
-                            Console.WriteLine(m?.Value ?? "<null>");
-                        }
+
+                        Console.WriteLine();
                     }
                 }
 

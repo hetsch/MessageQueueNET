@@ -44,7 +44,7 @@ internal class QueueWatcherBackgroundService : BackgroundService
         {
             try
             {
-                await foreach (var messagesResult in _clientService.GetNextMessages(connection, _options.QueueNameFilter, stoppingToken, 100))
+                await foreach (var messagesResult in _clientService.GetNextMessages(connection, _options.QueueNameFilter, stoppingToken, 0))
                 {
                     if (messagesResult.Messages?.Any() != true)
                     {
@@ -68,7 +68,7 @@ internal class QueueWatcherBackgroundService : BackgroundService
                                   MessageResult messageResult,
                                   CancellationToken stoppingToken)
     {
-        var task = Task.Factory.StartNew(async (state) =>
+        Task.Factory.StartNew(async (state) =>
         {
             var processMessage = state as MessageResult;
 

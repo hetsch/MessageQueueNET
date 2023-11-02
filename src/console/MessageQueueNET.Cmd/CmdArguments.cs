@@ -18,8 +18,10 @@ namespace MessageQueueNET.Cmd
         public int? LifetimeSeconds { get; set; }
         public int? ItemLifetimeSeconds { get; set; }
         public int? ConfirmationPeridSeconds { get; set; }
+        public int? MaxUnconfirmedItems { get; set; }
         public bool? SuspendEnqueue { get; set; }
         public bool? SuspendDequeue { get; set; }
+        public string WorkerCommand { get; set; }
         public List<string> Messages { get; set; }
         public Guid MessageId { get; set; }
         public bool ShowFullItem { get; set; }
@@ -38,6 +40,9 @@ namespace MessageQueueNET.Cmd
                         break;
                     case "-c":
                         this.Command = args[++i];
+                        break;
+                    case "-workercmd":
+                        this.WorkerCommand = args[++i];
                         break;
                     case "-m":
                         this.Messages.Add(args[++i]);
@@ -61,6 +66,9 @@ namespace MessageQueueNET.Cmd
                         break;
                     case "-confirmationperiod":
                         this.ConfirmationPeridSeconds = int.Parse(args[++i]);
+                        break;
+                    case "-maxunconfirmeditems":
+                        this.MaxUnconfirmedItems = int.Parse(args[++i]);
                         break;
                     case "-id":
                     case "-messageid":

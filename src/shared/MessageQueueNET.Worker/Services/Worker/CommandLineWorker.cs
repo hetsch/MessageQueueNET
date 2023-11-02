@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MessageQueueNET.Worker.Services.Worker;
 
-internal class CommandLineWorker : IGenericQueueProcessor<CommandLineWorkerMessage>
+public class CommandLineWorker : IGenericQueueProcessor<CommandLineWorkerMessage>
 {
     public const string WorkerIdentifier = "mq.commandline";
 
