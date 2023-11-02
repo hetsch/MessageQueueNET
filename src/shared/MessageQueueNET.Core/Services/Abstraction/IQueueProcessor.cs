@@ -4,5 +4,7 @@ namespace MessageQueueNET.Core.Services.Abstraction;
 
 public interface IQueueProcessor
 {
-    bool CanProcessMessage(BaseQueueProcessorMessage jobProcessMessage);
+    string WorkerId { get; }
+
+    bool ConfirmAlways { get; }
 }

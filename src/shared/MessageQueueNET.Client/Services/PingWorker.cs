@@ -5,10 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Client.Services;
-internal class PingWorker : INoneGenericQueueProcessor
+internal class PingWorker : INonGenericQueueProcessor
 {
-    public bool CanProcessMessage(BaseQueueProcessorMessage jobProcessMessage)
-        => "ping".Equals(jobProcessMessage.JobType, StringComparison.OrdinalIgnoreCase);
+    public const string WorkerIdentifier = "mq.ping";
+
+    public string WorkerId => WorkerIdentifier;
+
+    public bool ConfirmAlways => true;
 
     public Task<QueueProcessorResult> Process(BaseQueueProcessorMessage jobProcessMessage, CancellationToken cancellationToken)
     {

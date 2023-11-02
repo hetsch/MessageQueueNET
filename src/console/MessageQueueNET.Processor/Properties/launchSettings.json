@@ -2,7 +2,7 @@
   "profiles": {
     "MessageQueueNET.Processor": {
       "commandName": "Project",
-      "commandLineArgs": "--api https://localhost:5001 --filter mq-processor.jobs"
+      "commandLineArgs": "--api https://localhost:5001 --filter mq-processor.jobs,mq-processor.jobs.results"
     }
   }
 }

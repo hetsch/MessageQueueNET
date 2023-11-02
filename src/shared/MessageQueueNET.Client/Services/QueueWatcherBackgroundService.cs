@@ -70,20 +70,21 @@ internal class QueueWatcherBackgroundService : BackgroundService
     {
         var task = Task.Factory.StartNew(async (state) =>
         {
-            QueueProcessorResult? jobResult = null;
-            BaseQueueProcessorMessage? baseJobMessage = null;
+            var processMessage = state as MessageResult;
+
+            QueueProcessorResult? processorResult = null;
+            BaseQueueProcessorMessage? baseProcessorMessage = null;
+            IQueueProcessor? processor = null;
 
             try
             {
-                var messageResult = state as MessageResult;
-
-                if (String.IsNullOrEmpty(messageResult?.Value))
+                if (String.IsNullOrEmpty(processMessage?.Value))
                 {
                     throw new Exception("Empty message received");
                 }
 
-                baseJobMessage = JsonSerializer.Deserialize<BaseQueueProcessorMessage>(messageResult.Value);
-                if (baseJobMessage is null)
+                baseProcessorMessage = JsonSerializer.Deserialize<BaseQueueProcessorMessage>(processMessage.Value);
+                if (baseProcessorMessage is null)
                 {
                     throw new Exception("Message is not valid");
                 }
@@ -92,20 +93,20 @@ internal class QueueWatcherBackgroundService : BackgroundService
                 {
                     var jobProcessors = scope.ServiceProvider.GetServices<IQueueProcessor>();
 
-                    var processor = jobProcessors.FirstOrDefault(j => j.CanProcessMessage(baseJobMessage));
+                    processor = jobProcessors.FirstOrDefault(j => baseProcessorMessage.Worker.Equals(j.WorkerId, StringComparison.OrdinalIgnoreCase));
                     if (processor is null)
                     {
-                        throw new Exception("no proper processor fouond");
+                        throw new Exception($"no proper processor found with workerId '{baseProcessorMessage.Worker}'");
                     }
 
                     if (processor.TryGetGenericJobProcessorType(out var bodyType))
                     {
-                        var genericJobMessage = messageResult.Value.DeserializeJobProcessingMessage(bodyType)!;
-                        jobResult = await processor.CallProcessGeneric(genericJobMessage, stoppingToken);
+                        var genericJobMessage = processMessage.Value.DeserializeJobProcessingMessage(bodyType)!;
+                        processorResult = await processor.CallProcessGeneric(genericJobMessage, stoppingToken);
                     }
-                    else if(processor is INoneGenericQueueProcessor nonGenericProcessor)
+                    else if (processor is INonGenericQueueProcessor nonGenericProcessor)
                     {
-                        jobResult = await nonGenericProcessor.Process(baseJobMessage, stoppingToken);
+                        processorResult = await nonGenericProcessor.Process(baseProcessorMessage, stoppingToken);
                     }
                 }
             }
@@ -115,16 +116,25 @@ internal class QueueWatcherBackgroundService : BackgroundService
             }
             finally
             {
-                if (!String.IsNullOrEmpty(messageResult.Queue) 
-                    && messageResult.ConfirmationRequired()
-                    && jobResult.ConfirmationRecommended())
+                if (processorResult != null
+                    && baseProcessorMessage != null)
+                {
+                    if (string.IsNullOrEmpty(processorResult.ProcessId))
+                    {
+                        processorResult.ProcessId = baseProcessorMessage.ProcessId;
+                    }
+                }
+
+                if (!String.IsNullOrEmpty(processMessage?.Queue)
+                    && processMessage.ConfirmationRequired()
+                    && (processorResult.ConfirmationRecommended() || processor.ConfirmationRecommended()))
                 {
                     #region Confirm Message
 
                     try
                     {
-                        var client = await _clientService.CreateClient(connection, messageResult.Queue);
-                        await client.ConfirmDequeueAsync(messageResult.Id);
+                        var client = await _clientService.CreateClient(connection, processMessage.Queue);
+                        await client.ConfirmDequeueAsync(processMessage.Id);
                     }
                     catch (Exception ex)
                     {
@@ -134,16 +144,17 @@ internal class QueueWatcherBackgroundService : BackgroundService
                     #endregion
                 }
 
-                if (!String.IsNullOrEmpty(baseJobMessage?.ResultQueue))
+                if (!String.IsNullOrEmpty(baseProcessorMessage?.ResultQueue) && processorResult != null)
                 {
                     #region Return Result to MessageQueue
 
                     try
                     {
-                        var client = await _clientService.CreateClient(connection, baseJobMessage.ResultQueue);
+                        var client = await _clientService.CreateClient(connection, baseProcessorMessage.ResultQueue);
                         await client.EnqueueAsync(new string[]
                         {
-                            JsonSerializer.Serialize(jobResult)
+                            // cast to (object) => force serialize GenericQueueProcessorResult.Body!
+                            JsonSerializer.Serialize((object)processorResult)
                         });
                     }
                     catch (Exception ex)

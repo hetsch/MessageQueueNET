@@ -1,8 +1,10 @@
-﻿namespace MessageQueueNET.Core.Models;
+﻿using System;
+
+namespace MessageQueueNET.Core.Models;
 
 public class BaseQueueProcessorMessage
 {
-    public string JobId { get; set; } = "";
-    public string JobType { get; set; } = "";
+    public string ProcessId { get; set; } = "";
+    public string Worker { get; set; } = "";
     public string? ResultQueue { get; set; }
 }
