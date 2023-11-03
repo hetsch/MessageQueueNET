@@ -37,7 +37,7 @@ namespace MessageQueueNET
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MessageQueue.NET", Version = "v1" });
+                c.SwaggerDoc("v2", new OpenApiInfo { Title = "MessageQueue.NET", Version = "v2" });
             });
 
             services.AddQueuesService();
@@ -77,7 +77,7 @@ namespace MessageQueueNET
             if (env.IsDevelopment() || "true".Equals(Configuration["swaggerUI"], StringComparison.OrdinalIgnoreCase))
             {
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("../swagger/v1/swagger.json", $"MessageQueue.NET v{appVersion.Version}"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("../swagger/v2/swagger.json", $"MessageQueue.NET v{appVersion.Version}"));
             }
 
             restoreQueues.Restore().Wait();

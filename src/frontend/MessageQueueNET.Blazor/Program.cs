@@ -4,7 +4,7 @@ using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile(Path.Combine("_config", "dashboard.json"));
+builder.Configuration.AddJsonFile(Path.Combine("_config", "dashboard.json"), optional: true);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
