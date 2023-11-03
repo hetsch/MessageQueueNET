@@ -1,0 +1,58 @@
+@inject DashboardService DashboardService
+@inject IDialogService DialogService
+
+@inherits BaseComponent
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" Class="mr-3" />Create Queue
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.h6">
+            Type new queue name in namespace @(DashboardService.CreateQueuePattern()):
+        </MudText>
+        <MudTextField T="string" Style="width:800px;max-width:100%"
+                      Label="New Queue Name" 
+                      Variant="Variant.Text" 
+                      @bind-Value="_newQueueName"
+                      Required="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Secondary"
+                   OnClick="() => MudDialog?.Close()"
+                   Class="px-10">Close</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="Submit"
+                   Class="px-10">Add</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public MudDialogInstance? MudDialog { get; set; }
+
+    private string _newQueueName = "";
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _newQueueName = DashboardService.CreateQueuePattern().Replace("*", "");
+    }
+
+    async private Task Submit()
+    {
+        if(String.IsNullOrWhiteSpace(_newQueueName))
+        {
+            return;
+        }
+
+        if (await DashboardService.CreateQueue(_newQueueName))
+        {
+            MudDialog?.Close();
+        }
+    }
+}

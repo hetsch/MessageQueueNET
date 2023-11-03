@@ -19,15 +19,23 @@ If API authorization is used, the `ClientId` and `ClientSecret` can be passed in
 Here all methods are listed. The function is the same as described for the REST API:
 
 ```csharp
-Task<bool> EnqueueAsync(IEnumerable<string> messages)
+Task<InfoResult> ApiInfoAsync()
 ```
 
 ```csharp
-Task<MessagesResult> DequeueAsync(int count = 1, bool register = false)
+Task<ApiResult> EnqueueAsync(IEnumerable<string> messages)
 ```
 
 ```csharp
-Task<bool> ConfirmDequeueAsync(Guid messageId)
+Task<MessagesResult> DequeueAsync(
+            int count = 1, 
+            bool register = false,
+            CancellationToken? cancelationToken = null,
+            int? hashCode = null)
+```
+
+```csharp
+Task<ApiResult> ConfirmDequeueAsync(Guid messageId)
 ```
 
 ```csharp
@@ -39,22 +47,25 @@ Task<QueueLengthResult> LengthAsync()
 ```
 
 ```csharp
-Task<bool> RemoveAsync()
+Task<ApiResult> RemoveAsync(RemoveType removeType = RemoveType.Queue)
 ```
 
 ```csharp
-Task<bool> RegisterAsync(int? lifetimeSeconds = null,
-                         int? itemLifetimeSeconds = null,
-                         bool? suspendEnqueue = null,
-                         bool? suspendDequeue = null)
+Task<QueuePropertiesResult> RegisterAsync(int? lifetimeSeconds = null,
+                                          int? itemLifetimeSeconds = null,
+                                          int? confirmationPeriodSeconds = null,
+                                          int? maxUnconfirmedItems = null,
+                                          bool? suspendEnqueue = null,
+                                          bool? suspendDequeue = null)
 ```
 
 ```csharp
-Task<bool> PropertiesAsync()
+Task<QueuePropertiesResult> PropertiesAsync(CancellationToken? cancelationToken = null,
+                                            int? hashCode = null)
 ```
 
 ```csharp
-Task<IEnumerable<string>> QueueNamesAsync()
+Task<QueueNamesResult> QueueNamesAsync()
 ```
 
 Example:
@@ -69,5 +80,6 @@ var queueNames = await client.QueueNames(); // => ["my-queue-1, ..."]
 var length = await client.Length(); // => 2
 var message = await client.Dequeue(); // => ["Message1"]
 ```
+
 
 [Commandline Tools](../console/tools_en.md)

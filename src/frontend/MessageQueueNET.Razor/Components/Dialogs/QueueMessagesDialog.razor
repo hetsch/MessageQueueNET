@@ -1,0 +1,52 @@
+@using MessageQueueNET.Client.Models;
+@inject DashboardService DashboardService
+
+@inherits BaseComponent
+
+@if (_messages is not null)
+{
+    <MudDialog>
+        <TitleContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.More" Class="mr-3" />Messages: @QueueName
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudContainer Style="width:100%;max-heigth:80%;overflow-y: scroll">
+                <MudDataGrid Items="_messages.FitsSearchString(_searchString.Trim())">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6">Messages</MudText>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+                    </ToolBarContent>
+                    <Columns>
+                        <PropertyColumn Property="x => x.Id" Title="Id" Sortable="false" />
+                        <PropertyColumn Property="x=> x.CreationDateUTC.ToLocalTime()" Title="Created" Sortable="false" />
+                        <PropertyColumn Property="x => x.Value" Title="Message" Sortable="false" />
+                    </Columns>
+                </MudDataGrid>
+            </MudContainer>
+        </DialogContent>
+    </MudDialog>
+}
+
+@code {
+    [Parameter] public string QueueName { get; set; } = "";
+    [Parameter] public bool Unconfirmed { get; set; } = false;
+
+    private string _searchString = "";
+
+    private IEnumerable<MessageResult>? _messages = null;
+
+    async protected override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var messagesResult = await DashboardService.GetAllQueueMessages(QueueName, Unconfirmed);
+
+        _messages = Unconfirmed
+            ? messagesResult.UnconfirmedMessages
+            : messagesResult.Messages;
+    }
+}

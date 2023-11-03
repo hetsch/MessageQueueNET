@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MessageQueueNET.Cmd": {
+      "commandName": "Project",
+      "commandLineArgs": "https://localhost:5001 -c shell"
+    }
+  }
+}

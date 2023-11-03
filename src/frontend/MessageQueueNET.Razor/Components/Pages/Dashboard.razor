@@ -1,0 +1,35 @@
+@inject DashboardService DashboardService
+@inherits BaseComponent
+
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+
+
+<div class="main-layout">
+    <!-- Top Bar -->
+    <MudAppBar>
+        <NavHeader ToggleDarkmode="ToggleDarkmode" />
+    </MudAppBar>
+
+    <!-- scrollable Content -->
+    <div class="scrollable-content">
+        <MudContainer>
+            <ServerQueues />
+        </MudContainer>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <Footer />
+    </div>
+</div>
+
+
+@code {
+    private MudTheme _theme = new();
+    private bool _isDarkMode = true;
+
+    private void ToggleDarkmode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+}

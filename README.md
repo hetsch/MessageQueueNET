@@ -2,8 +2,6 @@
 
 A message queue API fully implemented in .NET Core
 
-[German - Deutsch](./doc/README_de.md)
-
 Message queues provide an asynchronous communication protocol, where the sender and recipient of messages do not interact with the message queue at the same time.
 Messages in the queue are stored only until the recipient retrieves them. After retrieving, a message is deleted again.
 Each message is also picked up and processed by a single recipient.
