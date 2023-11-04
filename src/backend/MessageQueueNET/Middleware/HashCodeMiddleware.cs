@@ -21,7 +21,7 @@ public class HashCodeMiddleware
     {
         string? idPattern = context.Request.Path.Value?.Split('/').Last();
 
-        if (context.Request.Headers.TryGetValue("X-MQ-HashCode", out var hashCode)
+        if (context.Request.TryGetHashCode(out var hashCode)
             && !String.IsNullOrEmpty(idPattern))
         {
             if (!String.IsNullOrEmpty(hashCode))

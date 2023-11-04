@@ -80,10 +80,12 @@
                                  OnClick="async () => await ShowQueueMessages(context.Item.QueueName, true)"
                                  Disabled="context.Item.UnconfirmedItems == 0"
                                  Variant="Variant.Filled">
-                            @(context.Item.MaxUnconfirmedItems.HasValue && context.Item.MaxUnconfirmedItems.Value>0
-                                ? $"{context.Item.UnconfirmedItems}/{context.Item.MaxUnconfirmedItems.Value}"
-                                : $"{context.Item.UnconfirmedItems}")
-                             </MudChip>
+                            @(context.Item.MaxUnconfirmedItems.HasValue && context.Item.MaxUnconfirmedItems.Value > 0
+                                ? context.Item.DequeuingClientsCount.HasValue && context.Item.DequeuingClientsCount.Value > 0
+                                    ? $"{context.Item.UnconfirmedItems}/[{context.Item.MaxUnconfirmedItems.Value}*{context.Item.DequeuingClientsCount.Value}]"
+                                    : $"{context.Item.UnconfirmedItems}/{context.Item.MaxUnconfirmedItems.Value}"
+                                : $"{context .Item.UnconfirmedItems}")
+                        </MudChip>
                     }
                 </CellTemplate>
             </TemplateColumn>

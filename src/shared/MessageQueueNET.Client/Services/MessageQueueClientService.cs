@@ -91,7 +91,7 @@ public class MessageQueueClientService
                         max += properties switch
                         {
                             { SuspendDequeue: true } => 0,
-                            { ConfirmationPeriodSeconds: > 0, MaxUnconfirmedItems: > 0 } => Math.Min(properties.Length, properties.MaxUnconfirmedItems - properties.UnconfirmedItems ?? 0),
+                            { ConfirmationPeriodSeconds: > 0, MaxUnconfirmedItems: > 0 } => Math.Min(properties.Length, properties.MaxUnconfirmedItems /*- properties.UnconfirmedItems*/ ?? 0),
                             _ => properties.Length
                         };
                     }

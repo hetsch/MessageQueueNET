@@ -10,6 +10,7 @@ namespace MessageQueueNET.Extensions
     {
         static public Queue? QueueWithOldestDequeueAbleItem(this IEnumerable<Queue> queues,
                                                             QueuesService queueService,
+                                                            string? clientId,
                                                             List<Queue> queueBag)
         {
             Queue? result = null;
@@ -24,7 +25,7 @@ namespace MessageQueueNET.Extensions
                 }
 
                 if (queue.Properties.MaxUnconfiredItems > 0
-                    && queueService.UnconfirmedMessagesCount(queue) >= queue.Properties.MaxUnconfiredItems)
+                    && queueService.UnconfirmedMessagesCount(queue, clientId) >= queue.Properties.MaxUnconfiredItems)
                 {
                     continue;
                 }
@@ -51,7 +52,7 @@ namespace MessageQueueNET.Extensions
                 else if (result == null && queueBag.Count() > 0)
                 {
                     queueBag.Clear();
-                    return QueueWithOldestDequeueAbleItem(queues, queueService, queueBag);
+                    return QueueWithOldestDequeueAbleItem(queues, queueService, clientId, queueBag);
                 }
             }
 

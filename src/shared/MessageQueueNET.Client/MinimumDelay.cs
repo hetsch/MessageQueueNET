@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Client;
@@ -21,7 +19,7 @@ internal class MinimumDelay : IAsyncDisposable
     {
         var waitMillisconds = _milliseconds - (int)(DateTime.Now - _start).TotalMilliseconds;
 
-        if(waitMillisconds > 0)
+        if (waitMillisconds > 0)
         {
             await Task.Delay(waitMillisconds);
         }

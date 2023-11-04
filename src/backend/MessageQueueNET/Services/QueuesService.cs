@@ -203,7 +203,7 @@ public class QueuesService
         return false;
     }
 
-    public int? UnconfirmedMessagesCount(Queue queue)
+    public int? UnconfirmedMessagesCount(Queue queue, string? clientId)
     {
         if (queue?.Properties == null || queue.Properties.ConfirmationPeriodSeconds <= 0)
         {
@@ -212,10 +212,32 @@ public class QueuesService
 
         if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
         {
-            return unconfirmedItems.Count;
+            if (clientId == null)
+            {
+                return unconfirmedItems.Count;
+            } 
+            else
+            {
+                return unconfirmedItems.Where(i => clientId.Equals(i.Value?.DequeuingClientId)).Count();
+            }
         }
 
         return 0;
+    }
+
+    public int? DequeuingClientsCount(Queue queue)
+    {
+        if (queue?.Properties == null || queue.Properties.ConfirmationPeriodSeconds <= 0)
+        {
+            return null;
+        }
+
+        if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
+        {
+            return unconfirmedItems.Select(i =>i.Value?.DequeuingClientId).Distinct().Count();
+        }
+
+        return null;
     }
 
     public IEnumerable<Client.Models.MessageResult>? UnconfirmedItems(Queue queue)
@@ -232,6 +254,7 @@ public class QueuesService
                                            Id = i.Id,
                                            Value = i.Message,
                                            CreationDateUTC = i.CreationDateUTC,
+                                           DequeuingClientId = i.DequeuingClientId
                                        });
 
                 return items.Count() > 0 ? items : null;

@@ -3,6 +3,7 @@ using MessageQueueNET.Client.Models;
 using MessageQueueNET.Client.Models.Authentication;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -15,6 +16,7 @@ namespace MessageQueueNET.Client
     public class QueueClient
     {
         private static HttpClient ReuseableHttpClient = new HttpClient();
+        private static string ClientId = $"{Environment.GetEnvironmentVariable("COMPUTERNAME")}-{Guid.NewGuid().ToString("N")}";
 
         private readonly HttpClient _httpClient;
         private readonly string _apiUrl;
@@ -274,8 +276,11 @@ namespace MessageQueueNET.Client
 
             if (hashCode.HasValue)
             {
-                requestMessage.Headers.Add("X-MQ-HashCode", hashCode.Value.ToString());
+                requestMessage.Headers.Add(MQHeaders.HashCode, hashCode.Value.ToString());
             }
+
+            requestMessage.Headers.Add(MQHeaders.ClientId, ClientId);
+            //Console.WriteLine($"Added Header {MQHeaders.ClientId}: {ClientId}");
         }
 
         private void CheckHttpResponse(HttpResponseMessage httpResponse)

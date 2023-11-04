@@ -42,6 +42,7 @@ namespace MessageQueueNET.Controllers
                 var queryQueues = _queues.GetQueues(idPattern);
                 var result = new MessagesResult(queryQueues.CalcHashCode());
                 var modifiedQueues = new List<Queue>();
+                var clientId = this.Request.GetClientId();
 
                 if (queryQueues.Any() == false)
                 {
@@ -53,7 +54,7 @@ namespace MessageQueueNET.Controllers
 
                 while (items.Count() < count)
                 {
-                    var queue = queryQueues.QueueWithOldestDequeueAbleItem(_queues, queueBag);
+                    var queue = queryQueues.QueueWithOldestDequeueAbleItem(_queues, clientId, queueBag);
                     if (queue is null)
                     {
                         break;
@@ -64,6 +65,7 @@ namespace MessageQueueNET.Controllers
                         if (queue.Properties.ConfirmationPeriodSeconds > 0)
                         {
                             var unconfirmedItem = item.Clone();
+                            unconfirmedItem.DequeuingClientId = clientId;
                             if (!await _persist.PersistUnconfirmedQueueItem(queue.Name, unconfirmedItem))
                             {
                                 throw new Exception("Can't unable to persist unconfirmed queue item");
@@ -241,7 +243,7 @@ namespace MessageQueueNET.Controllers
                         {
                             QueueLength = queue.Where(item => item.IsValid(queue))
                                                .Count(),
-                            UnconfirmedItems = _queues.UnconfirmedMessagesCount(queue)
+                            UnconfirmedItems = _queues.UnconfirmedMessagesCount(queue, null)
                         };
                     }
 
@@ -373,7 +375,8 @@ namespace MessageQueueNET.Controllers
 
                             Length = queue.Where(item => item.IsValid(queue))
                                           .Count(),
-                            UnconfirmedItems = queue.Properties.ConfirmationPeriodSeconds > 0 ? _queues.UnconfirmedMessagesCount(queue) : null,
+                            UnconfirmedItems = queue.Properties.ConfirmationPeriodSeconds > 0 ? _queues.UnconfirmedMessagesCount(queue, null) : null,
+                            DequeuingClientsCount = queue.Properties.ConfirmationPeriodSeconds>0 ? _queues.DequeuingClientsCount(queue) : null,
 
                             LifetimeSeconds = queue.Properties.LifetimeSeconds,
                             ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds,

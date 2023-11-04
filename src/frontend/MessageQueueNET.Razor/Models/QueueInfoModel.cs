@@ -18,4 +18,5 @@ internal class QueueInfoModel
 
     public int ConfirmationPeriodSeconds { get; set; }
     public int? MaxUnconfirmedItems { get; set; }
+    public int? DequeuingClientsCount { get; set; }
 }

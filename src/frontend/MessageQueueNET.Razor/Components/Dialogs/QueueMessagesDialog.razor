@@ -23,6 +23,10 @@
                     <Columns>
                         <PropertyColumn Property="x => x.Id" Title="Id" Sortable="false" />
                         <PropertyColumn Property="x=> x.CreationDateUTC.ToLocalTime()" Title="Created" Sortable="false" />
+                        @if (_messages.Any(m => m.DequeuingClientId != null))
+                        {
+                            <PropertyColumn Property="x => x.DequeuingClientId ?? String.Empty" Title="Deq.ClientId" Sortable="true" />
+                        }
                         <PropertyColumn Property="x => x.Value" Title="Message" Sortable="false" />
                     </Columns>
                 </MudDataGrid>
