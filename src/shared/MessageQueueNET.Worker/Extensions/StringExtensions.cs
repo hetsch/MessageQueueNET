@@ -24,6 +24,4 @@ internal static class StringExtensions
     public static bool FitsRegexPattern(this string aString, string regexPattern)
         // Use Regex.IsMatch to check if the string matches the pattern
         => Regex.IsMatch(aString, regexPattern);
-
-
 }
