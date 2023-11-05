@@ -14,15 +14,25 @@ var host = Host.CreateDefaultBuilder(args)
             .ConfigureServices((context, services) =>
             {
                 services
-                    .AddCommandLineWorker(fileOutputOptions =>
-                    {
-                        fileOutputOptions.RootPath = "C:\\temp\\mq-proccessor";
-                    })
-                    .AddQueueWatcher(config =>
-                    {
-                        config.MessageQueueApiUrl = arguments.Value.apiUrl;
-                        config.QueueNameFilter = arguments.Value.filter;
-                    });
+                    .AddCommandLineWorker(
+                        commandLineWorkerOptions =>
+                        {
+                            commandLineWorkerOptions.CommandFilters = arguments.Value.commandFilter
+                                                                                     .Split(',')
+                                                                                     .Select(c => c.Trim())
+                                                                                     .Where(c => !string.IsNullOrEmpty(c))
+                                                                                     .ToArray();
+                        },
+                        fileOutputOptions =>
+                        {
+                            fileOutputOptions.RootPath = arguments.Value.outputPath;
+                        })
+                    .AddQueueWatcher(
+                        config =>
+                        {
+                            config.MessageQueueApiUrl = arguments.Value.apiUrl;
+                            config.QueueNameFilter = arguments.Value.filter;
+                        });
             })
             .ConfigureLogging(config =>
             {

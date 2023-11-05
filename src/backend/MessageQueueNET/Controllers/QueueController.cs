@@ -81,8 +81,8 @@ namespace MessageQueueNET.Controllers
                                 Queue = queue.Name,
                                 Id = item.Id,
                                 Value = item.Message,
-                                RequireConfirmation = queue.Properties.ConfirmationPeriodSeconds > 0 ? true : null,
-                                ConfirmationPeriod = queue.Properties.ConfirmationPeriodSeconds > 0 ? queue.Properties.ConfirmationPeriodSeconds : null,
+                                RequireConfirmation = queue.Properties.RequireConfirmation() ? true : null,
+                                ConfirmationPeriod = queue.Properties.RequireConfirmation() ? queue.Properties.ConfirmationPeriodSeconds : null,
                             });
                         }
 
@@ -321,6 +321,7 @@ namespace MessageQueueNET.Controllers
                              int? itemLifetimeSeconds = null,
                              int? confirmationPeriodSeconds = null,
                              int? maxUnconfirmedItems = null,
+                             MaxUnconfirmedItemsStrategy? maxUnconfirmedItemsStrategy = null,
                              bool? suspendEnqueue = null,
                              bool? suspendDequeue = null)
         {
@@ -333,7 +334,8 @@ namespace MessageQueueNET.Controllers
                     queue.Properties.LifetimeSeconds = lifetimeSeconds.GetValueOrDefault(queue.Properties.LifetimeSeconds);
                     queue.Properties.ItemLifetimeSeconds = itemLifetimeSeconds.GetValueOrDefault(queue.Properties.ItemLifetimeSeconds);
                     queue.Properties.ConfirmationPeriodSeconds = confirmationPeriodSeconds.GetValueOrDefault(queue.Properties.ConfirmationPeriodSeconds);
-                    queue.Properties.MaxUnconfiredItems = maxUnconfirmedItems.GetValueOrDefault(queue.Properties.MaxUnconfiredItems);
+                    queue.Properties.MaxUnconfirmedItems = maxUnconfirmedItems.GetValueOrDefault(queue.Properties.MaxUnconfirmedItems);
+                    queue.Properties.MaxUnconfirmedItemsStrategy = maxUnconfirmedItemsStrategy.GetValueOrDefault(queue.Properties.MaxUnconfirmedItemsStrategy);
                     queue.Properties.SuspendEnqueue = suspendEnqueue.GetValueOrDefault(queue.Properties.SuspendEnqueue);
                     queue.Properties.SuspendDequeue = suspendDequeue.GetValueOrDefault(queue.Properties.SuspendDequeue);
 
@@ -375,14 +377,16 @@ namespace MessageQueueNET.Controllers
 
                             Length = queue.Where(item => item.IsValid(queue))
                                           .Count(),
-                            UnconfirmedItems = queue.Properties.ConfirmationPeriodSeconds > 0 ? _queues.UnconfirmedMessagesCount(queue, null) : null,
-                            DequeuingClientsCount = queue.Properties.ConfirmationPeriodSeconds>0 ? _queues.DequeuingClientsCount(queue) : null,
-
+                            UnconfirmedItems = _queues.UnconfirmedMessagesCount(queue, null),
+                            DequeuingClientsCount =  _queues.DequeuingClientsCount(queue),
+                            DequeuingClients = _queues.UnconfirmedMessagesByClient(queue),
+                            
                             LifetimeSeconds = queue.Properties.LifetimeSeconds,
                             ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds,
 
                             ConfirmationPeriodSeconds = queue.Properties.ConfirmationPeriodSeconds,
-                            MaxUnconfirmedItems = queue.Properties.MaxUnconfiredItems > 0 ? queue.Properties.MaxUnconfiredItems : null,
+                            MaxUnconfirmedItems = queue.Properties.MaxUnconfirmedItems > 0 ? queue.Properties.MaxUnconfirmedItems : null,
+                            MaxUnconfirmedItemsStrategy = queue.Properties.MaxUnconfirmedItemsStrategy,
 
                             SuspendDequeue = queue.Properties.SuspendDequeue,
                             SuspendEnqueue = queue.Properties.SuspendEnqueue,

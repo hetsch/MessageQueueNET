@@ -1,3 +1,4 @@
+@using MessageQueueNET.Client
 @using MessageQueueNET.Client.Models;
 @inject DashboardService DashboardService
 @inject IDialogService DialogService
@@ -25,6 +26,11 @@
                                      @bind-Value="_properties.ConfirmationPeriodSeconds" />
                     <MudNumericField Label="Max Unconfirmed Items"
                                      @bind-Value="_properties.MaxUnconfirmedItems" />
+                    <MudSelect Label="Max Unconformed Items Stragety" 
+                               @bind-Value="_properties.MaxUnconfirmedItemsStrategy">
+                        <MudSelectItem Value="MaxUnconfirmedItemsStrategy.Absolute">Absolute</MudSelectItem>
+                        <MudSelectItem Value="MaxUnconfirmedItemsStrategy.PerClient">Per Client</MudSelectItem>
+                    </MudSelect>
                 </MudTabPanel>
                 <MudTabPanel Text="Lifetime">
                     <MudNumericField Label="Queue [Seconds]"

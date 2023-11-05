@@ -1,4 +1,6 @@
-﻿namespace MessageQueueNET.Models
+﻿using MessageQueueNET.Client;
+
+namespace MessageQueueNET.Models
 {
     public class QueueProperties
     {
@@ -12,7 +14,8 @@
         public int ItemLifetimeSeconds { get; set; }
 
         public int ConfirmationPeriodSeconds { get; set; }
-        public int MaxUnconfiredItems { get; set; }
+        public int MaxUnconfirmedItems { get; set; }
+        public MaxUnconfirmedItemsStrategy MaxUnconfirmedItemsStrategy { get; set; }
 
         public bool SuspendEnqueue { get; set; }
         public bool SuspendDequeue { get; set; }

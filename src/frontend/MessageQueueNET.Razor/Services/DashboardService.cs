@@ -70,6 +70,7 @@ internal class DashboardService
             
             confirmationPeriodSeconds: queueProperties.ConfirmationPeriodSeconds,
             maxUnconfirmedItems: queueProperties.MaxUnconfirmedItems,
+            maxUnconfirmedItemsStrategy: queueProperties.MaxUnconfirmedItemsStrategy,
 
             suspendEnqueue: queueProperties.SuspendEnqueue,
             suspendDequeue: queueProperties.SuspendDequeue);

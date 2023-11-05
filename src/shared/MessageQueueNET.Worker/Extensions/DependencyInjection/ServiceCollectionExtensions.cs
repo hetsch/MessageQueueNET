@@ -9,10 +9,12 @@ namespace MessageQueueNET.Worker.Extensions.DependencyInjection;
 static public class ServiceCollectionExtensions
 {
     static public IServiceCollection AddCommandLineWorker(this IServiceCollection services,
+                                                          Action<CommandLineWorkerOptions> commandLineWorkerOptions,
                                                           Action<CommandLineResultFileOutputWorkerOptions> fileOutputOptions)
     {
         return services
             .AddProccessRunnerService()
+            .Configure(commandLineWorkerOptions)
             .Configure(fileOutputOptions)
             .AddTransient<IQueueProcessor, CommandLineWorker>()
             .AddTransient<IQueueProcessor, CommandLineResultConsoleOutputWorker>()

@@ -24,8 +24,13 @@ namespace MessageQueueNET.Extensions
                     continue;
                 }
 
-                if (queue.Properties.MaxUnconfiredItems > 0
-                    && queueService.UnconfirmedMessagesCount(queue, clientId) >= queue.Properties.MaxUnconfiredItems)
+                if (queue.Properties.MaxUnconfirmedItemsIsRestricted()
+                    && queueService.UnconfirmedMessagesCount(
+                          queue,
+                          queue.Properties.MaxUnconfirmedItemsStrategy switch {
+                              Client.MaxUnconfirmedItemsStrategy.PerClient => clientId,
+                              _ => null  // absolute
+                          }) >= queue.Properties.MaxUnconfirmedItems)
                 {
                     continue;
                 }

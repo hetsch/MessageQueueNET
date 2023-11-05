@@ -240,6 +240,30 @@ public class QueuesService
         return null;
     }
 
+    public IDictionary<string, int>? UnconfirmedMessagesByClient(Queue queue)
+    {
+        if (queue?.Properties == null || queue.Properties.ConfirmationPeriodSeconds <= 0)
+        {
+            return null;
+        }
+
+        if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
+        {
+            var dict = new Dictionary<string, int>();
+            var cliendIds = unconfirmedItems.Select(i => i.Value?.DequeuingClientId ?? String.Empty).Distinct();
+
+            foreach (var clientId in cliendIds)
+            {
+                dict[clientId] = unconfirmedItems
+                    .Count(i => (i.Value?.DequeuingClientId ?? String.Empty) == clientId);
+            }
+
+            return dict;
+        }
+
+        return null;
+    }
+
     public IEnumerable<Client.Models.MessageResult>? UnconfirmedItems(Queue queue)
     {
         try

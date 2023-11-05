@@ -24,7 +24,7 @@ static internal class QueueModelExtensions
 
             ConfirmationPeriodSeconds = queuePropertiesResult.Queues[q].ConfirmationPeriodSeconds,
             MaxUnconfirmedItems = queuePropertiesResult.Queues[q].MaxUnconfirmedItems,
-            DequeuingClientsCount = queuePropertiesResult.Queues[q].DequeuingClientsCount
+            DequeuingClients = queuePropertiesResult.Queues[q].DequeuingClients
         }) ?? Array.Empty<QueueInfoModel>();
 
     public static IEnumerable<QueueInfoModel> FitsSearchString(this IEnumerable<QueueInfoModel> items, string searchString)

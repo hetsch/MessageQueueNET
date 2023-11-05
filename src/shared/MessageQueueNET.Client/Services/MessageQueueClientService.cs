@@ -1,8 +1,10 @@
-﻿using MessageQueueNET.Client.Models;
+﻿using MessageQueueNET.Client.Extensions;
+using MessageQueueNET.Client.Models;
 using MessageQueueNET.Client.Services.Abstraction;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -84,22 +86,13 @@ public class MessageQueueClientService
             {
                 var propertiesResult = await client.PropertiesAsync();
 
-                if (propertiesResult.Queues?.Values != null)
-                {
-                    foreach (var properties in propertiesResult.Queues.Values)
-                    {
-                        max += properties switch
-                        {
-                            { SuspendDequeue: true } => 0,
-                            { ConfirmationPeriodSeconds: > 0, MaxUnconfirmedItems: > 0 } => Math.Min(properties.Length, properties.MaxUnconfirmedItems /*- properties.UnconfirmedItems*/ ?? 0),
-                            _ => properties.Length
-                        };
-                    }
-                }
+                max = propertiesResult.Queues?.Values
+                            .Sum(p => p.DequeueMaxRecommendation()) ?? 0;
+
             }
             await using (var minimumDelay = new MinimumDelay(1000))
             {
-                var messagesResult = await client.DequeueAsync(Math.Min(Math.Max(1, max), 100),
+                var messagesResult = await client.DequeueAsync(Math.Clamp(max, 1, 100),
                                                                cancelationToken: stoppingToken,
                                                                hashCode: hashCode);
                 hashCode = messagesResult.HashCode;

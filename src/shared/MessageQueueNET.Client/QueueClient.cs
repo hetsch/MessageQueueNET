@@ -186,6 +186,7 @@ namespace MessageQueueNET.Client
                                                                int? itemLifetimeSeconds = null,
                                                                int? confirmationPeriodSeconds = null,
                                                                int? maxUnconfirmedItems = null,
+                                                               MaxUnconfirmedItemsStrategy? maxUnconfirmedItemsStrategy = null,
                                                                bool? suspendEnqueue = null,
                                                                bool? suspendDequeue = null)
         {
@@ -206,6 +207,10 @@ namespace MessageQueueNET.Client
             if (maxUnconfirmedItems.HasValue)
             {
                 urlParameters.Add($"maxUnconfirmedItems={maxUnconfirmedItems.Value}");
+            }
+            if (maxUnconfirmedItemsStrategy.HasValue)
+            {
+                urlParameters.Add($"maxUnconfirmedItemsStrategy={maxUnconfirmedItemsStrategy.Value}");
             }
             if (suspendEnqueue.HasValue)
             {
@@ -260,6 +265,8 @@ namespace MessageQueueNET.Client
                 }
             }
         }
+
+        static internal string ClientIdentity => ClientId;
 
         #region Helper
 
