@@ -1,5 +1,6 @@
 ﻿using MessageQueueNET.Client;
 using MessageQueueNET.Client.Models;
+using MessageQueueNET.Core.Concurrency;
 using MessageQueueNET.Extensions;
 using MessageQueueNET.Models;
 using MessageQueueNET.Services;
@@ -52,51 +53,53 @@ namespace MessageQueueNET.Controllers
                 List<MessageResult> items = new List<MessageResult>();
                 List<Queue> queueBag = new List<Queue>();
 
-                while (items.Count() < count)
+                using (var mutex = await MessageQueueMultiFuzzyMutexAsync.LockAsync(queryQueues.Select(q => q.Name).ToArray()))
                 {
-                    var queue = queryQueues.QueueWithOldestDequeueAbleItem(_queues, clientId, queueBag);
-                    if (queue is null)
+                    while (items.Count() < count)
                     {
-                        break;
-                    }
-
-                    if (queue.TryDequeue(out QueueItem? item))
-                    {
-                        if (queue.Properties.ConfirmationPeriodSeconds > 0)
+                        var queue = queryQueues.QueueWithOldestDequeueAbleItem(_queues, clientId, queueBag);
+                        if (queue is null)
                         {
-                            var unconfirmedItem = item.Clone();
-                            unconfirmedItem.DequeuingClientId = clientId;
-                            if (!await _persist.PersistUnconfirmedQueueItem(queue.Name, unconfirmedItem))
+                            break;
+                        }
+
+                        if (queue.TryDequeue(out QueueItem? item))
+                        {
+                            if (queue.Properties.ConfirmationPeriodSeconds > 0)
                             {
-                                throw new Exception("Can't unable to persist unconfirmed queue item");
+                                var unconfirmedItem = item.Clone();
+                                unconfirmedItem.DequeuingClientId = clientId;
+                                if (!await _persist.PersistUnconfirmedQueueItem(queue.Name, unconfirmedItem))
+                                {
+                                    throw new Exception("Can't unable to persist unconfirmed queue item");
+                                }
+
+                                _queues.AddToUnconfirmedMessage(queue, unconfirmedItem);
                             }
 
-                            _queues.AddToUnconfirmedMessage(queue, unconfirmedItem);
-                        }
-
-                        if (await _persist.RemoveQueueItem(queue.Name, item.Id) && item.IsValid(queue))
-                        {
-                            items.Add(new MessageResult()
+                            if (await _persist.RemoveQueueItem(queue.Name, item.Id) && item.IsValid(queue))
                             {
-                                Queue = queue.Name,
-                                Id = item.Id,
-                                Value = item.Message,
-                                RequireConfirmation = queue.Properties.RequireConfirmation() ? true : null,
-                                ConfirmationPeriod = queue.Properties.RequireConfirmation() ? queue.Properties.ConfirmationPeriodSeconds : null,
-                            });
-                        }
+                                items.Add(new MessageResult()
+                                {
+                                    Queue = queue.Name,
+                                    Id = item.Id,
+                                    Value = item.Message,
+                                    RequireConfirmation = queue.Properties.RequireConfirmation() ? true : null,
+                                    ConfirmationPeriod = queue.Properties.RequireConfirmation() ? queue.Properties.ConfirmationPeriodSeconds : null,
+                                });
+                            }
 
-                        modifiedQueues.Add(queue);
+                            modifiedQueues.Add(queue);
+                        }
+                    }
+
+                    result.Messages = items;
+
+                    if (modifiedQueues.Count() > 0)
+                    {
+                        modifiedQueues.SetModified();
                     }
                 }
-
-                result.Messages = items;
-
-                if (modifiedQueues.Count() > 0)
-                {
-                    modifiedQueues.SetModified();
-                }
-
                 return result;
             }
             catch (Exception ex)
