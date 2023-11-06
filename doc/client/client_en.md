@@ -55,6 +55,7 @@ Task<QueuePropertiesResult> RegisterAsync(int? lifetimeSeconds = null,
                                           int? itemLifetimeSeconds = null,
                                           int? confirmationPeriodSeconds = null,
                                           int? maxUnconfirmedItems = null,
+                                          MaxUnconfirmedItemsStrategy? maxUnconfirmedItemsStrategy = null,
                                           bool? suspendEnqueue = null,
                                           bool? suspendDequeue = null)
 ```

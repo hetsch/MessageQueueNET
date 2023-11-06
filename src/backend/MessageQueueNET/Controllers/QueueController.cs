@@ -53,7 +53,7 @@ namespace MessageQueueNET.Controllers
                 List<MessageResult> items = new List<MessageResult>();
                 List<Queue> queueBag = new List<Queue>();
 
-                using (var mutex = await MessageQueueMultiFuzzyMutexAsync.LockAsync(queryQueues.Select(q => q.Name).ToArray()))
+                using (var mutex = await MessageQueueFuzzyMutexAsync.LockAsync("dequeue", queryQueues.Select(q => q.Name).ToArray()))
                 {
                     while (items.Count() < count)
                     {

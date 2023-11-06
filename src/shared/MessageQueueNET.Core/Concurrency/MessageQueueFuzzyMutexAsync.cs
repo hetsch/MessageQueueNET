@@ -9,7 +9,8 @@ namespace MessageQueueNET.Core.Concurrency;
 
 public class MessageQueueFuzzyMutexAsync
 {
-    private static readonly ConcurrentDictionary<string, DateTime> _mutexDirectory = new ConcurrentDictionary<string, DateTime>();
+    private static readonly ConcurrentDictionary<string, DateTime> _globalMutexDirectory = new ConcurrentDictionary<string, DateTime>();
+    private static readonly ConcurrentDictionary<string, DateTime> _keyMutexDirectory = new ConcurrentDictionary<string, DateTime>();
 
     async static public Task<IMutex> LockAsync(string key, int timeoutMilliSeconds = 20000)
     {
@@ -19,7 +20,7 @@ public class MessageQueueFuzzyMutexAsync
 
         while (true)
         {
-            if (_mutexDirectory.TryAdd(key, DateTime.Now))
+            if (_globalMutexDirectory.TryAdd(key, DateTime.Now))
             {
                 break;
             }
@@ -35,63 +36,25 @@ public class MessageQueueFuzzyMutexAsync
             }
         }
 
-        return new Mutex(key, wasBlocked);
+        return new GlobalMutex(key, wasBlocked);
     }
 
-    #region Classes
-
-    public interface IMutex : IDisposable
+    async static public Task<IMutex> LockAsync(string globalKey, string[] keys, int timeoutMilliSeconds = 20000)
     {
-        bool WasBlocked { get; }
-    }
-
-    private class Mutex : IMutex
-    {
-        private readonly string _key;
-        private readonly bool _wasBlocked;
-        public Mutex(string key, bool hadLocks)
-        {
-            _key = key;
-            _wasBlocked = hadLocks;
-        }
-
-        public bool WasBlocked => _wasBlocked;
-
-        #region IDisposable
-
-        public void Dispose()
-        {
-            if (!_mutexDirectory.TryRemove(_key, out DateTime removed))
-            {
-
-            }
-        }
-
-        #endregion
-    }
-
-    #endregion
-}
-
-public class MessageQueueMultiFuzzyMutexAsync
-{
-    private static readonly ConcurrentDictionary<string, DateTime> _mutexDirectory = new ConcurrentDictionary<string, DateTime>();
-
-    async static public Task<IMutex> LockAsync(string[] keys, int timeoutMilliSeconds = 20000)
-    {
-        using (var globalMutex = await MessageQueueFuzzyMutexAsync.LockAsync(Guid.NewGuid().ToString()))
+        using (var globalMutex = await MessageQueueFuzzyMutexAsync.LockAsync(globalKey))
         {
             List<IMutex> mutexList = new List<IMutex>();
 
+            var random = new Random(Environment.TickCount);
+            var start = DateTime.Now;
+
             foreach (var key in keys.Distinct().ToArray())
             {
-                var random = new Random(Environment.TickCount);
-                var start = DateTime.Now;
                 bool wasBlocked = false;
 
                 while (true)
                 {
-                    if (_mutexDirectory.TryAdd(key, DateTime.Now))
+                    if (_keyMutexDirectory.TryAdd(key, DateTime.Now))
                     {
                         break;
                     }
@@ -116,6 +79,36 @@ public class MessageQueueMultiFuzzyMutexAsync
 
     #region Classes
 
+    public interface IMutex : IDisposable
+    {
+        bool WasBlocked { get; }
+    }
+
+    private class GlobalMutex : IMutex
+    {
+        private readonly string _key;
+        private readonly bool _wasBlocked;
+        public GlobalMutex(string key, bool hadLocks)
+        {
+            _key = key;
+            _wasBlocked = hadLocks;
+        }
+
+        public bool WasBlocked => _wasBlocked;
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            if (!_globalMutexDirectory.TryRemove(_key, out DateTime removed))
+            {
+
+            }
+        }
+
+        #endregion
+    }
+
     private class KeyMutex : IMutex
     {
         private readonly string _key;
@@ -132,7 +125,7 @@ public class MessageQueueMultiFuzzyMutexAsync
 
         public void Dispose()
         {
-            if (!_mutexDirectory.TryRemove(_key, out DateTime removed))
+            if (!_keyMutexDirectory.TryRemove(_key, out DateTime removed))
             {
 
             }
@@ -150,12 +143,12 @@ public class MessageQueueMultiFuzzyMutexAsync
             _mutexList = mutexList;
         }
 
-        public bool WasBlocked => _mutexList.Any(m=>m.WasBlocked);
+        public bool WasBlocked => _mutexList.Any(m => m.WasBlocked);
 
         public void Dispose()
         {
-            foreach(var mutex in _mutexList) 
-            { 
+            foreach (var mutex in _mutexList)
+            {
                 mutex.Dispose();
             }
 

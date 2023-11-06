@@ -285,8 +285,11 @@ This value can be used to ensure that the successful processing of a message fro
 must be confirmed. Otherwise, this message is automatically added back to the queue.
 A value ``0`` means that messages do not have to be confirmed and disappear completely from the queue after a ``dequeue``.
 - **maxUnconfirmedItems <int>**:
-Maximum number than can be dequeued and be in an unconfirmed status. If this number is reached, no ``dequeue`` is
-possible until items will get confirmed
+Maximum number than can be dequeued and be in an unconfirmed status. If this number is reached, no ``dequeue`` is possible until items will get confirmed
+- **maxUnconfirmedItemsStrategy <int>**:
+The strategy, the maximum for unconfirmed items are calculated:
+  * 0 ... **Absolute** maxUnconfirmedItems is the absolute value
+  * 1 ... **Per Client** maxUnconfirmedItems is per client
 - **suspendEnqueue <bool>**: 
 If you set this werr to ``true``, no more values can be added to this queue until the value is set back to ``false``.
 - **suspendDequeue <bool>**: 
