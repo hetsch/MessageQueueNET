@@ -31,7 +31,7 @@ public class HashCodeMiddleware
                 {
                     var queues = queueService.GetQueues(idPattern!, false);
 
-                    if(queues.CalcHashCode().ToString() != hashCode)
+                    if (queues.CalcHashCode().ToString() != hashCode)
                     {
                         break;
                     }

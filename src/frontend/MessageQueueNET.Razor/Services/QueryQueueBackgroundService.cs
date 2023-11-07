@@ -39,7 +39,7 @@ internal class QueryQueueBackgroundService : BackgroundService
                         {
                             try
                             {
-                                await foreach (var propertiesResult in _clientService.GetNextQueueProperties(new MessageQueueConnection(queue.Url), 
+                                await foreach (var propertiesResult in _clientService.GetNextQueueProperties(new MessageQueueConnection(queue.Url),
                                                                                                              queue.Filter,
                                                                                                              stoppingToken))
                                 {

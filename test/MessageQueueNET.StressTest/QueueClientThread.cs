@@ -40,12 +40,12 @@ internal class QueueClientThread
                 {
                     _client.EnqueueAsync(new string[] { randomNumber.ToString() }).Wait();
                 }
-            } 
-            catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine($"{_queueName}: {ex.Message}");
             }
-            
+
             Thread.Sleep(10);
         }
 

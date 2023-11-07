@@ -10,7 +10,7 @@ static internal class MessageQueueResultExtensions
            && messageResult.RequireConfirmation == true;
 
     static public int CurrentClientUnconfirmedCount(this QueueProperties properties)
-        => properties.DequeuingClients?.TryGetValue(QueueClient.ClientIdentity, out var count) == true 
+        => properties.DequeuingClients?.TryGetValue(QueueClient.ClientIdentity, out var count) == true
         ? count
         : 0;
 

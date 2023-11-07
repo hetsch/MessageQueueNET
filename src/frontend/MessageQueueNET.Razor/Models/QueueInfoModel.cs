@@ -18,5 +18,5 @@ internal class QueueInfoModel
 
     public int ConfirmationPeriodSeconds { get; set; }
     public int? MaxUnconfirmedItems { get; set; }
-    public IDictionary<string,int>? DequeuingClients { get; set; }
+    public IDictionary<string, int>? DequeuingClients { get; set; }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MessageQueueNET.Worker.Extensions;
@@ -13,7 +11,7 @@ internal static class StringExtensions
         => $"^{Regex.Escape(pattern).Replace(@"\*", ".*")}$"; // $"^{pattern.Replace("*", ".*")}$"; 
 
     public static bool FitsPattern(this string aString, string pattern)
-        => !String.IsNullOrEmpty(pattern) 
+        => !String.IsNullOrEmpty(pattern)
             && aString.FitsRegexPattern(pattern.ToRegexPattern());
 
     public static bool FitsAnyPattern(this string aString, string[] patterns)

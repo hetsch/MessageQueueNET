@@ -1,6 +1,4 @@
-﻿using MessageQueueNET.Core.Models;
-
-namespace MessageQueueNET.Core.Services.Abstraction;
+﻿namespace MessageQueueNET.Core.Services.Abstraction;
 
 public interface IQueueProcessor
 {

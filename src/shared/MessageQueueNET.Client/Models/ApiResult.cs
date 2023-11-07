@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MessageQueueNET.Client.Models;
+﻿namespace MessageQueueNET.Client.Models;
 
 public class ApiResult
 {

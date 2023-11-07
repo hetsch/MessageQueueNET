@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MessageQueueNET.Core.Models;
+﻿namespace MessageQueueNET.Core.Models;
 
 public class BaseQueueProcessorMessage
 {

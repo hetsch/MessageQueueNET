@@ -1,6 +1,5 @@
 ﻿using MessageQueueNET.Core.Models;
 using MessageQueueNET.Core.Services.Abstraction;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 

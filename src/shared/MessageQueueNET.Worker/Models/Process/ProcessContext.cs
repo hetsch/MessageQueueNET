@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MessageQueueNET.Worker.Models.Process;
+﻿namespace MessageQueueNET.Worker.Models.Process;
 
 public class ProcessContext
 {

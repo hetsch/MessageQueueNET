@@ -3,7 +3,6 @@ using MessageQueueNET.Client.Models;
 using MessageQueueNET.Client.Models.Authentication;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -16,7 +15,7 @@ namespace MessageQueueNET.Client
     public class QueueClient
     {
         private static HttpClient ReuseableHttpClient = new HttpClient();
-        private static string ClientId = $"{Environment.GetEnvironmentVariable("COMPUTERNAME")}-{Guid.NewGuid().ToString("N")}";
+        private static string ClientId = $"{Environment.GetEnvironmentVariable("COMPUTERNAME")}-{Guid.NewGuid():N}";
 
         private readonly HttpClient _httpClient;
         private readonly string _apiUrl;
@@ -43,7 +42,7 @@ namespace MessageQueueNET.Client
             string clientId = "", clientSecret = "";
             if (connection.Authentication is BasicAuthentication basicAuth)
             {
-                clientId = basicAuth.Username; 
+                clientId = basicAuth.Username;
                 clientSecret = basicAuth.Password;
             }
 
@@ -84,7 +83,7 @@ namespace MessageQueueNET.Client
         }
 
         async public Task<MessagesResult> DequeueAsync(
-            int count = 1, 
+            int count = 1,
             bool register = false,
             CancellationToken? cancelationToken = null,
             int? hashCode = null)
@@ -162,7 +161,7 @@ namespace MessageQueueNET.Client
                 {
                     CheckHttpResponse(httpResponse);
 
-                    return Result.Deserialize<QueueLengthResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);;
+                    return Result.Deserialize<QueueLengthResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions); ;
                 }
             }
         }

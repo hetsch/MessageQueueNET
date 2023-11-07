@@ -215,7 +215,7 @@ public class QueuesService
             if (clientId == null)
             {
                 return unconfirmedItems.Count;
-            } 
+            }
             else
             {
                 return unconfirmedItems.Where(i => clientId.Equals(i.Value?.DequeuingClientId)).Count();
@@ -234,7 +234,7 @@ public class QueuesService
 
         if (_unconfirmedItems.TryGetValue(queue.Name, out ConcurrentDictionary<Guid, QueueItem>? unconfirmedItems))
         {
-            return unconfirmedItems.Select(i =>i.Value?.DequeuingClientId).Distinct().Count();
+            return unconfirmedItems.Select(i => i.Value?.DequeuingClientId).Distinct().Count();
         }
 
         return null;

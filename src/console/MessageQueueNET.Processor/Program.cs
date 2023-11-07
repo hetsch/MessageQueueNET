@@ -34,9 +34,22 @@ var host = Host.CreateDefaultBuilder(args)
                             config.QueueNameFilter = arguments.Value.filter;
                         });
             })
-            .ConfigureLogging(config =>
+            .ConfigureLogging(logging =>
             {
-                config.SetMinimumLevel(LogLevel.Warning);
+                logging.AddFilter("System", LogLevel.Warning);
+                logging.AddFilter("Microsoft", LogLevel.Warning);
+
+                logging.AddFilter((provider, category, logLevel) =>
+                {
+                    if (category?.StartsWith("System.") == false
+                        && category.StartsWith("Microsoft.") == false)
+                    {
+                        return logLevel >= LogLevel.Information;
+                    }
+
+                    return false;
+                });
+                //config.SetMinimumLevel(LogLevel.Warning);
             })
             .Build();
 

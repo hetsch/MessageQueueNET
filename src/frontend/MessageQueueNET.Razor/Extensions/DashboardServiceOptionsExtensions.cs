@@ -12,7 +12,7 @@ static internal class DashboardServiceOptionsExtensions
 
     async static public ValueTask<QueueClient> GetQueueClient(this DashboardServiceOptions options,
                                                               MessageQueueClientService clientService,
-                                                              string modelName, 
+                                                              string modelName,
                                                               string queueName)
         => await clientService.CreateClient(
             new MessageQueueConnection(options.QueueModelByName(modelName).Url), queueName);

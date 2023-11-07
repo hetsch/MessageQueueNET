@@ -168,4 +168,3 @@ internal class QueueWatcherBackgroundService : BackgroundService
         }, messageResult, stoppingToken);
     }
 }
-    

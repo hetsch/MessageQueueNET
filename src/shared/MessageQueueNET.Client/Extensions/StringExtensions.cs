@@ -1,7 +1,5 @@
 ﻿using MessageQueueNET.Core.Models;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 
 namespace MessageQueueNET.Client.Extensions;

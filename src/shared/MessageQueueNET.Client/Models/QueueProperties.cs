@@ -11,7 +11,7 @@ namespace MessageQueueNET.Client.Models
         public int Length { get; set; }
         public int? UnconfirmedItems { get; set; }
         public int? DequeuingClientsCount { get; set; }
-        
+
 
         public IDictionary<string, int>? DequeuingClients { get; set; }
 

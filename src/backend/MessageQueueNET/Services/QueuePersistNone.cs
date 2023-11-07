@@ -32,9 +32,9 @@ namespace MessageQueueNET.Services
 
         public Task<bool> RemoveQueue(string queueName)
             => Task.FromResult(true);
-        public Task<bool> RemoveQueueMessages(string queueName) 
+        public Task<bool> RemoveQueueMessages(string queueName)
             => Task.FromResult(true);
-        public Task<bool> RemoveQueueUnconfirmedMessages(string queueName) 
+        public Task<bool> RemoveQueueUnconfirmedMessages(string queueName)
             => Task.FromResult(true);
 
         public Task<bool> RemoveQueueItem(string queueName, Guid itemId)

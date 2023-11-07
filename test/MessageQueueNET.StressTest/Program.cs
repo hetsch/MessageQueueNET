@@ -4,7 +4,7 @@ CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
 for (int i = 1; i <= 10; i++)
 {
-   var queueThread = new QueueClientThread($"test.queue{i}", cancellationToken);
+    var queueThread = new QueueClientThread($"test.queue{i}", cancellationToken);
     queueThread.Start();
 }
 

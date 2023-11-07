@@ -27,7 +27,8 @@ namespace MessageQueueNET.Extensions
                 if (queue.Properties.MaxUnconfirmedItemsIsRestricted()
                     && queueService.UnconfirmedMessagesCount(
                           queue,
-                          queue.Properties.MaxUnconfirmedItemsStrategy switch {
+                          queue.Properties.MaxUnconfirmedItemsStrategy switch
+                          {
                               Client.MaxUnconfirmedItemsStrategy.PerClient => clientId,
                               _ => null  // absolute
                           }) >= queue.Properties.MaxUnconfirmedItems)
@@ -35,7 +36,7 @@ namespace MessageQueueNET.Extensions
                     continue;
                 }
 
-                if(querymManyQueues && queueBag.Contains(queue)) // already took from here, take other if possible
+                if (querymManyQueues && queueBag.Contains(queue)) // already took from here, take other if possible
                 {
                     continue;
                 }
@@ -68,7 +69,7 @@ namespace MessageQueueNET.Extensions
         {
             int hashCode = 0;
 
-            foreach (var queue in queues.OrderBy(q=>q.Name))
+            foreach (var queue in queues.OrderBy(q => q.Name))
             {
                 hashCode = HashCode.Combine(hashCode, queue.LastModifiedUTC);
             }

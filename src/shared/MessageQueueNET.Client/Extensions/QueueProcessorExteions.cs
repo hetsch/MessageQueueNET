@@ -1,8 +1,4 @@
-﻿using MessageQueueNET.Core.Models;
-using MessageQueueNET.Core.Services.Abstraction;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using MessageQueueNET.Core.Services.Abstraction;
 
 namespace MessageQueueNET.Client.Extensions;
 

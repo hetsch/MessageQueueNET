@@ -103,7 +103,7 @@ namespace MessageQueueNET.Cmd
 
             Console.WriteLine("  length: number of messages in a queue");
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
-            Console.WriteLine("     -full   ... unconfirmed also"); 
+            Console.WriteLine("     -full   ... unconfirmed also");
             Console.WriteLine();
 
             Console.WriteLine("  all: lists all messages in a queue without dequeing any item");
@@ -162,7 +162,7 @@ namespace MessageQueueNET.Cmd
                             }
                         };
 
-                        if (!(await client.EnqueueAsync(new string[] 
+                        if (!(await client.EnqueueAsync(new string[]
                             {
                                 JsonSerializer.Serialize(message)
                             })).Success)
@@ -246,7 +246,7 @@ namespace MessageQueueNET.Cmd
 
                 Console.WriteLine("registered queue properties:");
                 Console.WriteLine("----------------------------");
-                if (queuePropertiesResult?.Queues != null) 
+                if (queuePropertiesResult?.Queues != null)
                 {
                     foreach (var queueName in queuePropertiesResult.Queues.Keys)
                     {
@@ -302,9 +302,9 @@ namespace MessageQueueNET.Cmd
                     {
                         Console.WriteLine($"{queueName}:");
 
-                        foreach (var m in messagesResult.Messages.Where(m=>m.Queue == queueName))
+                        foreach (var m in messagesResult.Messages.Where(m => m.Queue == queueName))
                         {
-                            
+
                             if (cmdArguments.ShowFullItem)
                             {
                                 Console.WriteLine($"{m.Id}:{m?.Value ?? "<null>"}");

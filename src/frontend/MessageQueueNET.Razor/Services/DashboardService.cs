@@ -67,7 +67,7 @@ internal class DashboardService
         await client.RegisterAsync(
             lifetimeSeconds: queueProperties.LifetimeSeconds,
             itemLifetimeSeconds: queueProperties.ItemLifetimeSeconds,
-            
+
             confirmationPeriodSeconds: queueProperties.ConfirmationPeriodSeconds,
             maxUnconfirmedItems: queueProperties.MaxUnconfirmedItems,
             maxUnconfirmedItemsStrategy: queueProperties.MaxUnconfirmedItemsStrategy,

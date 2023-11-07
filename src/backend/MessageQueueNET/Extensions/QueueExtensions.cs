@@ -13,7 +13,7 @@ static public class QueueExtensions
 
     static public void SetModified(this IEnumerable<Queue> queues)
     {
-        foreach(var queue in queues)
+        foreach (var queue in queues)
         {
             queue.SetModified();
         }

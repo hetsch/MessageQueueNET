@@ -381,9 +381,9 @@ namespace MessageQueueNET.Controllers
                             Length = queue.Where(item => item.IsValid(queue))
                                           .Count(),
                             UnconfirmedItems = _queues.UnconfirmedMessagesCount(queue, null),
-                            DequeuingClientsCount =  _queues.DequeuingClientsCount(queue),
+                            DequeuingClientsCount = _queues.DequeuingClientsCount(queue),
                             DequeuingClients = _queues.UnconfirmedMessagesByClient(queue),
-                            
+
                             LifetimeSeconds = queue.Properties.LifetimeSeconds,
                             ItemLifetimeSeconds = queue.Properties.ItemLifetimeSeconds,
 

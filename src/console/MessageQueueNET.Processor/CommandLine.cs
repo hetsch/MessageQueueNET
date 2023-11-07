@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
-
-namespace MessageQueueNET.Processor;
+﻿namespace MessageQueueNET.Processor;
 internal class CommandLine
 {
     public (string apiUrl, string filter, string outputPath, string commandFilter)? Parse(string[] args)
@@ -69,8 +67,8 @@ internal class CommandLine
             }
         }
 
-        if (apiUrl is not null 
-            && filterPattern is not null 
+        if (apiUrl is not null
+            && filterPattern is not null
             && outputPath is not null
             && commandFilter is not null)
         {

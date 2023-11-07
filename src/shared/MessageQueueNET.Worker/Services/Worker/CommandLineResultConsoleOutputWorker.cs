@@ -1,7 +1,6 @@
 ﻿using MessageQueueNET.Core.Models;
 using MessageQueueNET.Core.Services.Abstraction;
 using MessageQueueNET.Worker.Models.Worker;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Text;
 using System.Threading;

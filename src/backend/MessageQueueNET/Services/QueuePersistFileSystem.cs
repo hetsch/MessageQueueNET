@@ -170,7 +170,7 @@ namespace MessageQueueNET.Services
                 {
                     foreach (var fi in di.GetFiles())
                     {
-                        if(fi.Name.StartsWith("_"))
+                        if (fi.Name.StartsWith("_"))
                         {
                             continue;  // eg: _queue.properties.json
                         }
