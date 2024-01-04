@@ -114,7 +114,7 @@ namespace MessageQueueNET.Cmd
             Console.WriteLine("     -full   ... show id and message");
             Console.WriteLine();
 
-            Console.WriteLine("  enqueue: enqueies messages");
+            Console.WriteLine("  enqueue: enqueues messages");
             Console.WriteLine("  ----------------------------------------------------------------------------------------------------");
             Console.WriteLine("  options:");
             Console.WriteLine("     -m message1 -m message2");
@@ -155,6 +155,8 @@ namespace MessageQueueNET.Cmd
                             ProcessId = m,
                             Worker = CommandLineWorker.WorkerIdentifier,
                             ResultQueue = $"{cmdArguments.QueueName}.results",
+                            Subject = cmdArguments.WorkerCommand.Replace("\\","/").Split('/').Last(),
+                            Publisher = Environment.UserName,
                             Body = new()
                             {
                                 Command = cmdArguments.WorkerCommand,
