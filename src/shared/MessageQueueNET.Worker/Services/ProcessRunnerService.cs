@@ -16,7 +16,9 @@ public partial class ProcessRunnerService
         _logger = logger;
     }
 
-    public Task Run(ProcessContext context)
+    public Task Run(
+        ProcessContext context,
+        Action<int>? onProcessStarted = null)
     {
         var task = new Task(() =>
         {
@@ -38,6 +40,8 @@ public partial class ProcessRunnerService
                 {
                     StringBuilder output = new(),
                                   stdErr = new();
+
+                    onProcessStarted?.Invoke(process.Id);
 
                     process.OutputDataReceived += (sender, outLine) =>
                     {

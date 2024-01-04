@@ -32,7 +32,10 @@ public class CommandLineWorker : IGenericQueueProcessor<CommandLineWorkerMessage
 
     public bool ConfirmAlways => true;
 
-    async public Task<QueueProcessorResult> ProcessGeneric(GenericQueueProcessorMessage<CommandLineWorkerMessage> message, CancellationToken cancellationToken)
+    async public Task<QueueProcessorResult> ProcessGeneric(
+            GenericQueueProcessorMessage<CommandLineWorkerMessage> 
+            message, CancellationToken cancellationToken
+        )
     {
         ProcessContext? proccessContext = null;
 
@@ -55,7 +58,9 @@ public class CommandLineWorker : IGenericQueueProcessor<CommandLineWorkerMessage
             };
 
 
-            await _runnerService.Run(proccessContext);
+            await _runnerService.Run(proccessContext,
+                onProcessStarted: (procId) => _logger.LogInformation("Process started with proc-id: {procId}", procId)
+            );
 
             return new GenericQueueProcessorResult<CommandLineWorkerResultBody>()
             {

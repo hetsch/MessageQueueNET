@@ -116,12 +116,20 @@ internal class QueueWatcherBackgroundService : BackgroundService
             }
             finally
             {
-                if (processorResult != null
-                    && baseProcessorMessage != null)
+                if (processorResult is not null
+                    && baseProcessorMessage is not null)
                 {
                     if (string.IsNullOrEmpty(processorResult.ProcessId))
                     {
                         processorResult.ProcessId = baseProcessorMessage.ProcessId;
+                    }
+                    if (string.IsNullOrEmpty(processorResult.Publisher))
+                    {
+                        processorResult.Publisher = baseProcessorMessage.Publisher;
+                    }
+                    if (string.IsNullOrEmpty(processorResult.Subject))
+                    {
+                        processorResult.Subject = baseProcessorMessage.Subject;
                     }
                 }
 
