@@ -18,4 +18,4 @@ Each message is also picked up and processed by a single recipient.
 
 [Commandline Tools](./doc/console/tools_en.md)
 
-[Commandline Tools](./doc/queue-worker/queue-worker_en.md)
+[Queue Worker Pattern](./doc/queue-worker/queue-worker_en.md)
