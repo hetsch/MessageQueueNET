@@ -173,6 +173,28 @@ namespace MessageQueueNET.Cmd
                         }
                     }
                 }
+                else if(true)
+                {
+                    foreach (var m in cmdArguments.Messages)
+                    {
+                        var message = new BaseQueueProcessorMessage()
+                        {
+                            ProcessId = m,
+                            Worker = "mq.ping",
+                            ResultQueue = $"ping.response.{cmdArguments.QueueName}",
+                            Subject = "ping",
+                            Publisher = Environment.UserName,
+                        };
+
+                        if (!(await client.EnqueueAsync(new string[]
+                            {
+                                JsonSerializer.Serialize(message)
+                            })).Success)
+                        {
+                            throw new Exception($"Can't enqueue messages...");
+                        }
+                    }
+                }
                 else
                 {
                     #region Simple Messages

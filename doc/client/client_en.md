@@ -51,6 +51,10 @@ Task<ApiResult> RemoveAsync(RemoveType removeType = RemoveType.Queue)
 ```
 
 ```csharp
+Task<ApiResult> DeleteMessage(Guid messageId)
+```
+
+```csharp
 Task<QueuePropertiesResult> RegisterAsync(int? lifetimeSeconds = null,
                                           int? itemLifetimeSeconds = null,
                                           int? confirmationPeriodSeconds = null,

@@ -121,6 +121,13 @@ internal class DashboardService
         return (await client.RemoveAsync(removeType)).Success;
     }
 
+    async public Task<bool> DeleteMessage(string queueName, Guid messageId)
+    {
+        var client = await _options.GetQueueClient(_clientService, SelectedServerName, queueName);
+
+        return (await client.DeleteMessage(messageId)).Success;
+    }
+
     public bool CanDeleteMany()
         => !string.IsNullOrEmpty(DeleteManyQueuePattern());
 

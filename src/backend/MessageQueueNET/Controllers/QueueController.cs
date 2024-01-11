@@ -170,6 +170,29 @@ namespace MessageQueueNET.Controllers
         }
 
         [HttpGet]
+        [Route("deletemessage/{id}")]
+        async public Task<ApiResult> DeleteMessage(string id, Guid messageId)
+        {
+            try
+            {
+                var queue = _queues.GetQueue(id);
+                var success = queue.TryDelete(messageId);
+
+                if(success)
+                {
+                    await _persist.RemoveQueueItem(queue.Name, messageId);
+                    queue.SetModified();
+                }
+
+                return new ApiResult(queue.CalcHashCode()) { Success = success };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResult().AddExceptionMessage(ex);
+            }
+        }
+
+        [HttpGet]
         [Route("all/{idPattern}")]
         public MessagesResult AllMessages(string idPattern, int max = 0, bool unconfirmedOnly = false)
         {

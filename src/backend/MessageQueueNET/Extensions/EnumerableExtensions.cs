@@ -19,7 +19,7 @@ namespace MessageQueueNET.Extensions
 
             foreach (var queue in queues)
             {
-                if (queue.Properties.SuspendDequeue == true || queue.Count() == 0)
+                if (queue.Properties.SuspendDequeue == true || queue.Count == 0)
                 {
                     continue;
                 }

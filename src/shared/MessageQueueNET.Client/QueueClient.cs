@@ -136,6 +136,21 @@ namespace MessageQueueNET.Client
             }
         }
 
+        async public Task<ApiResult> DeleteMessage(Guid messageId)
+        {
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_apiUrl}/queue/deletemessage/{_queueName}?messageId={messageId}"))
+            {
+                ModifyHttpRequest(requestMessage);
+
+                using (var httpResponse = await _httpClient.SendAsync(requestMessage))
+                {
+                    CheckHttpResponse(httpResponse);
+
+                    return Result.Deserialize<ApiResult>(await httpResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                }
+            }
+        }
+
         async public Task<MessagesResult> AllMessagesAsync(int max = 0, bool unconfirmedOnly = false)
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_apiUrl}/queue/all/{_queueName}?max={max}&unconfirmedOnly={unconfirmedOnly}"))

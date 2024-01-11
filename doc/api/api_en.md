@@ -271,6 +271,31 @@ GET /Queue/remove/test.*?removeType=0
 }
 ```
 
+### /Queue/deletemessage/{id}
+
+Delete a single message from an queue
+
+- **Method**: `GET`
+- **Parameters**:
+  - `id`: String (path, required) - ID of the queue.
+  - `messageId`: UUID (query, required) - ID of the message to confirm.
+
+#### Example
+
+**Request**
+
+```http
+GET /Queue/deletemessage/test?messageId=d290f1ee-6c54-4b01-90e6-d701748f0851
+```
+
+**Response**
+
+```json
+{
+  "success": true
+}
+```
+
 ### /Queue/register/{idPattern}
 
 Creates a queue with no values (if the queue does not already exist). Other processes can then see the queue using `/queue/queuenames`.

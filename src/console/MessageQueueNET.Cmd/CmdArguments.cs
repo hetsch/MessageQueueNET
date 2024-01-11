@@ -22,6 +22,7 @@ namespace MessageQueueNET.Cmd
         public bool? SuspendEnqueue { get; set; }
         public bool? SuspendDequeue { get; set; }
         public string WorkerCommand { get; set; }
+        public bool PingWorker { get; set; } = false;
         public List<string> Messages { get; set; }
         public Guid MessageId { get; set; }
         public bool ShowFullItem { get; set; }
@@ -43,6 +44,9 @@ namespace MessageQueueNET.Cmd
                         break;
                     case "-workercmd":
                         this.WorkerCommand = args[++i];
+                        break;
+                    case "-ping":
+                        this.PingWorker = true;
                         break;
                     case "-m":
                         this.Messages.Add(args[++i]);
