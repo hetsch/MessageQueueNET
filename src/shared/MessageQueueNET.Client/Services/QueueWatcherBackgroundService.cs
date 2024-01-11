@@ -40,6 +40,17 @@ internal class QueueWatcherBackgroundService : BackgroundService
 
         var connection = new MessageQueueConnection(_options.MessageQueueApiUrl);
 
+        if (_options.TryRegisterQueues)
+        {
+            foreach(var queuePatern in _options.QueueNameFilter.Split(',')
+                                               .Where(n => !n.Contains("*"))
+                                               .Select(n => n.Trim()))
+            {
+                var client = await _clientService.CreateClient(connection, queuePatern);
+                await client.RegisterAsync();
+            }
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
