@@ -28,7 +28,7 @@ static public class ServiceCollectionExtensoins
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
             {
                 SslProtocols = SslProtocols.Tls11 | SslProtocols.Tls12 | /*SslProtocols.Tls13 |*/ SslProtocols.Tls
-                //,ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+                ,ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
             });
 
         return services

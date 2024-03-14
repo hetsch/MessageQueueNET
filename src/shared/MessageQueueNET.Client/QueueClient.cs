@@ -29,7 +29,10 @@ namespace MessageQueueNET.Client
         {
             if (httpClient == null && ReuseableHttpClient == null)
             {
-                ReuseableHttpClient = new HttpClient();
+                ReuseableHttpClient = new HttpClient(new HttpClientHandler()
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                });
             }
 
             _httpClient = httpClient ?? ReuseableHttpClient;
