@@ -8,8 +8,8 @@
 
 	<PropertyGroup>
 		<AssemblyName>MessageQueueNET.Client</AssemblyName>
-		<Version>2.24.201</Version>
-		<Copyright>2023, Jürgen Gstaltmaier</Copyright>
+		<Version>2.24.1101</Version>
+		<Copyright>2024, Jürgen Gstaltmaier</Copyright>
 		<PackageProjectUrl>https://github.com/jugstalt/MessageQueueNET</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/jugstalt/MessageQueueNET</RepositoryUrl>
 		<Authors>Jürgen Gstaltmaier</Authors>
