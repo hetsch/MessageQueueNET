@@ -51,9 +51,9 @@ namespace MessageQueueNET
                         {
                             Console.WriteLine(configContent);
 
-                            var configTargetes = new List<string>(new string[] { $"{fiConfig.Directory!.FullName}/message-queue.json" });
+                            var configTargets = new List<string>(new string[] { $"{fiConfig.Directory!.FullName}/message-queue.json" });
 
-                            foreach (var configTarget in configTargetes)
+                            foreach (var configTarget in configTargets)
                             {
                                 fiConfig = new FileInfo(configTarget);
 
