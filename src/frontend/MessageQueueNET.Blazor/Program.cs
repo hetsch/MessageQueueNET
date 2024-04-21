@@ -4,6 +4,11 @@ using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#if DEBUG
+// Aspire
+builder.AddServiceDefaults();
+#endif
+
 builder.Configuration.AddJsonFile(Path.Combine("_config", "dashboard.json"), optional: true);
 
 // Add services to the container.
@@ -29,6 +34,11 @@ builder.Services.AddDashboardService(config =>
 });
 
 var app = builder.Build();
+
+#if DEBUG
+// Aspire
+app.MapDefaultEndpoints();
+#endif
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

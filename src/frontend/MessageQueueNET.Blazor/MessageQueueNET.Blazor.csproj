@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\aspire\MessageQueueNET.ServiceDefaults\MessageQueueNET.ServiceDefaults.csproj" />
     <ProjectReference Include="..\MessageQueueNET.Razor\MessageQueueNET.Razor.csproj" />
   </ItemGroup>
 

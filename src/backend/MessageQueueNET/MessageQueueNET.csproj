@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>MessageQueueNET</RootNamespace>
     <AssemblyName>MessageQueueNET</AssemblyName>
-	<LangVersion>11</LangVersion>
+	<LangVersion>12</LangVersion>
 	<Nullable>enable</Nullable>  
     <UserSecretsId>dac92db3-dbf3-47e8-81ec-7f3e54481482</UserSecretsId>
   </PropertyGroup>
@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\aspire\MessageQueueNET.ServiceDefaults\MessageQueueNET.ServiceDefaults.csproj" />
     <ProjectReference Include="..\..\shared\MessageQueueNET.Client\MessageQueueNET.Client.csproj" />
   </ItemGroup>
 
