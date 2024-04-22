@@ -27,9 +27,11 @@ public class HashCodeMiddleware
             if (!String.IsNullOrEmpty(hashCode))
             {
                 DateTime start = DateTime.Now;
+                bool forAccess = !context.Request.IsSlientAccess();
+
                 while ((DateTime.Now - start).TotalSeconds < 60)
                 {
-                    var queues = queueService.GetQueues(idPattern!, false);
+                    var queues = queueService.GetQueues(idPattern!, forAccess);
 
                     if (queues.CalcHashCode().ToString() != hashCode)
                     {

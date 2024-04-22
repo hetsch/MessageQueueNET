@@ -67,7 +67,7 @@ namespace MessageQueueNET.Controllers
                         {
                             if (queue.Properties.ConfirmationPeriodSeconds > 0)
                             {
-                                var unconfirmedItem = item.Clone();
+                                var unconfirmedItem = item!.Clone();
                                 unconfirmedItem.DequeuingClientId = clientId;
                                 if (!await _persist.PersistUnconfirmedQueueItem(queue.Name, unconfirmedItem))
                                 {
@@ -77,7 +77,7 @@ namespace MessageQueueNET.Controllers
                                 _queues.AddToUnconfirmedMessage(queue, unconfirmedItem);
                             }
 
-                            if (await _persist.RemoveQueueItem(queue.Name, item.Id) && item.IsValid(queue))
+                            if (await _persist.RemoveQueueItem(queue.Name, item!.Id) && item.IsValid(queue))
                             {
                                 items.Add(new MessageResult()
                                 {
@@ -386,7 +386,9 @@ namespace MessageQueueNET.Controllers
             {
                 if (_queues.AnyQueueExists(idPattern))
                 {
-                    var queues = _queues.GetQueues(idPattern)
+                    bool forAccess = !this.Request.IsSlientAccess();
+
+                    var queues = _queues.GetQueues(idPattern, forAccess)
                                         .OrderBy(q => q.Name);
 
                     var queuePropertiesResult = new QueuePropertiesResult(queues.CalcHashCode())

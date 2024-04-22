@@ -1,5 +1,6 @@
 ﻿using MessageQueueNET.Client;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace MessageQueueNET.Extensions;
 
@@ -31,5 +32,20 @@ static internal class HttpRequestExtensions
         hashCode = result.ToString();
 
         return true;
+    }
+
+    static public bool IsSlientAccess(this HttpRequest httpRequest)
+    {
+        if (!httpRequest.Headers.TryGetValue(MQHeaders.SilentAccess, out var result))
+        {
+            return false;
+        }
+
+        if(bool.TryParse(result, out bool silentAccess))
+        {
+            return silentAccess;
+        }
+
+        return false;
     }
 }

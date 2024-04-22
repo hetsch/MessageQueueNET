@@ -3,6 +3,7 @@ using MessageQueueNET.Client.Models;
 using MessageQueueNET.Client.Models.Authentication;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -252,11 +253,12 @@ namespace MessageQueueNET.Client
         }
 
         async public Task<QueuePropertiesResult> PropertiesAsync(CancellationToken? cancelationToken = null,
-                                                                 int? hashCode = null)
+                                                                 int? hashCode = null,
+                                                                 bool? silentAccess = null)
         {
             using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_apiUrl}/queue/properties/{_queueName}"))
             {
-                ModifyHttpRequest(requestMessage, hashCode);
+                ModifyHttpRequest(requestMessage, hashCode, silentAccess);
 
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage, cancellationToken: cancelationToken ?? CancellationToken.None))
                 {
@@ -287,7 +289,7 @@ namespace MessageQueueNET.Client
 
         #region Helper
 
-        private void ModifyHttpRequest(HttpRequestMessage requestMessage, int? hashCode = null)
+        private void ModifyHttpRequest(HttpRequestMessage requestMessage, int? hashCode = null, bool? silentAccess = null)
         {
             if (!String.IsNullOrEmpty(_clientId) && !String.IsNullOrEmpty(_clientSecret))
             {
@@ -301,6 +303,11 @@ namespace MessageQueueNET.Client
             if (hashCode.HasValue)
             {
                 requestMessage.Headers.Add(MQHeaders.HashCode, hashCode.Value.ToString());
+            }
+
+            if(silentAccess.HasValue)
+            {
+                requestMessage.Headers.Add(MQHeaders.SilentAccess, silentAccess.Value.ToString());
             }
 
             requestMessage.Headers.Add(MQHeaders.ClientId, ClientId);

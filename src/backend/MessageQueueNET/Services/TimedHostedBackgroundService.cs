@@ -43,7 +43,7 @@ namespace MessageQueueNET.Services
                         (DateTime.UtcNow - queue.LastAccessUTC).TotalSeconds > queue.Properties.LifetimeSeconds)
                     {
                         var itemCount = queue.Where(item => item.IsValid(queue)).Count() +
-                                        _queues.UnconfirmedMessagesCount(queue, null);
+                                        (_queues.UnconfirmedMessagesCount(queue, null) ?? 0);
                         if (itemCount == 0)
                         {
                             if (_persist.RemoveQueue(queue.Name).Result)
