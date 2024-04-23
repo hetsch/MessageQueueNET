@@ -38,7 +38,7 @@ internal class QueueWatcherBackgroundService : BackgroundService
             throw new Exception("No MessageQueueApiUrl defined");
         }
 
-        var connection = new MessageQueueConnection(_options.MessageQueueApiUrl);
+        var connection = _options.ToConnection();
 
         if (_options.TryRegisterQueues)
         {

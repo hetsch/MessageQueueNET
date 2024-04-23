@@ -96,6 +96,8 @@ namespace MessageQueueNET.Client
             {
                 ModifyHttpRequest(requestMessage, hashCode);
 
+                Console.WriteLine("******* Timeout="+_httpClient.Timeout.ToString());
+
                 using (var httpResponse = await _httpClient.SendAsync(requestMessage, cancelationToken ?? CancellationToken.None))
                 {
                     CheckHttpResponse(httpResponse);

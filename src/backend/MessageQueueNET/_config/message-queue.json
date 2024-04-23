@@ -3,7 +3,8 @@
     "Persist": {
       "Type": "filesystem",
       "RootPath": "C:\\temp\\message-queue\\persist"
-    }
+    },
+    "MaxRequestPollingSeconds": 60
   },
   "Authorization_": {
     "Type": "Basic",

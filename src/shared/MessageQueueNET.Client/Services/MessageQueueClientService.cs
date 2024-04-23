@@ -1,6 +1,7 @@
 ﻿using MessageQueueNET.Client.Extensions;
 using MessageQueueNET.Client.Models;
 using MessageQueueNET.Client.Services.Abstraction;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,14 +19,19 @@ public class MessageQueueClientService
 
     private readonly HttpClient _httpClient;
     private readonly IMessageQueueApiVersionService _clientVersionService;
+    private readonly ILogger<MessageQueueClientService> _logger;
 
     static private ConcurrentDictionary<string, Version> ApiVersions = new ConcurrentDictionary<string, Version>();
 
     public MessageQueueClientService(IMessageQueueApiVersionService clientVersionService,
-                                     IHttpClientFactory httpClientFactory)
+                                     IHttpClientFactory httpClientFactory,
+                                     ILogger<MessageQueueClientService> logger)
     {
         _clientVersionService = clientVersionService;
+        _logger = logger;
         _httpClient = httpClientFactory.CreateClient(HttpClientName);
+
+        _logger.LogInformation("HttpClient create. Timeout {timeout}", _httpClient.Timeout);
     }
 
     async public Task<QueueClient> CreateClient(MessageQueueConnection connection,
@@ -39,9 +45,13 @@ public class MessageQueueClientService
             var apiInfo = await client.ApiInfoAsync();
             var apiVersion = apiInfo.Version;
 
-            if (apiVersion.Major != _clientVersionService.Version.Major)
+            if(apiVersion.Major == 2 && _clientVersionService.Version.Major == 3)
             {
-                throw new Exception($"Client ({apiVersion}) and API ({_clientVersionService}) Major Version not match");
+                _logger.LogWarning("Client ({apiVersion}) and API ({clientVersion}) Major Version not match", apiVersion, _clientVersionService.Version);
+            }
+            else if (apiVersion.Major != _clientVersionService.Version.Major)
+            {
+                throw new Exception($"Client ({apiVersion}) and API ({_clientVersionService.Version}) Major Version not match");
             }
 
             ApiVersions[connection.ApiUrl] = apiVersion;
