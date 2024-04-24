@@ -50,7 +50,7 @@ builder.services
         config.MessageQueueClientSecret = configuration["MessageQueue:ClientSecret"] ?? "";  // optional
 
         config.AppName = "my-app-name";
-        // optional: but use it, to show, witch instances should be syncronized.
+        // optional: but use it, to show, wich instances should be syncronized.
         // it is important, if developement, test, staging, production instances use the
         // same massagequeue to syncronize
         config.Namespace = configuration["MessageQueue:Namespace"] ?? "";
@@ -72,7 +72,7 @@ production.my-app-nameBD98A4C2-5F38-4FF8-9C5C-4318D7A9AE3E   // {Namespace}.{App
 
 If you run several instances of your app, every instance gets a individual queue, only differs by the GUID
 
-Create class implements `IMessageHandler` to handle actions for your app instance.
+Create a class that implements `IMessageHandler` to handle actions for an app instance.
 This must be registred with `builder.services.AddMessageHandler()` (see above).
 
 ```csharp
@@ -135,5 +135,7 @@ class MyServiceOrController(MessageQueueAppTopicService topicService)
 This sends a message to all queues fitting the following pattern:
 
 ```
-develpment.my-app-name*   // {Namespace}.{AppName}*
+production.my-app-name*   // {Namespace}.{AppName}*
 ```
+
+[Processor Pattern](./processor_pattern_en.md)

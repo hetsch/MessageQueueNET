@@ -9,7 +9,6 @@ public class MessageQueueAppTopicServiceOptions : MessageQueueConnectionOptions
         InstanceId = Guid.NewGuid().ToString("N").ToLowerInvariant();
     }
 
-
     public bool ManageQueueLifetimeCycle { get; set; } = true;
     public int? QueueLifetimeSeconds { get; set; }
     public int? ItemLifetimeSeconds { get; set; }   
