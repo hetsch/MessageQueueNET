@@ -4,6 +4,26 @@
 
 The Processor Pattern is designed to enhance the processing capabilities of applications by monitoring multiple queues within a message queue system. This pattern focuses on the efficient handling and processing of messages serialized in JSON format, facilitating robust and scalable application architectures.
 
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant MQ as Message Queue Service
+    participant NQP as Non-Generic Queue Processor
+    participant GQP as Generic Queue Processor
+
+    App->>+MQ: Publishes JSON message
+    Note over MQ: multiple queues
+    MQ->>+NQP: Sends message to Non-Generic Processor
+    NQP->>-NQP: Processes message
+    NQP->>MQ: Posts result to Result Queue
+    MQ->>+GQP: Sends message to Generic Processor
+    GQP->>-GQP: Processes message
+    GQP->>MQ: Posts result to Result Queue
+
+    Note over NQP,GQP: Processors handle messages based on 'Worker' field
+
+```
+
 ## Core Concept
 
 At the heart of the Processor Pattern is the BaseQueueProcessorMessage class, which includes essential information such as `ProcessId`, `Worker`, and optional fields for `ResultQueue`, `Publisher`, and `Subject`. This class serves as the standard message format that is enqueued and processed by various workers.
