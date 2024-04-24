@@ -1,7 +1,10 @@
 ﻿using MessageQueueNET.Client.Extensions;
+using MessageQueueNET.Core.Extensions;
+using MessageQueueNET.Core.Services.Abstraction;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MessageQueueNET.Client.Services;
@@ -34,7 +37,24 @@ public class MessageQueueAppTopicService
         catch { return false; }
     }
 
-    async public Task<bool> EnqueueAsync(IEnumerable<string> messages, bool includeOwnQueue = false)
+    public Task<bool> EnqueueAsync<THandler>(
+                IEnumerable<string> messages, 
+                bool includeOwnQueue = false
+            ) where THandler : IMessageHandler
+        => EnqueueAsync(typeof(THandler), messages, includeOwnQueue);
+
+    public Task<bool> EnqueueAsync(
+                IMessageHandler messageHandler,
+                IEnumerable<string> messages,
+                bool includeOwnQueue = false
+            ) 
+        => EnqueueAsync(messageHandler.GetType(), messages, includeOwnQueue);
+
+    async public Task<bool> EnqueueAsync(
+                Type messageHandlerType,
+                IEnumerable<string> messages,
+                bool includeOwnQueue = false
+            )
     {
         var client = ClientInstance($"{_queuePrefix}*");
         var queueProperties = await client.PropertiesAsync();
@@ -45,6 +65,7 @@ public class MessageQueueAppTopicService
         }
 
         var ownQueueName = $"{_queuePrefix}{_options.InstanceId}";
+        var commandName = messageHandlerType.MessageHandlerCommandName();
 
         foreach (var queueName in queueProperties.Queues.Keys)
         {
@@ -54,7 +75,7 @@ public class MessageQueueAppTopicService
             }
 
             var queueClient = ClientInstance(queueName);
-            await queueClient.EnqueueAsync(messages);
+            await queueClient.EnqueueAsync(messages.Select(m => $"{commandName}:{m}"));
         }
 
         return true;

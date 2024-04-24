@@ -10,8 +10,9 @@ public class MessageQueueAppTopicServiceOptions : MessageQueueConnectionOptions
     }
 
 
-    public bool TryRegisterQueues { get; set; } = false;
-    public int? LifetimeSeconds { get; set; }
+    public bool ManageQueueLifetimeCycle { get; set; } = true;
+    public int? QueueLifetimeSeconds { get; set; }
+    public int? ItemLifetimeSeconds { get; set; }   
 
     public string Namespace { get; set; } = "";
     public string AppName { get; set; } = "";

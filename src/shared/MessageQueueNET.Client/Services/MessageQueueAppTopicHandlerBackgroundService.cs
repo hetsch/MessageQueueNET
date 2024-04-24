@@ -39,10 +39,13 @@ internal class MessageQueueAppTopicHandlerBackgroundService : BackgroundService
 
         var connection = _options.ToConnection();
 
-        if (_options.TryRegisterQueues)
+        if (_options.ManageQueueLifetimeCycle)
         {
             var client = await _clientService.CreateClient(connection, _options.ToQueueName());
-            await client.RegisterAsync(lifetimeSeconds: _options.LifetimeSeconds);
+            await client.RegisterAsync(
+                        lifetimeSeconds: _options.QueueLifetimeSeconds,
+                        itemLifetimeSeconds: _options.ItemLifetimeSeconds 
+                    );
         }
 
         while (!stoppingToken.IsCancellationRequested)
@@ -67,8 +70,8 @@ internal class MessageQueueAppTopicHandlerBackgroundService : BackgroundService
                                 continue;
                             }
 
-                            string commandName = messageResult!.Value!.Split(':')[0];
-                            string commandMessage = messageResult.Value.Substring(commandName.Length + 1);
+                            (string commandName, string commandMessage)
+                                = messageResult.Value.SplitByFirst(':');
 
                             using (var scope = _serviceScopeFactory.CreateScope())
                             {
@@ -95,6 +98,12 @@ internal class MessageQueueAppTopicHandlerBackgroundService : BackgroundService
             {
                 _logger.LogError("Exception in BackgroundService: {message}", ex.Message);
             }
+        }
+
+        if(_options.ManageQueueLifetimeCycle)
+        {
+            var client = await _clientService.CreateClient(connection, _options.ToQueueName());
+            await client.RemoveAsync(RemoveType.Queue);
         }
     }
 }

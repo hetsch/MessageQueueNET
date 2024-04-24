@@ -30,8 +30,6 @@ public class MessageQueueClientService
         _clientVersionService = clientVersionService;
         _logger = logger;
         _httpClient = httpClientFactory.CreateClient(HttpClientName);
-
-        _logger.LogInformation("HttpClient create. Timeout {timeout}", _httpClient.Timeout);
     }
 
     async public Task<QueueClient> CreateClient(MessageQueueConnection connection,
