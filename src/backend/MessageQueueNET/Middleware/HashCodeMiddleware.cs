@@ -22,10 +22,10 @@ public class HashCodeMiddleware
     {
         _next = next;
 
-        var pollingSeconds = configuration["MessageQueue:MaxRequestPollingSeconds"];
-        if(!String.IsNullOrEmpty(pollingSeconds))
+        var maxPollingSeconds = configuration["MessageQueue:MaxRequestPollingSeconds"];
+        if(!String.IsNullOrEmpty(maxPollingSeconds))
         {
-            _maxPollingSeonds = int.Parse(pollingSeconds);
+            _maxPollingSeonds = int.Parse(maxPollingSeconds);
         }
 
         logger.LogInformation("Max request polling duration set to {maxRequestPolling} seconds", _maxPollingSeonds);
@@ -42,6 +42,7 @@ public class HashCodeMiddleware
             if (!String.IsNullOrEmpty(hashCode))
             {
                 DateTime start = DateTime.Now;
+                int maxPollingSeconds = context.Request.MaxPollingSeconds(_maxPollingSeonds);
                 bool forAccess = !context.Request.IsSlientAccess();
 
                 while ((DateTime.Now - start).TotalSeconds < _maxPollingSeonds)

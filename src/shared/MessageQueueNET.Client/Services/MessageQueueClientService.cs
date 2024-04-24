@@ -59,10 +59,12 @@ public class MessageQueueClientService
     }
 
     async public IAsyncEnumerable<QueuePropertiesResult> GetNextQueueProperties(
-        MessageQueueConnection connection,
-        string queueNamePattern,
-        [EnumeratorCancellation] CancellationToken stoppingToken,
-        bool? silentAccess = null)  // Action will not affectLastAccessTime (LifeTime)
+            MessageQueueConnection connection,
+            string queueNamePattern,
+            [EnumeratorCancellation] CancellationToken stoppingToken,
+            int? maxPollingSeconds = null,
+            bool? silentAccess = null  // true: Action will not affectLastAccessTime (LifeTime)
+        )  
     {
         int? hashCode = null;
         var client = await CreateClient(connection, queueNamePattern);
@@ -71,7 +73,12 @@ public class MessageQueueClientService
         {
             await using (var minimumDelay = new MinimumDelay(1000))
             {
-                var queueProperties = await client.PropertiesAsync(stoppingToken, hashCode, silentAccess);
+                var queueProperties = await client.PropertiesAsync(
+                            stoppingToken, 
+                            hashCode: hashCode,
+                            maxPollingSeconds: maxPollingSeconds,
+                            silentAccess: silentAccess
+                        );
                 hashCode = queueProperties.HashCode;
 
                 yield return queueProperties;
@@ -80,10 +87,12 @@ public class MessageQueueClientService
     }
 
     async public IAsyncEnumerable<MessagesResult> GetNextMessages(
-        MessageQueueConnection connection,
-        string queueNamePattern,
-        [EnumeratorCancellation] CancellationToken stoppingToken,
-        int constCount = 0)
+            MessageQueueConnection connection,
+            string queueNamePattern,
+            [EnumeratorCancellation] CancellationToken stoppingToken,
+            int constCount = 0,
+            int? maxPollingSeconds = null
+         )
     {
         int? hashCode = null;
         var client = await CreateClient(connection, queueNamePattern);
@@ -103,7 +112,8 @@ public class MessageQueueClientService
             {
                 var messagesResult = await client.DequeueAsync(Math.Clamp(max, 1, 100),
                                                                cancelationToken: stoppingToken,
-                                                               hashCode: hashCode);
+                                                               hashCode: hashCode,
+                                                               maxPollingSeconds: maxPollingSeconds);
                 hashCode = messagesResult.HashCode;
 
                 yield return messagesResult;

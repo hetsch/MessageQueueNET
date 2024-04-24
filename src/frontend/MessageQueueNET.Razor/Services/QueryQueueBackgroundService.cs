@@ -42,6 +42,7 @@ internal class QueryQueueBackgroundService : BackgroundService
                                 await foreach (var propertiesResult in _clientService.GetNextQueueProperties(new MessageQueueConnection(queue.Url),
                                                                                                              queue.Filter,
                                                                                                              stoppingToken,
+                                                                                                             maxPollingSeconds: _options.MaxPollingSeconds,
                                                                                                              silentAccess: true))
                                 {
                                     await TaskExt.WaitUntil(() => _eventBus.HasSubscribers);

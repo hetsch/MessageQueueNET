@@ -10,4 +10,6 @@ public class DashboardServiceOptions
         public string Url { get; set; } = "";
         public string Filter { get; set; } = "*";
     }
+
+    public int? MaxPollingSeconds { get; set; } = null;
 }
