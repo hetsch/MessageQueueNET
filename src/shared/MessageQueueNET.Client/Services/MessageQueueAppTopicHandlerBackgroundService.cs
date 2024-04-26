@@ -54,7 +54,13 @@ internal class MessageQueueAppTopicHandlerBackgroundService : BackgroundService
             {
                 var queueFilter = _options.ToTopicQueuesFilter();
 
-                await foreach (var messagesResult in _clientService.GetNextMessages(connection, queueFilter, stoppingToken, 0))
+                await foreach (var messagesResult in _clientService.GetNextMessages(
+                            connection, 
+                            queueFilter, 
+                            stoppingToken,
+                            maxPollingSeconds: _options.MaxPollingSeconds
+                        )
+                    )
                 {
                     if (messagesResult.Messages?.Any() != true)
                     {

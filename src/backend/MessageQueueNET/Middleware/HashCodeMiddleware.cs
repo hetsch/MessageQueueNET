@@ -45,7 +45,7 @@ public class HashCodeMiddleware
                 int maxPollingSeconds = context.Request.MaxPollingSeconds(_maxPollingSeonds);
                 bool forAccess = !context.Request.IsSlientAccess();
 
-                while ((DateTime.Now - start).TotalSeconds < _maxPollingSeonds)
+                while ((DateTime.Now - start).TotalSeconds < maxPollingSeconds)
                 {
                     var queues = queueService.GetQueues(idPattern!, forAccess);
 

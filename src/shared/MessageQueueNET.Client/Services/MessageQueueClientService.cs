@@ -35,8 +35,10 @@ public class MessageQueueClientService
     async public Task<QueueClient> CreateClient(MessageQueueConnection connection,
                                                 string queueNamePattern)
     {
-        var client = new QueueClient(connection, queueNamePattern,
-            httpClient: _httpClient);
+        var client = new QueueClient(
+                connection, queueNamePattern,
+                httpClient: _httpClient
+           );
 
         if (!ApiVersions.TryGetValue(connection.ApiUrl, out _))
         {

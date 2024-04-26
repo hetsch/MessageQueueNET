@@ -6,4 +6,6 @@ public class MessageQueueConnectionOptions
 
     public string MessageQueueClientId { get; set; } = "";
     public string MessageQueueClientSecret { get; set; } = "";
+
+    public int? MaxPollingSeconds { get; set; }
 }

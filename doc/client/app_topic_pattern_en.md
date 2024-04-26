@@ -46,8 +46,12 @@ builder.services
     .AddMessageQueueAppTopicServices(config =>
     {
         config.MessageQueueApiUrl = configuration["MessageQueue:ConnectionString"] ?? "";
-        config.MessageQueueClientId = configuration["MessageQueue:ClientId"] ?? "";  // optional
-        config.MessageQueueClientSecret = configuration["MessageQueue:ClientSecret"] ?? "";  // optional
+        // optional
+        config.MessageQueueClientId = configuration["MessageQueue:ClientId"] ?? "";
+        config.MessageQueueClientSecret = configuration["MessageQueue:ClientSecret"] ?? "";
+        config.MaxPollingSeconds = 20;  // Maximal polling time, for query new items.
+                                        // After this time, the Requests end and
+                                        // a new request will be opend
 
         config.AppName = "my-app-name";
         // optional: but use it, to show, wich instances should be syncronized.

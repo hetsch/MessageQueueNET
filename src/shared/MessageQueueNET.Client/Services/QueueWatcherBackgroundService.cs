@@ -55,7 +55,13 @@ internal class QueueWatcherBackgroundService : BackgroundService
         {
             try
             {
-                await foreach (var messagesResult in _clientService.GetNextMessages(connection, _options.QueueNameFilter, stoppingToken, 0))
+                await foreach (var messagesResult in _clientService.GetNextMessages(
+                                                                    connection, 
+                                                                    _options.QueueNameFilter, 
+                                                                    stoppingToken,
+                                                                    maxPollingSeconds: _options.MaxPollingSeconds
+                                                                )
+                                                            )
                 {
                     if (messagesResult.Messages?.Any() != true)
                     {
