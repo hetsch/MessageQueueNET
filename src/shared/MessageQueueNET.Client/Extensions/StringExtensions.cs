@@ -11,4 +11,17 @@ static internal class StringExtensions
 
         return JsonSerializer.Deserialize(jsonString, genericType);
     }
+
+    static public (string key, string val) SplitByFirst(this string? str, char separator)
+    {
+        if (string.IsNullOrEmpty(str) || !str.Contains(separator))
+        {
+            return (str ?? string.Empty, string.Empty);
+        }
+
+        string key = str.Substring(0, str.IndexOf(separator));
+        string val = str.Substring(key.Length + 1);
+
+        return (key, val);
+    }
 }

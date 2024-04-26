@@ -1,6 +1,7 @@
 ﻿using MessageQueueNET.Client.Extensions;
 using MessageQueueNET.Client.Models;
 using MessageQueueNET.Client.Services.Abstraction;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,30 +19,39 @@ public class MessageQueueClientService
 
     private readonly HttpClient _httpClient;
     private readonly IMessageQueueApiVersionService _clientVersionService;
+    private readonly ILogger<MessageQueueClientService> _logger;
 
     static private ConcurrentDictionary<string, Version> ApiVersions = new ConcurrentDictionary<string, Version>();
 
     public MessageQueueClientService(IMessageQueueApiVersionService clientVersionService,
-                                     IHttpClientFactory httpClientFactory)
+                                     IHttpClientFactory httpClientFactory,
+                                     ILogger<MessageQueueClientService> logger)
     {
         _clientVersionService = clientVersionService;
+        _logger = logger;
         _httpClient = httpClientFactory.CreateClient(HttpClientName);
     }
 
     async public Task<QueueClient> CreateClient(MessageQueueConnection connection,
                                                 string queueNamePattern)
     {
-        var client = new QueueClient(connection, queueNamePattern,
-            httpClient: _httpClient);
+        var client = new QueueClient(
+                connection, queueNamePattern,
+                httpClient: _httpClient
+           );
 
         if (!ApiVersions.TryGetValue(connection.ApiUrl, out _))
         {
             var apiInfo = await client.ApiInfoAsync();
             var apiVersion = apiInfo.Version;
 
-            if (apiVersion.Major != _clientVersionService.Version.Major)
+            if(apiVersion.Major == 2 && _clientVersionService.Version.Major == 3)
             {
-                throw new Exception($"Client ({apiVersion}) and API ({_clientVersionService}) Major Version not match");
+                _logger.LogWarning("Client ({apiVersion}) and API ({clientVersion}) Major Version not match", apiVersion, _clientVersionService.Version);
+            }
+            else if (apiVersion.Major != _clientVersionService.Version.Major)
+            {
+                throw new Exception($"Client ({apiVersion}) and API ({_clientVersionService.Version}) Major Version not match");
             }
 
             ApiVersions[connection.ApiUrl] = apiVersion;
@@ -51,10 +61,12 @@ public class MessageQueueClientService
     }
 
     async public IAsyncEnumerable<QueuePropertiesResult> GetNextQueueProperties(
-        MessageQueueConnection connection,
-        string queueNamePattern,
-        [EnumeratorCancellation] CancellationToken stoppingToken,
-        bool? silentAccess = null)  // Action will not affectLastAccessTime (LifeTime)
+            MessageQueueConnection connection,
+            string queueNamePattern,
+            [EnumeratorCancellation] CancellationToken stoppingToken,
+            int? maxPollingSeconds = null,
+            bool? silentAccess = null  // true: Action will not affectLastAccessTime (LifeTime)
+        )  
     {
         int? hashCode = null;
         var client = await CreateClient(connection, queueNamePattern);
@@ -63,7 +75,12 @@ public class MessageQueueClientService
         {
             await using (var minimumDelay = new MinimumDelay(1000))
             {
-                var queueProperties = await client.PropertiesAsync(stoppingToken, hashCode, silentAccess);
+                var queueProperties = await client.PropertiesAsync(
+                            stoppingToken, 
+                            hashCode: hashCode,
+                            maxPollingSeconds: maxPollingSeconds,
+                            silentAccess: silentAccess
+                        );
                 hashCode = queueProperties.HashCode;
 
                 yield return queueProperties;
@@ -72,10 +89,12 @@ public class MessageQueueClientService
     }
 
     async public IAsyncEnumerable<MessagesResult> GetNextMessages(
-        MessageQueueConnection connection,
-        string queueNamePattern,
-        [EnumeratorCancellation] CancellationToken stoppingToken,
-        int constCount = 0)
+            MessageQueueConnection connection,
+            string queueNamePattern,
+            [EnumeratorCancellation] CancellationToken stoppingToken,
+            int constCount = 0,
+            int? maxPollingSeconds = null
+         )
     {
         int? hashCode = null;
         var client = await CreateClient(connection, queueNamePattern);
@@ -95,7 +114,8 @@ public class MessageQueueClientService
             {
                 var messagesResult = await client.DequeueAsync(Math.Clamp(max, 1, 100),
                                                                cancelationToken: stoppingToken,
-                                                               hashCode: hashCode);
+                                                               hashCode: hashCode,
+                                                               maxPollingSeconds: maxPollingSeconds);
                 hashCode = messagesResult.HashCode;
 
                 yield return messagesResult;

@@ -28,7 +28,7 @@ Task<ApiResult> EnqueueAsync(IEnumerable<string> messages)
 
 ```csharp
 Task<MessagesResult> DequeueAsync(
-            int count = 1, 
+            int count = 1,
             bool register = false,
             CancellationToken? cancelationToken = null,
             int? hashCode = null)
@@ -86,5 +86,4 @@ var length = await client.Length(); // => 2
 var message = await client.Dequeue(); // => ["Message1"]
 ```
 
-
-[Commandline Tools](../console/tools_en.md)
+[App Topic Pattern](./app_topic_pattern_en.md)

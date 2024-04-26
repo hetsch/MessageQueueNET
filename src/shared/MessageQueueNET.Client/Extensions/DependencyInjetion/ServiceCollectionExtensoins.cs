@@ -1,5 +1,6 @@
 ﻿using MessageQueueNET.Client.Services;
 using MessageQueueNET.Client.Services.Abstraction;
+using MessageQueueNET.Core.Extensions;
 using MessageQueueNET.Core.Services.Abstraction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -36,13 +37,30 @@ static public class ServiceCollectionExtensoins
             .AddTransient<MessageQueueClientService>();
     }
 
-    static public IServiceCollection AddQueueWatcher(this IServiceCollection services,
-                                                     Action<QueueWatcherBackgroundServiceOptions> configAction)
-    {
-        return services
+    static public IServiceCollection AddQueueProcessorWatcher(
+                this IServiceCollection services,
+                Action<QueueWatcherBackgroundServiceOptions> configAction
+            )
+        => services
             .Configure(configAction)
-            .AddMessageQueueClientService()
             .AddTransient<IQueueProcessor, PingWorker>()
             .AddHostedService<QueueWatcherBackgroundService>();
+
+    static public IServiceCollection AddMessageQueueAppTopicServices(
+                this IServiceCollection services,
+                Action<MessageQueueAppTopicServiceOptions> configAction)
+        => services
+            .Configure(configAction)
+            .AddHostedService<MessageQueueAppTopicHandlerBackgroundService>()
+            .AddTransient<MessageQueueAppTopicService>();
+
+    static public IServiceCollection AddMessageHandler<THandler>(
+                this IServiceCollection services
+            ) where THandler : class, IMessageHandler
+    {
+        {
+            services.TryAddKeyedScoped<IMessageHandler, THandler>(typeof(THandler).MessageHandlerCommandName());
+            return services;
+        }
     }
 }

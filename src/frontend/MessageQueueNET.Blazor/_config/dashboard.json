@@ -21,6 +21,7 @@
         "Url": "https://localhost:7001",
         "Filter": "test.*"
       }
-    ]
+    ],
+    "MaxPollingSeconds": 10000
   }
 }

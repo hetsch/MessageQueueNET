@@ -195,17 +195,17 @@ namespace MessageQueueNET.Cmd
                         }
                     }
                 }
-                else
-                {
-                    #region Simple Messages
+                //else
+                //{
+                //    #region Simple Messages
 
-                    if (!(await client.EnqueueAsync(cmdArguments.Messages)).Success)
-                    {
-                        throw new Exception($"Can't enqueue messages...");
-                    }
+                //    if (!(await client.EnqueueAsync(cmdArguments.Messages)).Success)
+                //    {
+                //        throw new Exception($"Can't enqueue messages...");
+                //    }
 
-                    #endregion
-                }
+                //    #endregion
+                //}
             }
             else if (cmdArguments.Command == "dequeue")
             {

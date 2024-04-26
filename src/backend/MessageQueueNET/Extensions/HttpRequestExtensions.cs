@@ -34,6 +34,21 @@ static internal class HttpRequestExtensions
         return true;
     }
 
+    static public int MaxPollingSeconds(this HttpRequest httpRequest, int defaultMaxPollingSeconds)
+    {
+        if (!httpRequest.Headers.TryGetValue(MQHeaders.MaxPollingSeconds, out var result))
+        {
+            return defaultMaxPollingSeconds;
+        }
+
+        return Math.Max(1,
+            Math.Min(
+                defaultMaxPollingSeconds, 
+                int.Parse(httpRequest.Headers[MQHeaders.MaxPollingSeconds]!)
+            )
+        );
+    }
+
     static public bool IsSlientAccess(this HttpRequest httpRequest)
     {
         if (!httpRequest.Headers.TryGetValue(MQHeaders.SilentAccess, out var result))

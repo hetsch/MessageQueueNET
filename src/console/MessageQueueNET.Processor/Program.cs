@@ -27,7 +27,8 @@ var host = Host.CreateDefaultBuilder(args)
                         {
                             fileOutputOptions.RootPath = arguments.Value.outputPath;
                         })
-                    .AddQueueWatcher(
+                    .AddMessageQueueClientService()
+                    .AddQueueProcessorWatcher(
                         config =>
                         {
                             config.MessageQueueApiUrl = arguments.Value.apiUrl;
