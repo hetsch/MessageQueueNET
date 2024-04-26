@@ -86,4 +86,4 @@ var length = await client.Length(); // => 2
 var message = await client.Dequeue(); // => ["Message1"]
 ```
 
-[App Topic Pattern](./app_topic_pattern_en.md)
+[Commandline Tools](../console/tools_en.md)

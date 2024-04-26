@@ -141,5 +141,3 @@ This sends a message to all queues fitting the following pattern:
 ```
 production.my-app-name*   // {Namespace}.{AppName}*
 ```
-
-[Processor Pattern](./processor_pattern_en.md)
