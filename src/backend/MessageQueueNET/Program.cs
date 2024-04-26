@@ -1,55 +1,50 @@
-using Microsoft.AspNetCore.Hosting;
+using MessageQueueNET;
+using MessageQueueNET.Client.Services.Abstraction;
+using MessageQueueNET.Extensions;
+using MessageQueueNET.Extensions.DependencyInjection;
+using MessageQueueNET.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
-namespace MessageQueueNET
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            #region First Start => init configuration
+var builder = WebApplication
+                    .CreateBuilder(args)
+                    .Setup(args);
 
-            new Setup().TrySetup(args);
+#if DEBUG
+// Aspire
+builder.AddServiceDefaults();
+#endif
 
-            #endregion
+builder.Logging.AddConsole();
+builder.Configuration.AddJsonFile(
+            "_config/message-queue.json",
+            optional: true,
+            reloadOnChange: false
+       );
 
-            CreateHostBuilder(args).Build().Run();
-        }
+var startup = new Startup(builder.Configuration);
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.AddJsonFile("_config/message-queue.json", optional: true);
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
+startup.ConfigureServices(builder.Services);
 
-                    #region Expose Ports
+var app = builder.Build();
 
-                    List<string> urls = new List<string>();
-                    for (int i = 0; i < args.Length - 1; i++)
-                    {
-                        switch (args[i].ToLower())
-                        {
-                            case "-expose-http":
-                                urls.Add("http://localhost:" + int.Parse(args[++i]));
-                                break;
-                            case "-expose-https":
-                                urls.Add("https://localhost:" + int.Parse(args[++i]));
-                                break;
-                        }
-                    }
-                    if (urls.Count > 0)
-                    {
-                        webBuilder = webBuilder.UseUrls(urls.ToArray());
-                    }
+#if DEBUG
+// Aspire
+app.MapDefaultEndpoints();
+#endif
 
-                    #endregion
-                });
+startup.Configure(
+        app, 
+        builder.Environment,
+        app.Services.GetRequiredService<RestorePersistedQueuesService>(),
+        app.Services.GetRequiredService<IMessageQueueApiVersionService>()
+     );
 
-    }
-}
+app.LogStartupInformation(
+        builder,
+        app.Services.GetRequiredService<ILogger<Startup>>()
+   )
+   .Run();

@@ -21,6 +21,17 @@
                                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
                     </ToolBarContent>
                     <Columns>
+                        @if (Unconfirmed == false)
+                        {
+                            <TemplateColumn>
+                                <CellTemplate>
+                                    <MudIconButton Size="@Size.Medium"
+                                                   Icon="@Icons.Material.Outlined.Delete"
+                                                   Color="Color.Secondary"
+                                                   OnClick="() => DeleteMessage(context.Item)"/>
+                                </CellTemplate>
+                            </TemplateColumn>
+                        }
                         <PropertyColumn Property="x => x.Id" Title="Id" Sortable="false" />
                         <PropertyColumn Property="x=> x.CreationDateUTC.ToLocalTime()" Title="Created" Sortable="false" />
                         @if (_messages.Any(m => m.DequeuingClientId != null))
@@ -47,10 +58,23 @@
     {
         await base.OnInitializedAsync();
 
+        await LoadMessages();
+    }
+
+    async private Task LoadMessages()
+    {
         var messagesResult = await DashboardService.GetAllQueueMessages(QueueName, Unconfirmed);
 
         _messages = Unconfirmed
             ? messagesResult.UnconfirmedMessages
             : messagesResult.Messages;
+    }
+
+    async private Task DeleteMessage(MessageResult messageResult)
+    {
+        if(await DashboardService.DeleteMessage(QueueName, messageResult.Id))
+        {
+            await LoadMessages();
+        }
     }
 }

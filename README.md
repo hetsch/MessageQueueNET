@@ -17,3 +17,5 @@ Each message is also picked up and processed by a single recipient.
 [Client Library](./doc/client/client_en.md)
 
 [Commandline Tools](./doc/console/tools_en.md)
+
+[Queue Worker Pattern](./doc/queue-worker/queue-worker_en.md)

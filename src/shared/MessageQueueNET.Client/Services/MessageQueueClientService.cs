@@ -53,7 +53,8 @@ public class MessageQueueClientService
     async public IAsyncEnumerable<QueuePropertiesResult> GetNextQueueProperties(
         MessageQueueConnection connection,
         string queueNamePattern,
-        [EnumeratorCancellation] CancellationToken stoppingToken)
+        [EnumeratorCancellation] CancellationToken stoppingToken,
+        bool? silentAccess = null)  // Action will not affectLastAccessTime (LifeTime)
     {
         int? hashCode = null;
         var client = await CreateClient(connection, queueNamePattern);
@@ -62,7 +63,7 @@ public class MessageQueueClientService
         {
             await using (var minimumDelay = new MinimumDelay(1000))
             {
-                var queueProperties = await client.PropertiesAsync(stoppingToken, hashCode);
+                var queueProperties = await client.PropertiesAsync(stoppingToken, hashCode, silentAccess);
                 hashCode = queueProperties.HashCode;
 
                 yield return queueProperties;

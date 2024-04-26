@@ -8,8 +8,8 @@
 
 	<PropertyGroup>
 		<AssemblyName>MessageQueueNET.Client</AssemblyName>
-		<Version>2.24.101</Version>
-		<Copyright>2023, Jürgen Gstaltmaier</Copyright>
+		<Version>2.24.1601</Version>
+		<Copyright>2024, Jürgen Gstaltmaier</Copyright>
 		<PackageProjectUrl>https://github.com/jugstalt/MessageQueueNET</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/jugstalt/MessageQueueNET</RepositoryUrl>
 		<Authors>Jürgen Gstaltmaier</Authors>
@@ -20,9 +20,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-rc.2.23479.6" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-rc.2.23479.6" />
-    <PackageReference Include="System.Text.Json" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>

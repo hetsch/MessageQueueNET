@@ -156,3 +156,5 @@ Alternatively, instead of manually typing out each message, you can specify a te
 ```
 
 Replace <path-to-your-text-file> with the path to your text file.
+
+[Queue Worker Pattern](../queue-worker/queue-worker_en.md)

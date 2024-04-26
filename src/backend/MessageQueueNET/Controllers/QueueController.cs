@@ -67,7 +67,7 @@ namespace MessageQueueNET.Controllers
                         {
                             if (queue.Properties.ConfirmationPeriodSeconds > 0)
                             {
-                                var unconfirmedItem = item.Clone();
+                                var unconfirmedItem = item!.Clone();
                                 unconfirmedItem.DequeuingClientId = clientId;
                                 if (!await _persist.PersistUnconfirmedQueueItem(queue.Name, unconfirmedItem))
                                 {
@@ -77,7 +77,7 @@ namespace MessageQueueNET.Controllers
                                 _queues.AddToUnconfirmedMessage(queue, unconfirmedItem);
                             }
 
-                            if (await _persist.RemoveQueueItem(queue.Name, item.Id) && item.IsValid(queue))
+                            if (await _persist.RemoveQueueItem(queue.Name, item!.Id) && item.IsValid(queue))
                             {
                                 items.Add(new MessageResult()
                                 {
@@ -162,6 +162,29 @@ namespace MessageQueueNET.Controllers
                 queue.SetModified();
 
                 return new ApiResult(queue.CalcHashCode());
+            }
+            catch (Exception ex)
+            {
+                return new ApiResult().AddExceptionMessage(ex);
+            }
+        }
+
+        [HttpGet]
+        [Route("deletemessage/{id}")]
+        async public Task<ApiResult> DeleteMessage(string id, Guid messageId)
+        {
+            try
+            {
+                var queue = _queues.GetQueue(id);
+                var success = queue.TryDelete(messageId);
+
+                if(success)
+                {
+                    await _persist.RemoveQueueItem(queue.Name, messageId);
+                    queue.SetModified();
+                }
+
+                return new ApiResult(queue.CalcHashCode()) { Success = success };
             }
             catch (Exception ex)
             {
@@ -363,7 +386,9 @@ namespace MessageQueueNET.Controllers
             {
                 if (_queues.AnyQueueExists(idPattern))
                 {
-                    var queues = _queues.GetQueues(idPattern)
+                    bool forAccess = !this.Request.IsSlientAccess();
+
+                    var queues = _queues.GetQueues(idPattern, forAccess)
                                         .OrderBy(q => q.Name);
 
                     var queuePropertiesResult = new QueuePropertiesResult(queues.CalcHashCode())

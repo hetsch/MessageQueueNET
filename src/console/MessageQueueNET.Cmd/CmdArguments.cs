@@ -12,16 +12,17 @@ namespace MessageQueueNET.Cmd
             this.Messages = new List<string>();
         }
 
-        public string ServerUrl { get; set; } = string.Empty;
-        public string QueueName { get; set; } = string.Empty;
-        public string Command { get; set; } = string.Empty;
+        public string ServerUrl { get; set; } = "";
+        public string QueueName { get; set; } = "";
+        public string Command { get; set; } = "";
         public int? LifetimeSeconds { get; set; }
         public int? ItemLifetimeSeconds { get; set; }
         public int? ConfirmationPeridSeconds { get; set; }
         public int? MaxUnconfirmedItems { get; set; }
         public bool? SuspendEnqueue { get; set; }
         public bool? SuspendDequeue { get; set; }
-        public string WorkerCommand { get; set; }
+        public string WorkerCommand { get; set; } = "";
+        public bool PingWorker { get; set; } = false;
         public List<string> Messages { get; set; }
         public Guid MessageId { get; set; }
         public bool ShowFullItem { get; set; }
@@ -43,6 +44,9 @@ namespace MessageQueueNET.Cmd
                         break;
                     case "-workercmd":
                         this.WorkerCommand = args[++i];
+                        break;
+                    case "-ping":
+                        this.PingWorker = true;
                         break;
                     case "-m":
                         this.Messages.Add(args[++i]);
