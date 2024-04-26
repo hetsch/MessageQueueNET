@@ -60,47 +60,99 @@ message #2
 >> exit
 ```
 
-## MessageQueueNET.ProcService.exe
 
-This tool monitors a queue and starts a process (e.g. shellscript) to which the received message is passed as arguments:
+## MessageQueueNET.Processor
+
+MessageQueueNET.Processor is a C# console application designed to monitor a message queue and execute the listed messages. It's a robust tool for managing and processing tasks queued in your system.
+
+### How It Works
+
+The application continuously monitors a specified message queue. When a new message appears, it executes the command associated with that message, adhering to predefined filters and constraints for security and efficiency.
+
+### Usage
+
+Run the application using the following command:
 
 ```
-Usage: MessageQueueNET.ProcService.exe serviceUrl -q <queueName> -c <comand> {-p <max-parallel-tasks=1> -qsize <queuesize=0> -duration <seconds> | -stoptime <time>  }
+.\MessageQueueNET.Processor.exe --api <API_URL> --filter <QUEUE_NAME> --output <LOG_DIRECTORY> --command <ALLOWED_COMMANDS>
 ```
-
-The first parameter must always be the url to the REST API. 
-
-The other options are:
-
-* `-q`:
-   the name (Id) of the queue that should be monitored
-
-* `-c`: 
-   the process that should be started as soon as an entry appears on the queue. A '.exe' or '.bat' file (Windows) or any other executable can be specified as a process.
-   The message from the queue is passed to the process as arguments.
-
-* `-p`: 
-   If there are multiple messages in the queue, this parameter can be used to specify how many processes can run in parallel. If you do not specify this value, only one process is executed at a time.
-   All other processes are queued and processed sequentially.
-
-* `-qsize`: 
-  The processes are executed one after the other, depending on the degree of parallelization. 
-  The maximum length of this process queue can be specified here. Here you can determine how many values are collected from the *REST API Queue at a time.
-  The REST API is queried once per second and then messages are processed.  If a process can run so quickly that multiple messages can be processed within a second, the length of the 
-  process queue specified here should be greater than the number of parallel processes. Otherwise, if the process queue shoud have the same size as the maximum parallelization level (default) 
-
-* `-duration`:
-  The tool usually runs endlessly. This parameter can be used to specify the seconds until the monitoring is automatically terminated. After that, no new messages will be collected.
-  The tool is still waiting on running processes to finalize. All processes in the process queue are *cancelled* and the corresponding messages are written back to the REST API queue. After that, the tool will finish running.
-
-* `-stoptime`:
-   As an alternative to the '-duration', you can also specify the exact time when the tool stops monitoring the queue. Possible inputs are: 
-
-   * 09:00 or 14:30  (>= 00:00 and < 24:00)
-   * 07:00 pm  (12-hour formatted)
 
 Example:
+```
+.\MessageQueueNET.Processor.exe --api https://localhost:5001 --filter mq-processor.* --output c:\temp\mq-processor --command c:\temp\*.exe,c:\temp\*.cmd,c:\temp\*.bat
+```
+
+### Parameters
+
+ * `--api` URL to the MessageQueue.
+ * `--filter` Name of the queue to monitor. Wildcards can be used to monitor multiple queues.
+ * `--output` Directory where logs for the results will be stored.
+ * `--command` A comma-separated list of commands that are allowed to be executed. Wildcards can be used. This list must be specified to ensure that only specific, safe processes are started.
+
+### Message Format in the Queue
+
+Messages in the queue must be structured in a specific format to be processed correctly. Here's an example of a valid message:
+
+``` javascript
+{
+  "Body": {
+    "Command": "c:\\temp\\test.bat",
+    "Arguments": "123"
+  },
+  "ProcessId": "123",
+  "Worker": "mq.commandline",
+  "ResultQueue": "mq-processor.jobs.results",
+  "Publisher": "username",
+  "Subject": "executing test.bat ..."
+}
+```
+
+Required Properties
+
+* `ProcessId`: A unique identifier for the process.
+* `Worker`: Specifies the worker that will execute the message. This must always be set to "mq.commandline".
+* `Command`, Arguments: The command to be executed along with its parameters. The command must match one of the allowed commands specified in the --command parameter; otherwise, it will be rejected for security reasons.
+
+`Publisher` and `Subject` are optional Properties
+
+### Security
+
+The application ensures that only specified commands can be run, preventing the execution of arbitrary or potentially harmful processes. This feature is critical for maintaining the security and integrity of your system.
+
+### Logs
+
+Logs for each processed message and the result of its execution are stored in the specified output directory. This ensures easy tracking and auditing of the tasks handled by the application.
+
+### Sending Messages to the Queue Using Command Line
+
+To send messages to the queue in the format required by MessageQueueNET.Processor, you can use the MessageQueueNET.Cmd command line tool. Follow these steps to enqueue messages:
+
+1. Run the Command Line Tool
+
+Execute the following command to start the MessageQueueNET.Cmd tool:
 
 ```
-./MessageQueueNET.ProcService.exe http://my-queue-server -q my-queue-1 -c c:\temp\dummy.bat -p 3 -stoptime "04:00 pm"
+.\MessageQueueNET.Cmd.exe <url-to-messagequeue> -c shell
 ```
+
+Replace <url-to-messagequeue> with the URL of your message queue.
+
+2. Enqueue a Message
+
+Once in the shell, use the following command to enqueue a message:
+
+```
+<name-of-the-queue> enqueue -workercmd c:\temp\test.bat -m "argument1 argument2..."
+```
+
+Replace <name-of-the-queue> with the name of your queue, and adjust the command and arguments as required.
+
+Optional: Enqueue Messages from a File
+
+Alternatively, instead of manually typing out each message, you can specify a text file containing the parameters/arguments for the command. Each line in the file should contain the arguments for one command. Use the following command to enqueue messages from a file:
+
+```
+<name-of-the-queue> enqueue -workercmd c:\temp\test.bat -f <path-to-your-text-file>
+```
+
+Replace <path-to-your-text-file> with the path to your text file.

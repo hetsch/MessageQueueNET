@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+  </PropertyGroup>
+
+	<PropertyGroup>
+		<AssemblyName>MessageQueueNET.Core</AssemblyName>
+		<Version>2.24.101</Version>
+		<Copyright>2023, Jürgen Gstaltmaier</Copyright>
+		<PackageProjectUrl>https://github.com/jugstalt/MessageQueueNET</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/jugstalt/MessageQueueNET</RepositoryUrl>
+		<Authors>Jürgen Gstaltmaier</Authors>
+		<Company />
+		<Product />
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	</PropertyGroup>
+</Project>

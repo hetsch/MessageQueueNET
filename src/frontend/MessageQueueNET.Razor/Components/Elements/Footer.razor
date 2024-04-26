@@ -1,0 +1,21 @@
+@using MessageQueueNET.Client.Services.Abstraction;
+@inject IMessageQueueApiVersionService VersionService
+
+<table style="width:100%">
+    <tr>
+        <td>
+            Version @VersionService.Version
+        </td>
+        <td style="text-align:center">
+            Timezone: @TimeZone
+        </td>
+        <td style="text-align:right">
+            <a href="@RepoUrl" target="_blank">GitHub Repository</a>
+        </td>
+    </tr>
+</table>
+
+@code {
+    private string TimeZone => TimeZoneInfo.Local.ToString();
+    private const string RepoUrl = "https://github.com/jugstalt/messagequeuenet";
+}
