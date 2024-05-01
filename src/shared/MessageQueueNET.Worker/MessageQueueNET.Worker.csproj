@@ -8,7 +8,7 @@
 
 	<PropertyGroup>
 		<AssemblyName>MessageQueueNET.Worker</AssemblyName>
-		<Version>3.24.1709</Version>
+		<Version>3.24.1801</Version>
 		<Copyright>2024, Jürgen Gstaltmaier</Copyright>
 		<PackageProjectUrl>https://github.com/jugstalt/MessageQueueNET</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/jugstalt/MessageQueueNET</RepositoryUrl>
