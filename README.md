@@ -1,4 +1,4 @@
-# MessageQueueNET
+# MessageQueueNET v2.x
 
 A message queue API fully implemented in .NET Core
 
