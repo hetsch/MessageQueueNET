@@ -79,7 +79,7 @@ Add a queue watcher to your application
 ```csharp
 builder.services
     .AddMessageQueueClientService()
-    .AddQueueWatcher(
+    .AddQueueProcessorWatcher(
     config =>
     {
         config.MessageQueueApiUrl = "https://localhost:5001";// url to the messagequeue service;
@@ -102,7 +102,7 @@ public interface IQueueProcessor
 }
 ```
 
-The `PingWorker` is an automatically added for testing with `AddQueueWatcher`
+The `PingWorker` is an automatically added for testing with `AddQueueProcessorWatcher`
 
 ```csharp
 namespace MessageQueueNET.Client.Services;
