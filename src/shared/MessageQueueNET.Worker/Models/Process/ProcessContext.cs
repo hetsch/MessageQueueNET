@@ -1,4 +1,6 @@
-﻿namespace MessageQueueNET.Worker.Models.Process;
+using System.Text;
+
+namespace MessageQueueNET.Worker.Models.Process;
 
 public class ProcessContext
 {
@@ -8,4 +10,5 @@ public class ProcessContext
     public int ExitCode { get; set; }
     public string? Output { get; set; }
     public string? ErrorOutput { get; set; }
+    public Encoding Encoding { get; set; } = Encoding.UTF8;
 }

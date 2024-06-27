@@ -33,6 +33,8 @@ public partial class ProcessRunnerService
                 processStartInfo.UseShellExecute = false;
                 processStartInfo.RedirectStandardOutput = true;
                 processStartInfo.RedirectStandardError = true;
+                processStartInfo.StandardOutputEncoding = context.Encoding;
+                processStartInfo.StandardErrorEncoding = context.Encoding;
 
                 LogStartingProcess(context.Command, context.Arguments);
 
