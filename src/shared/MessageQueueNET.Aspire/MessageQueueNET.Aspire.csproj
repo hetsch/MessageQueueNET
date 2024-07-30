@@ -8,7 +8,7 @@
 
   <PropertyGroup>
 	  <AssemblyName>MessageQueueNET.Aspire</AssemblyName>
-	  <Version>3.24.1801-preview.1</Version>
+	  <Version>3.24.3101-preview.1</Version>
 	  <Copyright>2024, Jürgen Gstaltmaier</Copyright>
 	  <PackageProjectUrl>https://github.com/jugstalt/MessageQueueNET</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/jugstalt/MessageQueueNET</RepositoryUrl>
@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting" Version="8.0.0-preview.6.24214.1" />
+    <PackageReference Include="Aspire.Hosting" Version="8.1.0" />
   </ItemGroup>
 
 </Project>
