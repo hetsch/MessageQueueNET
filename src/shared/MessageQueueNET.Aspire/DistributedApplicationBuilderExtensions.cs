@@ -8,12 +8,12 @@ static public class DistributedApplicationBuilderExtensions
     static public IResourceBuilder<ContainerResource> AddMessageQueueNET(
                 this IDistributedApplicationBuilder builder,
                 int port = 9091,
-                int maxRequestPollingSeconds = 5
+                int maxRequestPollingSeconds = 5,
+                string mountSource = ""
         )
     {
         var resource = builder.AddContainer("message-queue", "gstalt/messagequeue_net", "latest")
             .WithHttpEndpoint(port, 8080)
-            .WithBindMount("messagequeue", "/etc/messagequeue")
             .WithEnvironment(e =>
             {
                 e.EnvironmentVariables.Add("SWAGGERUI", "true");
@@ -25,6 +25,11 @@ static public class DistributedApplicationBuilderExtensions
                     e.EnvironmentVariables.Add("MESSAGEQUEUE__MAXREQUESTPOLLINGSECONDS", maxRequestPollingSeconds.ToString());
                 }
             });
+
+        if(!string.IsNullOrEmpty(mountSource))
+        {
+            resource.WithBindMount(mountSource, "/etc/messagequeue");
+        }
 
         return resource;
     }
