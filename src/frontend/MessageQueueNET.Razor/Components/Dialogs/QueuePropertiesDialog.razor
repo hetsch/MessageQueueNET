@@ -17,9 +17,9 @@
             <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
                 <MudTabPanel Text="Suspend">
                     <MudCheckBox Label="Suspend Enqueue"
-                                 @bind-Checked="_properties.SuspendEnqueue" />
+                                 @bind-Value="_properties.SuspendEnqueue" />
                     <MudCheckBox Label="Suspend Dequeue"
-                                 @bind-Checked="_properties.SuspendDequeue" />
+                                 @bind-Value="_properties.SuspendDequeue" />
                 </MudTabPanel>
                 <MudTabPanel Text="Confirmation">
                     <MudNumericField Label="Period [Seconds]"

@@ -15,12 +15,12 @@
                    @queueServerName
             @if (_itemCounters.ContainsKey(queueServerName))
             {
-                <MudChip Color="Color.Secondary" 
+                <MudChip Color="Color.Secondary" T="string"
                          Variant="Variant.Filled">@_itemCounters[queueServerName]</MudChip>
             }
             @if (_unconfirmedCounters.ContainsKey(queueServerName))
             {
-                <MudChip Color="Color.Success" 
+                <MudChip Color="Color.Success" T="string"
                          Variant="Variant.Filled">@_unconfirmedCounters[queueServerName]</MudChip>
             }
         </MudButton>

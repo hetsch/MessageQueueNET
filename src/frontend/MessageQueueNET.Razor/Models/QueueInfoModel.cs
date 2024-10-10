@@ -7,6 +7,9 @@ internal class QueueInfoModel
     public DateTime LastAccessUTC { get; set; }
     public DateTime LastModifiedUTC { get; set; }
 
+    public long LastAccessUtcTicks => LastAccessUTC.Ticks;
+    public long LastModifiedUtcTicks => LastModifiedUTC.Ticks;
+
     public int QueueLength { get; set; }
     public int? UnconfirmedItems { get; set; }
 

@@ -33,7 +33,14 @@
                             </TemplateColumn>
                         }
                         <PropertyColumn Property="x => x.Id" Title="Id" Sortable="false" />
-                        <PropertyColumn Property="x=> x.CreationDateUTC.ToLocalTime()" Title="Created" Sortable="false" />
+                        <PropertyColumn Property="x=> x.CrateionDateUtcTicks" 
+                                        Title="Created" 
+                                        Sortable="false">
+                           <CellTemplate>
+                                @context.Item.CreationDateUTC.ToLocalTime()
+                           </CellTemplate>
+                               
+                        </PropertyColumn>
                         @if (_messages.Any(m => m.DequeuingClientId != null))
                         {
                             <PropertyColumn Property="x => x.DequeuingClientId ?? String.Empty" Title="Deq.ClientId" Sortable="true" />

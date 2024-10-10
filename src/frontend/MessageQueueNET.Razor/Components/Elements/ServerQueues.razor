@@ -8,7 +8,8 @@
 
 @if (_queueLengthResults.TryGetValue(DashboardService.SelectedServerName, out IEnumerable<QueueInfoModel>? queueInfoModels))
 {
-    <MudDataGrid Items="queueInfoModels.FitsSearchString(_searchString.Trim())" Style="white-space:nowrap">
+    <MudDataGrid Items="queueInfoModels.FitsSearchString(_searchString.Trim())"
+                 Style="white-space:nowrap">
         <ToolBarContent>
             <MudText Typo="Typo.h6">
                Queues
@@ -38,8 +39,18 @@
                           AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
         </ToolBarContent>
         <Columns>
-            <PropertyColumn Property="x => x.QueueName" Title="Queue" Sortable="true" />
-            <PropertyColumn Property="x => x.LastModifiedUTC.ToLocalTime()" Title="Last Modified" Sortable="true" />
+            <PropertyColumn Property="x => x.QueueName"
+                            Title="Queue" 
+                            Sortable="true" />
+
+            <PropertyColumn Property="x => x.LastModifiedUtcTicks"
+                            Title="Last Modified"
+                            Sortable="true">
+                <CellTemplate>
+                    @context.Item.LastModifiedUTC.ToLocalTime()
+                </CellTemplate>
+            </PropertyColumn>
+            
 
             <TemplateColumn Title="Suspend" Sortable="false">
                 <HeaderTemplate>
@@ -67,7 +78,7 @@
 
             <TemplateColumn Title="Items" Sortable="true">
                 <CellTemplate>
-                    <MudChip Color="Color.Secondary"
+                    <MudChip Color="Color.Secondary" T="string"
                              OnClick="async () => await ShowQueueMessages(context.Item.QueueName)"
                              Variant="Variant.Filled">@context.Item.QueueLength</MudChip>
                 </CellTemplate>
@@ -76,7 +87,7 @@
             <TemplateColumn Title="Unconfirmed Items" Sortable="true">
                 <CellTemplate>
                     @if (context.Item.UnconfirmedItems.HasValue) {
-                        <MudChip Color="Color.Success"
+                        <MudChip Color="Color.Success" T="string"
                                  OnClick="async () => await ShowQueueMessages(context.Item.QueueName, true)"
                                  Disabled="context.Item.UnconfirmedItems == 0"
                                  Variant="Variant.Filled">
