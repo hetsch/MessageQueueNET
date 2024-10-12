@@ -45,7 +45,7 @@ static public class DistributedApplicationBuilderExtensions
             .WithEnvironment(e =>
             {
                 e.EnvironmentVariables.Add("DASHBOARD__QUEUES__0__NAME", "queues");
-                e.EnvironmentVariables.Add("DASHBOARD__QUEUES__0__URL", messageQueueUrl.Replace("{{localhost}}", "docker.for.mac.localhost"));
+                e.EnvironmentVariables.Add("DASHBOARD__QUEUES__0__URL", messageQueueUrl.Replace("{{localhost}}", ContainerEnvironment.HostAddress));
             });
 
         return resource;
