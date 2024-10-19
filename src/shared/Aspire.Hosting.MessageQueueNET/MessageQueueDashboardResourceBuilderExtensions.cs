@@ -1,4 +1,5 @@
 ﻿using Aspire.Hosting.ApplicationModel;
+using System;
 
 namespace Aspire.Hosting;
 
@@ -13,7 +14,7 @@ static public class MessageQueueDashboardResourceBuilderExtensions
             string? bridgeNetwork = null
         )
     {
-        var resource = new MessageQueueDashboardResource(name, bridgeNetwork);
+        var resource = new MessageQueueDashboardResource(name);
         var resourceBuilder = builder.AddResource(resource)
                     .WithImage(MessageQueueDashboardContainerImageTags.Image)
                     .WithImageRegistry(MessageQueueDashboardContainerImageTags.Registry)
@@ -23,39 +24,32 @@ static public class MessageQueueDashboardResourceBuilderExtensions
                           port: httpPort,
                           name: MessageQueueResource.HttpEndpointName);
 
-        if (!String.IsNullOrEmpty(bridgeNetwork))
-        {
-            resourceBuilder.WithContainerRuntimeArgs("--network", bridgeNetwork);
-        }
-
         return new MessageQueueDashboardResourceBuilder(builder, resourceBuilder);
     }
 
     static public MessageQueueDashboardResourceBuilder ConnectToMessageQueue(
         this MessageQueueDashboardResourceBuilder builder,
-        MessageQueueResourceBuilder messageQueueBuilder,
+        IResourceBuilder<MessageQueueResource> messageQueue,
         string name,
         string filter = "*")
     {
         builder.ResourceBuilder.WithEnvironment(e =>
         {
-            string url = $"http://{messageQueueBuilder.ResourceBuilder.Resource.HttpEndpoint.ContainerHost}:{messageQueueBuilder.ResourceBuilder.Resource.HttpEndpoint.Port}";
-
-            if (!String.IsNullOrEmpty(builder.ResourceBuilder.Resource.BridgeNetwork) &&
-                builder.ResourceBuilder.Resource.BridgeNetwork.Equals(
-                    messageQueueBuilder.ResourceBuilder.Resource.BridgeNetwork
-                )
-               )
-            {
-                url = $"http://{messageQueueBuilder.ResourceBuilder.Resource.ContainerName}:{messageQueueBuilder.ResourceBuilder.Resource.ContainerHttpPort}";
-            }
-
             e.EnvironmentVariables.Add($"DASHBOARD__QUEUES__{builder.QueueIndex}__NAME", name);
-            e.EnvironmentVariables.Add($"DASHBOARD__QUEUES__{builder.QueueIndex}__URL", url);
+            e.EnvironmentVariables.Add(
+                $"DASHBOARD__QUEUES__{builder.QueueIndex}__URL",
+                $"http://{messageQueue.Resource.ContainerName}:{messageQueue.Resource.ContainerHttpPort}"
+                );
             e.EnvironmentVariables.Add($"DASHBOARD__QUEUES__{builder.QueueIndex}__FILTER", filter);
 
             builder.QueueIndex++;
         });
+
+        if (!builder.ConnectedMessageQueues.Contains(messageQueue))
+        {
+            builder.ConnectedMessageQueues.Add(messageQueue);
+            builder.ResourceBuilder.WaitFor(messageQueue);
+        }
 
         return builder;
     }
@@ -71,6 +65,9 @@ static public class MessageQueueDashboardResourceBuilderExtensions
 
         return builder;
     }
+
+    static public IResourceBuilder<MessageQueueDashboardResource> Build(
+        this MessageQueueDashboardResourceBuilder builder) => builder.ResourceBuilder;
 }
 
 public class MessageQueueDashboardResourceBuilder(
@@ -81,7 +78,10 @@ public class MessageQueueDashboardResourceBuilder(
     internal IDistributedApplicationBuilder AppBuilder { get; } = appBuilder;
     internal IResourceBuilder<MessageQueueDashboardResource> ResourceBuilder { get; } = resourceBuilder;
 
+    internal List<IResourceBuilder<MessageQueueResource>> ConnectedMessageQueues = new();
+
     internal int QueueIndex = 0;
+
 }
 
 internal static class MessageQueueDashboardContainerImageTags

@@ -1,6 +1,6 @@
 ﻿namespace Aspire.Hosting.ApplicationModel;
 
-public class MessageQueueDashboardResource(string name, string? bridgeNetwork = null)
+public class MessageQueueDashboardResource(string name)
     : ContainerResource(name)
 {
     internal const string HttpEndpointName = "http";
@@ -8,8 +8,6 @@ public class MessageQueueDashboardResource(string name, string? bridgeNetwork = 
     public int ContainerHttpPort = 8080;
 
     private EndpointReference? _httpReference;
-
-    internal string? BridgeNetwork { get; set; } = bridgeNetwork;
 
     public EndpointReference HttpEndpoint =>
         _httpReference ??= new(this, HttpEndpointName);

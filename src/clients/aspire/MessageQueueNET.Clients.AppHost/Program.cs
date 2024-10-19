@@ -1,13 +1,15 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var mq = builder
-            .AddMessageQueueNET("messagequeue"/*, bridgeNetwork: "mq"*/)
-            .WithBindMountPersistance();
+            .AddMessageQueueNET("messagequeue")
+            .WithBindMountPersistance()
+            .Build();
 
 var mqDashboard = builder
-            .AddDashboardForMessageQueueNET("messagequeue-dashboard"/*, bridgeNetwork: "mq"*/)
+            .AddDashboardForMessageQueueNET("messagequeue-dashboard")
             .ConnectToMessageQueue(mq, "mq")
             .ConnectToMessageQueue(mq, "mail", "mail*")
-            .WithMaxPollingSeconds(5);
+            .WithMaxPollingSeconds(5)
+            .Build();
 
 builder.Build().Run();

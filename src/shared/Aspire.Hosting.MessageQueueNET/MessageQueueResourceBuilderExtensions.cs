@@ -14,7 +14,7 @@ static public class MessageQueueResourceBuilderExtensions
             int maxRequestPollingSeconds = 5
         )
     {
-        var resource = new MessageQueueResource(name, bridgeNetwork);
+        var resource = new MessageQueueResource(name);
         var resourceBuilder = builder.AddResource(resource)
                     .WithImage(MessageQueueContainerImageTags.Image)
                     .WithImageRegistry(MessageQueueContainerImageTags.Registry)
@@ -69,6 +69,9 @@ static public class MessageQueueResourceBuilderExtensions
 
         return builder;
     }
+
+    public static IResourceBuilder<MessageQueueResource> Build(this MessageQueueResourceBuilder builder)
+        => builder.ResourceBuilder;
 }
 
 public class MessageQueueResourceBuilder(
