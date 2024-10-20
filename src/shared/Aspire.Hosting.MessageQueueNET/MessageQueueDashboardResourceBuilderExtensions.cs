@@ -1,5 +1,4 @@
 ﻿using Aspire.Hosting.ApplicationModel;
-using System;
 
 namespace Aspire.Hosting;
 
@@ -24,7 +23,7 @@ static public class MessageQueueDashboardResourceBuilderExtensions
                           port: httpPort,
                           name: MessageQueueResource.HttpEndpointName);
 
-        return new MessageQueueDashboardResourceBuilder(builder, resourceBuilder);
+        return new MessageQueueDashboardResourceBuilder(resourceBuilder);
     }
 
     static public MessageQueueDashboardResourceBuilder ConnectToMessageQueue(
@@ -71,11 +70,9 @@ static public class MessageQueueDashboardResourceBuilderExtensions
 }
 
 public class MessageQueueDashboardResourceBuilder(
-        IDistributedApplicationBuilder appBuilder,
         IResourceBuilder<MessageQueueDashboardResource> resourceBuilder
     )
 {
-    internal IDistributedApplicationBuilder AppBuilder { get; } = appBuilder;
     internal IResourceBuilder<MessageQueueDashboardResource> ResourceBuilder { get; } = resourceBuilder;
 
     internal List<IResourceBuilder<MessageQueueResource>> ConnectedMessageQueues = new();

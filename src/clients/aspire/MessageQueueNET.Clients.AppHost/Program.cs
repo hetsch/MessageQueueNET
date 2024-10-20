@@ -2,8 +2,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var mq = builder
             .AddMessageQueueNET("messagequeue")
-            .WithBindMountPersistance()
-            .Build();
+            .WithBindMountPersistance();
 
 var mqDashboard = builder
             .AddDashboardForMessageQueueNET("messagequeue-dashboard")

@@ -4,7 +4,7 @@ namespace Aspire.Hosting;
 
 static public class MessageQueueResourceBuilderExtensions
 {
-    static public MessageQueueResourceBuilder AddMessageQueueNET(
+    static public IResourceBuilder<MessageQueueResource> AddMessageQueueNET(
             this IDistributedApplicationBuilder builder,
             string name,
             int? httpPort = null,
@@ -41,14 +41,14 @@ static public class MessageQueueResourceBuilderExtensions
             resourceBuilder.WithContainerRuntimeArgs("--network", bridgeNetwork);
         }
 
-        return new MessageQueueResourceBuilder(builder, resourceBuilder);
+        return resourceBuilder;
     }
 
-    public static MessageQueueResourceBuilder WithBindMountPersistance(
-        this MessageQueueResourceBuilder builder,
+    public static IResourceBuilder<MessageQueueResource> WithBindMountPersistance(
+        this IResourceBuilder<MessageQueueResource> builder,
         string persistancePath = "{{local-app-data}}/messagequeue-aspire")
     {
-        builder.ResourceBuilder.WithBindMount(
+        builder.WithBindMount(
                 persistancePath.Replace("{{local-app-data}}", Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)),
                 "/home/app/messagequeue",
                 isReadOnly: false
@@ -57,11 +57,11 @@ static public class MessageQueueResourceBuilderExtensions
         return builder;
     }
 
-    public static MessageQueueResourceBuilder WithVolumePersistance(
-        this MessageQueueResourceBuilder builder,
+    public static IResourceBuilder<MessageQueueResource> WithVolumePersistance(
+        this IResourceBuilder<MessageQueueResource> builder,
         string volumneName = "messagequeue-aspire")
     {
-        builder.ResourceBuilder.WithBindMount(
+        builder.WithBindMount(
                 volumneName,
                 "/home/app/messagequeue",
                 isReadOnly: false
@@ -69,18 +69,6 @@ static public class MessageQueueResourceBuilderExtensions
 
         return builder;
     }
-
-    public static IResourceBuilder<MessageQueueResource> Build(this MessageQueueResourceBuilder builder)
-        => builder.ResourceBuilder;
-}
-
-public class MessageQueueResourceBuilder(
-        IDistributedApplicationBuilder appBuilder,
-        IResourceBuilder<MessageQueueResource> resourceBuilder
-    )
-{
-    internal IDistributedApplicationBuilder AppBuilder { get; } = appBuilder;
-    internal IResourceBuilder<MessageQueueResource> ResourceBuilder { get; } = resourceBuilder;
 }
 
 internal static class MessageQueueContainerImageTags
